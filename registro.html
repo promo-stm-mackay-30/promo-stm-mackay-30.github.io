@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Registro de apoderados · Prom Party G'30</title>
+<meta name="description" content="Registra al alumno que asistirá a la Prom Party G'30 e indica las tres personas autorizadas para retirarlo.">
+<meta name="theme-color" content="#070a1c">
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="estilo.css">
+</head>
+<body>
+<div class="aurora" aria-hidden="true"><i></i><i></i><i></i></div>
+<main class="contenedor">
+  <a class="volver" href="./">← Volver al inicio</a>
+  <h1>Registro de apoderados</h1>
+  <p class="sub">Fiesta Prom G'30 · Miércoles 16 de diciembre de 2026 · Patio 511, Reñaca<br>
+    Fotografías 19:00 hrs · Fiesta 20:00 a 01:00 hrs del jueves 17.</p>
+
+  <section id="construccion" class="tarjeta oculto">
+    <h2>🚧 En construcción</h2>
+    <p class="sub" style="margin:0">El registro todavía no está habilitado. Muy pronto podrás completarlo aquí.</p>
+  </section>
+
+  <section id="cerrado" class="tarjeta oculto">
+    <h2>Registro cerrado</h2>
+    <p class="sub" style="margin:0">Se completaron todos los cupos de la fiesta.</p>
+  </section>
+
+  <form id="form" class="oculto" novalidate autocomplete="off">
+    <p class="msg info" id="cupos"></p>
+    <p class="sub">Completa este formulario para registrar al alumno que asistirá e indicar las personas autorizadas para retirarlo al finalizar. Verifica cuidadosamente los nombres y teléfonos antes de enviar. Los datos se usan exclusivamente para organizar el registro y coordinar el retiro de los alumnos.</p>
+
+    <div class="tarjeta">
+      <h2>Código de acceso</h2>
+      <label for="codigo">Código que te entregó la organización</label>
+      <input type="text" id="codigo" required autocapitalize="off">
+    </div>
+
+    <div class="tarjeta">
+      <h2>Alumno</h2>
+      <label for="alumno">Nombre completo del alumno</label>
+      <input type="text" id="alumno" maxlength="100" required>
+      <div class="fila">
+        <div><label for="curso">Curso</label><input type="text" id="curso" maxlength="30" required></div>
+        <div><label for="colegio">Colegio</label><input type="text" id="colegio" maxlength="60" required></div>
+      </div>
+    </div>
+
+    <div class="tarjeta">
+      <h2>Apoderado</h2>
+      <label for="apoderado">Nombre completo del apoderado</label>
+      <input type="text" id="apoderado" maxlength="100" required>
+      <div class="fila">
+        <div><label for="telApoderado">Teléfono de contacto</label><input type="tel" id="telApoderado" placeholder="+56 9 1234 5678" required></div>
+        <div><label for="emailApoderado">Correo (recibirás el pase QR)</label><input type="email" id="emailApoderado" required></div>
+      </div>
+    </div>
+
+    <div class="tarjeta">
+      <h2>Personas autorizadas para el retiro</h2>
+      <div id="autorizados"></div>
+    </div>
+
+    <div class="tarjeta">
+      <label class="chk"><input type="checkbox" id="confirmo" required>
+        <span>Confirmo que los datos proporcionados son correctos y, en mi calidad de apoderado/a, autorizo a las tres personas identificadas en este formulario para retirar al alumno durante o al término de la Fiesta Prom G’30.</span></label>
+      <p class="sub" style="margin:.8rem 0 0;font-size:.78rem">El retiro se hará con verificación de identidad.</p>
+    </div>
+
+    <input class="honey" type="text" id="web" tabindex="-1" autocomplete="off" aria-hidden="true">
+    <p class="msg mal oculto" id="error" role="alert"></p>
+    <button class="btn" id="enviar" type="submit">Registrar al alumno</button>
+  </form>
+
+  <p class="pie">The Mackay School &amp; St Margaret's · Prom Party G'30</p>
+</main>
+
+<script src="config.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+const API = window.API_URL;
+
+$("autorizados").innerHTML = [1, 2, 3].map(n => `
+  <div class="fila" style="${n > 1 ? 'margin-top:.9rem' : ''}">
+    <div><label for="aut${n}">Persona autorizada N.º ${n}</label><input type="text" id="aut${n}" maxlength="100" required></div>
+    <div><label for="telAut${n}">Teléfono N.º ${n}</label><input type="tel" id="telAut${n}" placeholder="+56 9 1234 5678" required></div>
+  </div>`).join("");
+
+async function api(body) {
+  const r = await fetch(API, { method: "POST", body: JSON.stringify(body) });   // sin cabecera JSON: evita preflight CORS
+  return r.json();
+}
+
+async function iniciar() {
+  if (!API) { $("construccion").classList.remove("oculto"); return; }
+  try {
+    const e = await api({ accion: "estado" });
+    if (!e.ok) throw 0;
+    if (e.libres <= 0) { $("cerrado").classList.remove("oculto"); return; }
+    $("cupos").textContent = `Quedan ${e.libres} de ${e.total} cupos.`;
+    $("form").classList.remove("oculto");
+  } catch (_) {
+    $("construccion").classList.remove("oculto");
+  }
+}
+
+function mostrarError(t) { const m = $("error"); m.textContent = t; m.classList.remove("oculto"); m.scrollIntoView({ behavior: "smooth", block: "center" }); }
+
+$("form").addEventListener("submit", async ev => {
+  ev.preventDefault();
+  $("error").classList.add("oculto");
+  const ids = ["codigo","alumno","curso","colegio","apoderado","telApoderado","emailApoderado","aut1","telAut1","aut2","telAut2","aut3","telAut3"];
+  const d = { accion: "registrar", web: $("web").value, confirmo: $("confirmo").checked };
+  for (const k of ids) { d[k] = $(k).value.trim(); if (!d[k]) { $(k).focus(); return mostrarError("Completa todos los campos."); } }
+  if (!d.confirmo) return mostrarError("Debes marcar la confirmación para continuar.");
+  const b = $("enviar"); b.disabled = true; b.textContent = "Registrando…";
+  try {
+    const r = await api(d);
+    if (!r.ok) { mostrarError(r.msg || "No se pudo registrar."); b.disabled = false; b.textContent = "Registrar al alumno"; return; }
+    try { localStorage.setItem("pase_g30", r.token); } catch (_) {}
+    location.href = "pase.html#" + r.token;
+  } catch (_) {
+    mostrarError("No hay conexión con el servidor. Inténtalo de nuevo en un momento.");
+    b.disabled = false; b.textContent = "Registrar al alumno";
+  }
+});
+
+iniciar();
+</script>
+</body>
+</html>
