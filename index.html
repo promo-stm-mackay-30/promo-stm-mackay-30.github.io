@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Promo 2026</title>
+<meta name="description" content="Fotos, videos y recuerdos de la Promo">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  /* ============================================================
+     EDITA AQUÍ LOS COLORES DE LA PROMO
+     ============================================================ */
+  :root {
+    --color-1: #f5a623;   /* dorado */
+    --color-2: #19d3e6;   /* cian neón */
+    --fondo:   #070a1c;   /* fondo azul noche */
+    --texto:   #ffffff;
+    --texto-suave: #b9c3de;
+  }
+  .hero {
+    display: block;
+    width: 100%;
+    border-radius: 22px;
+    margin-bottom: 18px;
+    box-shadow: 0 0 40px rgba(245,166,35,.25), 0 0 80px rgba(25,211,230,.15);
+  }
+  .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .btn.principal { color: #1a1204; }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { min-height: 100%; }
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    background: var(--fondo);
+    color: var(--texto);
+    display: flex;
+    justify-content: center;
+    padding: 40px 16px 32px;
+    overflow-x: hidden;
+    position: relative;
+  }
+  body::before, body::after {
+    content: "";
+    position: fixed;
+    width: 420px; height: 420px;
+    border-radius: 50%;
+    filter: blur(110px);
+    opacity: .45;
+    z-index: 0;
+    pointer-events: none;
+  }
+  body::before { background: var(--color-1); top: -140px; left: -160px; }
+  body::after  { background: var(--color-2); bottom: -160px; right: -160px; }
+
+  main {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 440px;
+    text-align: center;
+  }
+
+  .colegio {
+    font-size: 13px;
+    letter-spacing: .25em;
+    text-transform: uppercase;
+    color: var(--texto-suave);
+    font-weight: 600;
+  }
+  h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-weight: 400;
+    font-size: clamp(64px, 22vw, 104px);
+    line-height: .9;
+    margin: 10px 0 6px;
+    background: linear-gradient(120deg, var(--color-1), var(--color-2));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .lema { color: var(--texto-suave); font-size: 15px; margin-bottom: 28px; }
+
+  .countdown {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 32px;
+  }
+  .countdown div {
+    background: rgba(255,255,255,.06);
+    border: 1px solid rgba(255,255,255,.1);
+    border-radius: 14px;
+    padding: 10px 0;
+    width: 70px;
+  }
+  .countdown b { display: block; font-size: 26px; font-weight: 700; }
+  .countdown span { font-size: 11px; color: var(--texto-suave); text-transform: uppercase; letter-spacing: .1em; }
+  .mensaje-post {
+    margin-bottom: 32px;
+    font-size: 17px;
+    font-weight: 600;
+  }
+
+  .botones { display: flex; flex-direction: column; gap: 14px; }
+  .btn {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 18px 20px;
+    border-radius: 18px;
+    text-decoration: none;
+    color: var(--texto);
+    text-align: left;
+    background: rgba(255,255,255,.06);
+    border: 1px solid rgba(255,255,255,.12);
+    transition: transform .15s ease, background .15s ease;
+  }
+  .btn:active { transform: scale(.98); }
+  .btn:hover { background: rgba(255,255,255,.1); }
+  .btn.principal {
+    background: linear-gradient(120deg, var(--color-1), var(--color-2));
+    border: none;
+  }
+  .btn .icono { font-size: 28px; line-height: 1; }
+  .btn strong { display: block; font-size: 17px; }
+  .btn small { display: block; font-size: 13px; opacity: .8; margin-top: 2px; }
+
+  .staff {
+    display: inline-block;
+    margin-top: 36px;
+    font-size: 13px;
+    color: var(--texto-suave);
+    text-decoration: none;
+    border-bottom: 1px dashed var(--texto-suave);
+    padding-bottom: 2px;
+  }
+  footer { margin-top: 28px; font-size: 12px; color: var(--texto-suave); opacity: .7; }
+</style>
+</head>
+<body>
+<main>
+  <img class="hero" src="logo.jpg" alt="Prom Party G'30 – The Mackay School & St Margaret's">
+  <p class="colegio sr-only" id="colegio"></p>
+  <h1 class="sr-only" id="titulo"></h1>
+  <p class="lema" id="lema"></p>
+
+  <div class="countdown" id="countdown" hidden>
+    <div><b id="d">0</b><span>días</span></div>
+    <div><b id="h">0</b><span>horas</span></div>
+    <div><b id="m">0</b><span>min</span></div>
+    <div><b id="s">0</b><span>seg</span></div>
+  </div>
+  <p class="mensaje-post" id="mensaje-post" hidden></p>
+
+  <div class="botones">
+    <a class="btn principal" id="link-subir" target="_blank" rel="noopener">
+      <span class="icono">📸</span>
+      <span><strong>Subir fotos y videos</strong><small>Comparte lo que grabaste</small></span>
+    </a>
+    <a class="btn" id="link-ver" target="_blank" rel="noopener">
+      <span class="icono">🖼️</span>
+      <span><strong>Ver el álbum</strong><small>Todas las fotos de la promo</small></span>
+    </a>
+  </div>
+
+  <a class="staff" id="link-staff" target="_blank" rel="noopener">🎟️ Registro de ingreso (solo staff)</a>
+
+  <footer id="footer"></footer>
+</main>
+
+<script>
+/* ============================================================
+   EDITA AQUÍ LOS DATOS DE LA PROMO
+   ============================================================ */
+const PROMO = {
+  colegio:    "The Mackay School & St Margaret's",
+  titulo:     "Prom Party G'30",
+  lema:       "La última noche juntos",
+  fechaFiesta: "2026-12-12T22:00:00-03:00",   // fecha y hora de la fiesta (hora Chile)
+  linkSubir:  "https://photos.app.goo.gl/REEMPLAZAR",  // álbum compartido de Google Fotos (con colaboración)
+  linkVer:    "https://photos.app.goo.gl/REEMPLAZAR",  // puede ser el mismo link del álbum
+  linkStaff:  "https://forms.gle/REEMPLAZAR",          // Google Form de registro de ingreso
+};
+/* ============================================================ */
+
+document.title = PROMO.titulo;
+document.getElementById("colegio").textContent = PROMO.colegio;
+document.getElementById("titulo").textContent = PROMO.titulo;
+document.getElementById("lema").textContent = PROMO.lema;
+document.getElementById("link-subir").href = PROMO.linkSubir;
+document.getElementById("link-ver").href = PROMO.linkVer;
+document.getElementById("link-staff").href = PROMO.linkStaff;
+document.getElementById("footer").textContent = PROMO.colegio + " · " + PROMO.titulo;
+
+const fiesta = new Date(PROMO.fechaFiesta).getTime();
+const cd = document.getElementById("countdown");
+const post = document.getElementById("mensaje-post");
+
+function tick() {
+  const diff = fiesta - Date.now();
+  if (isNaN(fiesta)) return;
+  if (diff <= 0) {
+    cd.hidden = true;
+    post.hidden = false;
+    const horasDesde = -diff / 36e5;
+    post.textContent = horasDesde < 10 ? "🎉 ¡La fiesta es ahora!" : "💜 Gracias por esa noche. Sube tus fotos y revívela.";
+    return;
+  }
+  cd.hidden = false;
+  post.hidden = true;
+  document.getElementById("d").textContent = Math.floor(diff / 864e5);
+  document.getElementById("h").textContent = Math.floor(diff / 36e5) % 24;
+  document.getElementById("m").textContent = Math.floor(diff / 6e4) % 60;
+  document.getElementById("s").textContent = Math.floor(diff / 1e3) % 60;
+}
+tick();
+setInterval(tick, 1000);
+</script>
+</body>
