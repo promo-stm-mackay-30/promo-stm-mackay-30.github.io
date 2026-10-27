@@ -76,6 +76,8 @@
         <p id="resumen" style="font-weight:700"></p>
         <label for="emailApoderado">Correo del apoderado (recibirás la confirmación del registro)</label>
         <input type="email" id="emailApoderado" required>
+        <label for="rutApoderado">RUT del apoderado</label>
+        <input type="text" id="rutApoderado" class="rut" placeholder="12.345.678-5" maxlength="12" required>
       </div>
       <div class="tarjeta">
         <h2>Personas autorizadas para el retiro</h2>
@@ -119,10 +121,30 @@ const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({ "&": "&a
 let hallados = [], elegido = null, datos = {};
 
 $("autorizados").innerHTML = [1, 2, 3].map(n => `
-  <div class="fila" style="${n > 1 ? 'margin-top:.9rem' : ''}">
-    <div><label for="aut${n}">Persona autorizada N.º ${n}</label><input type="text" id="aut${n}" maxlength="100" required></div>
-    <div><label for="telAut${n}">Teléfono N.º ${n}</label><input type="tel" id="telAut${n}" placeholder="+56 9 1234 5678" required></div>
+  <div style="${n > 1 ? 'margin-top:1.2rem;padding-top:1rem;border-top:1px solid var(--borde)' : ''}">
+    <label for="aut${n}">Persona autorizada N.º ${n} · nombre completo</label><input type="text" id="aut${n}" maxlength="100" required>
+    <div class="fila">
+      <div><label for="rutAut${n}">RUT N.º ${n}</label><input type="text" id="rutAut${n}" class="rut" placeholder="12.345.678-5" maxlength="12" required></div>
+      <div><label for="telAut${n}">Teléfono N.º ${n}</label><input type="tel" id="telAut${n}" placeholder="+56 9 1234 5678" required></div>
+    </div>
   </div>`).join("");
+
+/* RUT chileno: formato automático y validación del dígito verificador (el servidor vuelve a validarlo). */
+function rutValido(r) {
+  const t = String(r || "").toUpperCase().replace(/[^0-9K]/g, "");
+  if (t.length < 2) return "";
+  const cuerpo = t.slice(0, -1), dv = t.slice(-1);
+  if (!/^\d{6,8}$/.test(cuerpo)) return "";
+  let suma = 0, m = 2;
+  for (let i = cuerpo.length - 1; i >= 0; i--) { suma += +cuerpo[i] * m; m = m === 7 ? 2 : m + 1; }
+  const res = 11 - (suma % 11), esp = res === 11 ? "0" : res === 10 ? "K" : String(res);
+  return dv === esp ? cuerpo.replace(/\B(?=(\d{3})+(?!\d))/g, ".") + "-" + dv : "";
+}
+document.querySelectorAll(".rut").forEach(inp => inp.addEventListener("blur", () => {
+  const f = rutValido(inp.value);
+  if (f) inp.value = f;
+  inp.style.borderColor = inp.value && !f ? "var(--mal)" : "";
+}));
 
 async function api(body) {
   const r = await fetch(API, { method: "POST", body: JSON.stringify(body) });   // sin cabecera JSON: evita preflight CORS
@@ -180,8 +202,12 @@ $("atras3").onclick = () => paso(2);
 $("f3").addEventListener("submit", async ev => {
   ev.preventDefault(); $("e3").classList.add("oculto");
   const d = { accion: "registrar", codigo: datos.codigo, telefono: datos.telefono, id: elegido.id, confirmo: $("confirmo").checked };
-  for (const k of ["emailApoderado", "aut1", "telAut1", "aut2", "telAut2", "aut3", "telAut3"]) {
+  for (const k of ["emailApoderado", "rutApoderado", "aut1", "rutAut1", "telAut1", "aut2", "rutAut2", "telAut2", "aut3", "rutAut3", "telAut3"]) {
     d[k] = $(k).value.trim(); if (!d[k]) { $(k).focus(); return error("e3", "Completa todos los campos."); }
+  }
+  const nombresRut = { rutApoderado: "del apoderado", rutAut1: "de la persona autorizada N.º 1", rutAut2: "de la persona autorizada N.º 2", rutAut3: "de la persona autorizada N.º 3" };
+  for (const k in nombresRut) {
+    if (!rutValido(d[k])) { $(k).focus(); return error("e3", `El RUT ${nombresRut[k]} no es válido. Revisa el dígito verificador (ej.: 12.345.678-5).`); }
   }
   if (!d.confirmo) return error("e3", "Debes marcar la confirmación para continuar.");
   const b = $("b3"); b.disabled = true; b.textContent = "Registrando…";

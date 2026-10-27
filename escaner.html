@@ -127,7 +127,7 @@ async function alLeer(leido) {
     if (r.requiere === "confirmar") {
       pitar(true);
       mostrar("conf", `<div class="ico">🧑‍🤝‍🧑</div><h2>${esc(r.alumno)}</h2><p class="sub">${esc(r.curso)} · Cupo ${esc(r.folio)}<br>¿Quién retira al alumno? Verifica su identidad.</p>`
-        + r.personas.map(p => `<button class="persona" data-i="${p.i}"><b>${esc(p.nombre)}</b><small>${esc(p.rol)} · ${esc(p.tel)}</small></button>`).join("")
+        + r.personas.map(p => `<button class="persona" data-i="${p.i}"><b>${esc(p.nombre)}</b><small>${esc(p.rol)}${p.rut ? " · RUT " + esc(p.rut) : ""} · ${esc(p.tel)}</small></button>`).join("")
         + `<button class="persona no" data-i="NO">❌ La persona NO coincide</button>`
         + `<button class="persona" data-cancel="1" style="text-align:center;opacity:.8">Cancelar</button>`);
       document.querySelectorAll("#caja .persona").forEach(b => b.onclick = () => {
