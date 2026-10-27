@@ -81,11 +81,12 @@
       </div>
       <div class="tarjeta">
         <h2>Personas autorizadas para el retiro</h2>
+        <p class="sub" style="margin:-.3rem 0 .9rem;font-size:.82rem">Indica al menos una persona (además del apoderado). Puedes agregar hasta tres.</p>
         <div id="autorizados"></div>
       </div>
       <div class="tarjeta">
         <label class="chk"><input type="checkbox" id="confirmo" required>
-          <span>Confirmo que los datos proporcionados son correctos y, en mi calidad de apoderado/a, autorizo a las tres personas identificadas en este formulario para retirar al alumno durante o al término de la Fiesta Prom G’30.</span></label>
+          <span>Confirmo que los datos proporcionados son correctos y, en mi calidad de apoderado/a, autorizo a las personas identificadas en este formulario para retirar al alumno durante o al término de la Fiesta Prom G’30.</span></label>
         <p class="sub" style="margin:.8rem 0 0;font-size:.78rem">El retiro se hará con verificación de identidad.</p>
       </div>
       <p class="msg mal oculto" id="e3" role="alert"></p>
@@ -103,7 +104,7 @@
       </div>
       <div class="tarjeta">
         <h2>¿Y ahora?</h2>
-        <p class="sub" style="margin:0">La organización entregará la <b>pulsera con código QR</b> antes de la fiesta. Esa pulsera es la entrada: se escanea en la puerta. Solo podrán retirar al alumno el apoderado y las tres personas autorizadas, con verificación de identidad.</p>
+        <p class="sub" style="margin:0">La organización entregará la <b>pulsera con código QR</b> antes de la fiesta. Esa pulsera es la entrada: se escanea en la puerta. Solo podrán retirar al alumno el apoderado y las personas autorizadas, con verificación de identidad.</p>
         <p class="sub" id="listoCorreo" style="margin:.8rem 0 0"></p>
       </div>
       <a class="btn" href="./">Volver al inicio</a>
@@ -122,10 +123,10 @@ let hallados = [], elegido = null, datos = {};
 
 $("autorizados").innerHTML = [1, 2, 3].map(n => `
   <div style="${n > 1 ? 'margin-top:1.2rem;padding-top:1rem;border-top:1px solid var(--borde)' : ''}">
-    <label for="aut${n}">Persona autorizada N.º ${n} · nombre completo</label><input type="text" id="aut${n}" maxlength="100" required>
+    <label for="aut${n}">Persona autorizada N.º ${n} · nombre completo${n > 1 ? ' <span style="opacity:.7">(opcional)</span>' : ''}</label><input type="text" id="aut${n}" maxlength="100">
     <div class="fila">
-      <div><label for="rutAut${n}">RUT N.º ${n}</label><input type="text" id="rutAut${n}" class="rut" placeholder="12.345.678-5" maxlength="12" required></div>
-      <div><label for="telAut${n}">Teléfono N.º ${n}</label><input type="tel" id="telAut${n}" placeholder="+56 9 1234 5678" required></div>
+      <div><label for="rutAut${n}">RUT N.º ${n}</label><input type="text" id="rutAut${n}" class="rut" placeholder="12.345.678-5" maxlength="12"></div>
+      <div><label for="telAut${n}">Teléfono N.º ${n}</label><input type="tel" id="telAut${n}" placeholder="+56 9 1234 5678"></div>
     </div>
   </div>`).join("");
 
@@ -202,12 +203,18 @@ $("atras3").onclick = () => paso(2);
 $("f3").addEventListener("submit", async ev => {
   ev.preventDefault(); $("e3").classList.add("oculto");
   const d = { accion: "registrar", codigo: datos.codigo, telefono: datos.telefono, id: elegido.id, confirmo: $("confirmo").checked };
-  for (const k of ["emailApoderado", "rutApoderado", "aut1", "rutAut1", "telAut1", "aut2", "rutAut2", "telAut2", "aut3", "rutAut3", "telAut3"]) {
-    d[k] = $(k).value.trim(); if (!d[k]) { $(k).focus(); return error("e3", "Completa todos los campos."); }
+  for (const k of ["emailApoderado", "rutApoderado"]) {
+    d[k] = $(k).value.trim(); if (!d[k]) { $(k).focus(); return error("e3", "Completa el correo y el RUT del apoderado."); }
   }
-  const nombresRut = { rutApoderado: "del apoderado", rutAut1: "de la persona autorizada N.º 1", rutAut2: "de la persona autorizada N.º 2", rutAut3: "de la persona autorizada N.º 3" };
-  for (const k in nombresRut) {
-    if (!rutValido(d[k])) { $(k).focus(); return error("e3", `El RUT ${nombresRut[k]} no es válido. Revisa el dígito verificador (ej.: 12.345.678-5).`); }
+  if (!rutValido(d.rutApoderado)) { $("rutApoderado").focus(); return error("e3", "El RUT del apoderado no es válido. Revisa el dígito verificador (ej.: 12.345.678-5)."); }
+  /* Persona autorizada N.º 1 obligatoria; la 2 y la 3 opcionales, pero completas si se escriben. */
+  for (const n of [1, 2, 3]) {
+    const ids = ["aut" + n, "rutAut" + n, "telAut" + n];
+    ids.forEach(k => d[k] = $(k).value.trim());
+    if (n > 1 && ids.every(k => !d[k])) continue;
+    const falta = ids.find(k => !d[k]);
+    if (falta) { $(falta).focus(); return error("e3", `Completa nombre, RUT y teléfono de la persona autorizada N.º ${n}.`); }
+    if (!rutValido(d["rutAut" + n])) { $("rutAut" + n).focus(); return error("e3", `El RUT de la persona autorizada N.º ${n} no es válido. Revisa el dígito verificador (ej.: 12.345.678-5).`); }
   }
   if (!d.confirmo) return error("e3", "Debes marcar la confirmación para continuar.");
   const b = $("b3"); b.disabled = true; b.textContent = "Registrando…";
