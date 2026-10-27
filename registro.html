@@ -72,9 +72,9 @@
     <form id="f3" class="oculto" novalidate autocomplete="off">
       <p class="sub">Verifica cuidadosamente los nombres y teléfonos antes de enviar. Los datos se usan exclusivamente para organizar el registro y coordinar el retiro de los alumnos.</p>
       <div class="tarjeta">
-        <h2>Alumno registrado</h2>
+        <h2>Alumno</h2>
         <p id="resumen" style="font-weight:700"></p>
-        <label for="emailApoderado">Correo del apoderado (recibirás el pase QR)</label>
+        <label for="emailApoderado">Correo del apoderado (recibirás la confirmación del registro)</label>
         <input type="email" id="emailApoderado" required>
       </div>
       <div class="tarjeta">
@@ -90,6 +90,22 @@
       <button class="btn" id="b3" type="submit">Registrar al alumno</button>
       <button class="btn sec" id="atras3" type="button" style="margin-top:.9rem">Volver</button>
     </form>
+
+    <!-- Registro completado -->
+    <section id="listo" class="oculto">
+      <div class="tarjeta" style="text-align:center">
+        <div style="font-size:3.2rem">✅</div>
+        <h2 style="margin-top:.4rem">Registro completado</h2>
+        <p id="listoAlumno" style="font-size:1.3rem;font-weight:800;margin:.3rem 0"></p>
+        <p class="sub" id="listoPulsera" style="margin:.4rem 0 0"></p>
+      </div>
+      <div class="tarjeta">
+        <h2>¿Y ahora?</h2>
+        <p class="sub" style="margin:0">La organización entregará la <b>pulsera con código QR</b> antes de la fiesta. Esa pulsera es la entrada: se escanea en la puerta. Solo podrán retirar al alumno el apoderado y las tres personas autorizadas, con verificación de identidad.</p>
+        <p class="sub" id="listoCorreo" style="margin:.8rem 0 0"></p>
+      </div>
+      <a class="btn" href="./">Volver al inicio</a>
+    </section>
   </div>
 
   <p class="pie">The Mackay School &amp; St Margaret's · Prom Party G'30</p>
@@ -172,8 +188,11 @@ $("f3").addEventListener("submit", async ev => {
   try {
     const r = await api(d);
     if (!r.ok) { error("e3", r.msg || "No se pudo registrar."); b.disabled = false; b.textContent = "Registrar al alumno"; return; }
-    try { localStorage.setItem("pase_g30", r.token); } catch (_) {}
-    location.href = "pase.html#" + r.token;
+    $("listoAlumno").textContent = elegido.alumno;
+    $("listoPulsera").innerHTML = `${esc(elegido.colegio)} · ${esc(elegido.curso)}<br>Pulsera N.º <b>${esc(r.folio)}</b>`;
+    $("listoCorreo").textContent = r.correo ? `Te enviamos la confirmación a ${d.emailApoderado}.` : "La confirmación por correo llegará más tarde.";
+    $("f3").classList.add("oculto"); document.querySelector(".pasos").classList.add("oculto"); $("cupos").classList.add("oculto");
+    $("listo").classList.remove("oculto"); window.scrollTo({ top: 0, behavior: "smooth" });
   } catch (_) {
     error("e3", "No hay conexión con el servidor. Inténtalo de nuevo en un momento.");
     b.disabled = false; b.textContent = "Registrar al alumno";
