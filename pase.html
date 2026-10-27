@@ -55,8 +55,8 @@ function fallo(t) { $("cargando").classList.add("oculto"); const e = $("error");
   try {
     const r = await (await fetch(window.API_URL, { method: "POST", body: JSON.stringify({ accion: "pase", token }) })).json();
     if (!r.ok) return fallo(r.msg || "Pase no encontrado.");
-    /* Mismo contenido que la pulsera impresa: al escanear con el celular abre pulsera.html y el escáner de puerta lee el token. */
-    const qr = qrcode(0, "M"); qr.addData(new URL("pulsera.html#" + token, location.href).href); qr.make();
+    /* Mismo contenido que la pulsera impresa: con el celular abre el inicio (que oculta el token) y el escáner de puerta lee el token. */
+    const qr = qrcode(0, "M"); qr.addData(new URL("./", location.href).href + "#" + token); qr.make();
     const url = qr.createDataURL(10, 2);
     $("qr").src = url; $("guardar").href = url;
     $("folio").textContent = "Cupo N.º " + r.folio;
