@@ -19,6 +19,10 @@
   .pasos { display:flex; gap:.4rem; margin-bottom:1rem; }
   .pasos i { flex:1; height:.3rem; border-radius:9px; background:rgba(255,255,255,.15); }
   .pasos i.on { background:linear-gradient(90deg,var(--oro),var(--cian)); }
+  .campo-error { display:block; color:#ff8a98; font-size:.8rem; font-weight:600; margin-top:.35rem; }
+  .campo-error::before { content:"⚠ "; }
+  input.invalido { border-color:var(--mal) !important; box-shadow:0 0 0 3px rgba(255,90,110,.2); animation:tiembla .35s; }
+  @keyframes tiembla { 20%,60% { transform:translateX(-5px); } 40%,80% { transform:translateX(5px); } }
 </style>
 </head>
 <body>
@@ -194,6 +198,21 @@ async function api(body) {
   return r.json();
 }
 function error(id, t) { const m = $(id); m.textContent = t; m.classList.remove("oculto"); m.scrollIntoView({ behavior: "smooth", block: "center" }); }
+
+/* Error junto al campo: lo marca en rojo, escribe el motivo debajo y lo enfoca. Se borra al corregir. */
+function campoError(id, t) {
+  const inp = $(id);
+  let s = document.getElementById(id + "-err");
+  if (!s) { s = document.createElement("small"); s.id = id + "-err"; s.className = "campo-error"; s.setAttribute("role", "alert"); inp.insertAdjacentElement("afterend", s); }
+  s.textContent = t;
+  inp.classList.remove("invalido"); void inp.offsetWidth; inp.classList.add("invalido");
+  inp.focus({ preventScroll: true }); inp.scrollIntoView({ behavior: "smooth", block: "center" });
+}
+function limpiarError(id) {
+  const s = document.getElementById(id + "-err"); if (s) s.remove();
+  $(id).classList.remove("invalido");
+}
+document.addEventListener("input", e => { if (e.target.id && document.getElementById(e.target.id + "-err")) limpiarError(e.target.id); });
 function paso(n) {
   ["f1", "f2", "f3"].forEach((f, i) => $(f).classList.toggle("oculto", i !== n - 1));
   ["p1", "p2", "p3"].forEach((p, i) => $(p).classList.toggle("on", i < n));
@@ -215,12 +234,20 @@ async function iniciar() {
 $("f1").addEventListener("submit", async ev => {
   ev.preventDefault(); $("e1").classList.add("oculto");
   datos.codigo = $("codigo").value.trim(); datos.telefono = valor("telefono");
-  if (!datos.codigo || !datos.telefono) return error("e1", "Completa el código y el teléfono.");
-  if (!telOk(datos.telefono)) return error("e1", "El teléfono debe tener 8 dígitos después de +56 9.");
+  if (!datos.codigo) return campoError("codigo", "Escribe el código de acceso.");
+  if (!datos.telefono) return campoError("telefono", "Escribe el teléfono del apoderado.");
+  if (!telOk(datos.telefono)) return campoError("telefono", "Faltan dígitos: deben ser 8 después de +56 9.");
   const b = $("b1"); b.disabled = true; b.textContent = "Verificando…";
   try {
     const r = await api({ accion: "verificar", codigo: datos.codigo, telefono: datos.telefono, web: $("web").value });
-    if (!r.ok) return error("e1", r.msg || "No se pudo verificar.");
+    if (!r.ok) {
+      const m = r.msg || "No se pudo verificar.";
+      if (/c[oó]digo/i.test(m)) return campoError("codigo", "Código de acceso incorrecto. Revísalo e inténtalo de nuevo.");
+      if (/no figura/i.test(m)) return campoError("telefono", "Este teléfono no está en la lista de asistentes. Revisa el número o contacta a la organización.");
+      if (/ya est[aá] registrad/i.test(m)) return campoError("telefono", "El alumno asociado a este teléfono ya está registrado.");
+      if (/tel[eé]fono/i.test(m)) return campoError("telefono", m);
+      return error("e1", m);   // p. ej. demasiados intentos
+    }
     hallados = r.alumnos;
     $("alumnos").innerHTML = hallados.map((a, i) => `
       <label class="opcion"><input type="radio" name="alu" value="${i}" ${hallados.length === 1 ? "checked" : ""}>
@@ -246,25 +273,34 @@ $("atras3").onclick = () => paso(2);
 $("f3").addEventListener("submit", async ev => {
   ev.preventDefault(); $("e3").classList.add("oculto");
   const d = { accion: "registrar", codigo: datos.codigo, telefono: datos.telefono, id: elegido.id, confirmo: $("confirmo").checked };
-  for (const k of ["emailApoderado", "rutApoderado"]) {
-    d[k] = $(k).value.trim(); if (!d[k]) { $(k).focus(); return error("e3", "Completa el correo y el RUT del apoderado."); }
-  }
-  if (!rutValido(d.rutApoderado)) { $("rutApoderado").focus(); return error("e3", "El RUT del apoderado no es válido. Revisa el dígito verificador (ej.: 12.345.678-5)."); }
+  d.emailApoderado = $("emailApoderado").value.trim(); d.rutApoderado = $("rutApoderado").value.trim();
+  if (!d.emailApoderado) return campoError("emailApoderado", "Escribe el correo del apoderado.");
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(d.emailApoderado)) return campoError("emailApoderado", "El correo no es válido (ej.: nombre@gmail.com).");
+  if (!d.rutApoderado) return campoError("rutApoderado", "Escribe el RUT del apoderado.");
+  if (!rutValido(d.rutApoderado)) return campoError("rutApoderado", "RUT incorrecto: el dígito verificador no coincide.");
   /* Persona autorizada N.º 1 obligatoria; la 2 y la 3 opcionales, pero completas si se escriben. */
   for (const n of [1, 2, 3]) {
     const ids = ["aut" + n, "rutAut" + n, "telAut" + n];
     ids.forEach(k => d[k] = valor(k));
     if (n > 1 && ids.every(k => !d[k])) continue;
     const falta = ids.find(k => !d[k]);
-    if (falta) { $(falta).focus(); return error("e3", `Completa nombre, RUT y teléfono de la persona autorizada N.º ${n}.`); }
-    if (!rutValido(d["rutAut" + n])) { $("rutAut" + n).focus(); return error("e3", `El RUT de la persona autorizada N.º ${n} no es válido. Revisa el dígito verificador (ej.: 12.345.678-5).`); }
-    if (!telOk(d["telAut" + n])) { $("telAut" + n).focus(); return error("e3", `El teléfono de la persona autorizada N.º ${n} debe tener 8 dígitos después de +56 9.`); }
+    if (falta) return campoError(falta, falta.startsWith("aut") ? "Escribe el nombre completo." : falta.startsWith("rut") ? "Escribe el RUT." : "Escribe el teléfono.");
+    if (!rutValido(d["rutAut" + n])) return campoError("rutAut" + n, "RUT incorrecto: el dígito verificador no coincide.");
+    if (!telOk(d["telAut" + n])) return campoError("telAut" + n, "Faltan dígitos: deben ser 8 después de +56 9.");
   }
   if (!d.confirmo) return error("e3", "Debes marcar la confirmación para continuar.");
   const b = $("b3"); b.disabled = true; b.textContent = "Registrando…";
   try {
     const r = await api(d);
-    if (!r.ok) { error("e3", r.msg || "No se pudo registrar."); b.disabled = false; b.textContent = "Registrar al alumno"; return; }
+    if (!r.ok) {
+      b.disabled = false; b.textContent = "Registrar al alumno";
+      const m = r.msg || "No se pudo registrar.", n = (m.match(/N\.º (\d)/) || [])[1];
+      if (/RUT del apoderado/i.test(m)) return campoError("rutApoderado", "RUT incorrecto: el dígito verificador no coincide.");
+      if (n && /RUT/.test(m)) return campoError("rutAut" + n, "RUT incorrecto: el dígito verificador no coincide.");
+      if (n && /tel[eé]fono/i.test(m)) return campoError("telAut" + n, m);
+      if (/correo/i.test(m)) return campoError("emailApoderado", m);
+      return error("e3", m);
+    }
     $("listoAlumno").textContent = elegido.alumno;
     $("listoPulsera").innerHTML = `${esc(elegido.colegio)} · ${esc(elegido.curso)}<br>Pulsera N.º <b>${esc(r.folio)}</b>`;
     $("listoCorreo").textContent = r.correo ? `Te enviamos la confirmación a ${d.emailApoderado}.` : "La confirmación por correo llegará más tarde.";
