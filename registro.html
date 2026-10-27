@@ -141,11 +141,53 @@ function rutValido(r) {
   const res = 11 - (suma % 11), esp = res === 11 ? "0" : res === 10 ? "K" : String(res);
   return dv === esp ? cuerpo.replace(/\B(?=(\d{3})+(?!\d))/g, ".") + "-" + dv : "";
 }
-document.querySelectorAll(".rut").forEach(inp => inp.addEventListener("blur", () => {
-  const f = rutValido(inp.value);
-  if (f) inp.value = f;
-  inp.style.borderColor = inp.value && !f ? "var(--mal)" : "";
-}));
+/* Mientras se escribe: deja solo números y K, pone puntos de miles y el guion antes del dígito verificador. */
+function rutFormato(v) {
+  let t = String(v || "").toUpperCase().replace(/[^0-9K]/g, "");
+  t = t.replace(/K(?=.)/g, "");                 // la K solo puede ir al final
+  if (t.length > 9) t = t.slice(0, 9);
+  if (t.length < 2) return t;
+  return t.slice(0, -1).replace(/\B(?=(\d{3})+(?!\d))/g, ".") + "-" + t.slice(-1);
+}
+function marcar(inp, ok) {
+  inp.style.borderColor = ok === null ? "" : ok ? "var(--ok)" : "var(--mal)";
+}
+document.querySelectorAll(".rut").forEach(inp => {
+  inp.setAttribute("inputmode", "text"); inp.setAttribute("autocapitalize", "characters");
+  inp.addEventListener("input", () => {
+    inp.value = rutFormato(inp.value);
+    const limpio = inp.value.replace(/[^0-9K]/g, "");
+    marcar(inp, limpio.length < 8 ? null : !!rutValido(inp.value));   // se evalúa cuando ya está completo
+  });
+  inp.addEventListener("blur", () => { if (inp.value) marcar(inp, !!rutValido(inp.value)); });
+});
+
+/* Teléfonos móviles de Chile: el campo trae fijo "+56 9" y se escriben los 8 dígitos restantes. */
+const PREFIJO = "+56 9 ";
+function telFormato(v) {
+  let d = String(v || "").replace(/\D/g, "");
+  if (d.startsWith("569")) d = d.slice(3); else if (d.startsWith("56")) d = d.slice(2);   // quita el prefijo del campo
+  if (d.length > 8) {                                                                     // se pegó un número completo
+    if (d.startsWith("569")) d = d.slice(3);
+    else if (d.length === 9 && d.startsWith("9")) d = d.slice(1);
+  }
+  d = d.slice(0, 8);
+  return PREFIJO + d.slice(0, 4) + (d.length > 4 ? " " + d.slice(4) : "");
+}
+const telOk = v => String(v || "").replace(/\D/g, "").length === 11;
+document.querySelectorAll('input[type="tel"]').forEach(inp => {
+  inp.placeholder = "+56 9 1234 5678"; inp.setAttribute("inputmode", "numeric");
+  inp.addEventListener("focus", () => { if (!inp.value) inp.value = PREFIJO; });
+  inp.addEventListener("input", () => {
+    inp.value = telFormato(inp.value);
+    marcar(inp, inp.value.length <= PREFIJO.length ? null : telOk(inp.value) ? true : null);
+  });
+  inp.addEventListener("blur", () => {
+    if (inp.value.trim() === PREFIJO.trim()) { inp.value = ""; marcar(inp, null); }
+    else if (inp.value) marcar(inp, telOk(inp.value));
+  });
+});
+const valor = id => { const v = $(id).value.trim(); return v === PREFIJO.trim() ? "" : v; };
 
 async function api(body) {
   const r = await fetch(API, { method: "POST", body: JSON.stringify(body) });   // sin cabecera JSON: evita preflight CORS
@@ -172,8 +214,9 @@ async function iniciar() {
 /* Paso 1 */
 $("f1").addEventListener("submit", async ev => {
   ev.preventDefault(); $("e1").classList.add("oculto");
-  datos.codigo = $("codigo").value.trim(); datos.telefono = $("telefono").value.trim();
+  datos.codigo = $("codigo").value.trim(); datos.telefono = valor("telefono");
   if (!datos.codigo || !datos.telefono) return error("e1", "Completa el código y el teléfono.");
+  if (!telOk(datos.telefono)) return error("e1", "El teléfono debe tener 8 dígitos después de +56 9.");
   const b = $("b1"); b.disabled = true; b.textContent = "Verificando…";
   try {
     const r = await api({ accion: "verificar", codigo: datos.codigo, telefono: datos.telefono, web: $("web").value });
@@ -210,11 +253,12 @@ $("f3").addEventListener("submit", async ev => {
   /* Persona autorizada N.º 1 obligatoria; la 2 y la 3 opcionales, pero completas si se escriben. */
   for (const n of [1, 2, 3]) {
     const ids = ["aut" + n, "rutAut" + n, "telAut" + n];
-    ids.forEach(k => d[k] = $(k).value.trim());
+    ids.forEach(k => d[k] = valor(k));
     if (n > 1 && ids.every(k => !d[k])) continue;
     const falta = ids.find(k => !d[k]);
     if (falta) { $(falta).focus(); return error("e3", `Completa nombre, RUT y teléfono de la persona autorizada N.º ${n}.`); }
     if (!rutValido(d["rutAut" + n])) { $("rutAut" + n).focus(); return error("e3", `El RUT de la persona autorizada N.º ${n} no es válido. Revisa el dígito verificador (ej.: 12.345.678-5).`); }
+    if (!telOk(d["telAut" + n])) { $("telAut" + n).focus(); return error("e3", `El teléfono de la persona autorizada N.º ${n} debe tener 8 dígitos después de +56 9.`); }
   }
   if (!d.confirmo) return error("e3", "Debes marcar la confirmación para continuar.");
   const b = $("b3"); b.disabled = true; b.textContent = "Registrando…";
