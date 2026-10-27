@@ -11,6 +11,15 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="estilo.css">
+<style>
+  .opcion { display:flex; gap:.8rem; align-items:flex-start; padding:.9rem 1rem; margin-bottom:.6rem; border:1px solid var(--borde); border-radius:1rem; background:rgba(255,255,255,.05); cursor:pointer; }
+  .opcion input { margin-top:.25rem; accent-color:var(--oro); width:1.15rem; height:1.15rem; flex:none; }
+  .opcion b { display:block; }
+  .opcion small { color:var(--suave); }
+  .pasos { display:flex; gap:.4rem; margin-bottom:1rem; }
+  .pasos i { flex:1; height:.3rem; border-radius:9px; background:rgba(255,255,255,.15); }
+  .pasos i.on { background:linear-gradient(90deg,var(--oro),var(--cian)); }
+</style>
 </head>
 <body>
 <div class="aurora" aria-hidden="true"><i></i><i></i><i></i></div>
@@ -30,51 +39,58 @@
     <p class="sub" style="margin:0">Se completaron todos los cupos de la fiesta.</p>
   </section>
 
-  <form id="form" class="oculto" novalidate autocomplete="off">
+  <div id="app" class="oculto">
+    <div class="pasos" aria-hidden="true"><i id="p1" class="on"></i><i id="p2"></i><i id="p3"></i></div>
     <p class="msg info" id="cupos"></p>
-    <p class="sub">Completa este formulario para registrar al alumno que asistirá e indicar las personas autorizadas para retirarlo al finalizar. Verifica cuidadosamente los nombres y teléfonos antes de enviar. Los datos se usan exclusivamente para organizar el registro y coordinar el retiro de los alumnos.</p>
 
-    <div class="tarjeta">
-      <h2>Código de acceso</h2>
-      <label for="codigo">Código que te entregó la organización</label>
-      <input type="text" id="codigo" required autocapitalize="off">
-    </div>
-
-    <div class="tarjeta">
-      <h2>Alumno</h2>
-      <label for="alumno">Nombre completo del alumno</label>
-      <input type="text" id="alumno" maxlength="100" required>
-      <div class="fila">
-        <div><label for="curso">Curso</label><input type="text" id="curso" maxlength="30" required></div>
-        <div><label for="colegio">Colegio</label><input type="text" id="colegio" maxlength="60" required></div>
+    <!-- Paso 1: verificar teléfono -->
+    <form id="f1" novalidate autocomplete="off">
+      <p class="sub">Verifica tu teléfono: debe ser el <b>teléfono del apoderado</b> informado al colegio para la lista de asistentes.</p>
+      <div class="tarjeta">
+        <h2>Paso 1 · Verificación</h2>
+        <label for="codigo">Código de acceso (te lo entregó la organización)</label>
+        <input type="text" id="codigo" autocapitalize="off" required>
+        <label for="telefono">Teléfono del apoderado</label>
+        <input type="tel" id="telefono" placeholder="+56 9 1234 5678" inputmode="tel" required>
       </div>
-    </div>
+      <input class="honey" type="text" id="web" tabindex="-1" autocomplete="off" aria-hidden="true">
+      <p class="msg mal oculto" id="e1" role="alert"></p>
+      <button class="btn" id="b1" type="submit">Verificar</button>
+    </form>
 
-    <div class="tarjeta">
-      <h2>Apoderado</h2>
-      <label for="apoderado">Nombre completo del apoderado</label>
-      <input type="text" id="apoderado" maxlength="100" required>
-      <div class="fila">
-        <div><label for="telApoderado">Teléfono de contacto</label><input type="tel" id="telApoderado" placeholder="+56 9 1234 5678" required></div>
-        <div><label for="emailApoderado">Correo (recibirás el pase QR)</label><input type="email" id="emailApoderado" required></div>
+    <!-- Paso 2: elegir alumno -->
+    <form id="f2" class="oculto" novalidate>
+      <div class="tarjeta">
+        <h2>Paso 2 · Alumno</h2>
+        <div id="alumnos"></div>
       </div>
-    </div>
+      <button class="btn" type="submit">Continuar</button>
+      <button class="btn sec" id="atras2" type="button" style="margin-top:.9rem">Volver</button>
+    </form>
 
-    <div class="tarjeta">
-      <h2>Personas autorizadas para el retiro</h2>
-      <div id="autorizados"></div>
-    </div>
-
-    <div class="tarjeta">
-      <label class="chk"><input type="checkbox" id="confirmo" required>
-        <span>Confirmo que los datos proporcionados son correctos y, en mi calidad de apoderado/a, autorizo a las tres personas identificadas en este formulario para retirar al alumno durante o al término de la Fiesta Prom G’30.</span></label>
-      <p class="sub" style="margin:.8rem 0 0;font-size:.78rem">El retiro se hará con verificación de identidad.</p>
-    </div>
-
-    <input class="honey" type="text" id="web" tabindex="-1" autocomplete="off" aria-hidden="true">
-    <p class="msg mal oculto" id="error" role="alert"></p>
-    <button class="btn" id="enviar" type="submit">Registrar al alumno</button>
-  </form>
+    <!-- Paso 3: correo y autorizados -->
+    <form id="f3" class="oculto" novalidate autocomplete="off">
+      <p class="sub">Verifica cuidadosamente los nombres y teléfonos antes de enviar. Los datos se usan exclusivamente para organizar el registro y coordinar el retiro de los alumnos.</p>
+      <div class="tarjeta">
+        <h2>Alumno registrado</h2>
+        <p id="resumen" style="font-weight:700"></p>
+        <label for="emailApoderado">Correo del apoderado (recibirás el pase QR)</label>
+        <input type="email" id="emailApoderado" required>
+      </div>
+      <div class="tarjeta">
+        <h2>Personas autorizadas para el retiro</h2>
+        <div id="autorizados"></div>
+      </div>
+      <div class="tarjeta">
+        <label class="chk"><input type="checkbox" id="confirmo" required>
+          <span>Confirmo que los datos proporcionados son correctos y, en mi calidad de apoderado/a, autorizo a las tres personas identificadas en este formulario para retirar al alumno durante o al término de la Fiesta Prom G’30.</span></label>
+        <p class="sub" style="margin:.8rem 0 0;font-size:.78rem">El retiro se hará con verificación de identidad.</p>
+      </div>
+      <p class="msg mal oculto" id="e3" role="alert"></p>
+      <button class="btn" id="b3" type="submit">Registrar al alumno</button>
+      <button class="btn sec" id="atras3" type="button" style="margin-top:.9rem">Volver</button>
+    </form>
+  </div>
 
   <p class="pie">The Mackay School &amp; St Margaret's · Prom Party G'30</p>
 </main>
@@ -83,6 +99,8 @@
 <script>
 const $ = id => document.getElementById(id);
 const API = window.API_URL;
+const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+let hallados = [], elegido = null, datos = {};
 
 $("autorizados").innerHTML = [1, 2, 3].map(n => `
   <div class="fila" style="${n > 1 ? 'margin-top:.9rem' : ''}">
@@ -94,6 +112,12 @@ async function api(body) {
   const r = await fetch(API, { method: "POST", body: JSON.stringify(body) });   // sin cabecera JSON: evita preflight CORS
   return r.json();
 }
+function error(id, t) { const m = $(id); m.textContent = t; m.classList.remove("oculto"); m.scrollIntoView({ behavior: "smooth", block: "center" }); }
+function paso(n) {
+  ["f1", "f2", "f3"].forEach((f, i) => $(f).classList.toggle("oculto", i !== n - 1));
+  ["p1", "p2", "p3"].forEach((p, i) => $(p).classList.toggle("on", i < n));
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
 
 async function iniciar() {
   if (!API) { $("construccion").classList.remove("oculto"); return; }
@@ -102,29 +126,56 @@ async function iniciar() {
     if (!e.ok) throw 0;
     if (e.libres <= 0) { $("cerrado").classList.remove("oculto"); return; }
     $("cupos").textContent = `Quedan ${e.libres} de ${e.total} cupos.`;
-    $("form").classList.remove("oculto");
-  } catch (_) {
-    $("construccion").classList.remove("oculto");
-  }
+    $("app").classList.remove("oculto");
+  } catch (_) { $("construccion").classList.remove("oculto"); }
 }
 
-function mostrarError(t) { const m = $("error"); m.textContent = t; m.classList.remove("oculto"); m.scrollIntoView({ behavior: "smooth", block: "center" }); }
+/* Paso 1 */
+$("f1").addEventListener("submit", async ev => {
+  ev.preventDefault(); $("e1").classList.add("oculto");
+  datos.codigo = $("codigo").value.trim(); datos.telefono = $("telefono").value.trim();
+  if (!datos.codigo || !datos.telefono) return error("e1", "Completa el código y el teléfono.");
+  const b = $("b1"); b.disabled = true; b.textContent = "Verificando…";
+  try {
+    const r = await api({ accion: "verificar", codigo: datos.codigo, telefono: datos.telefono, web: $("web").value });
+    if (!r.ok) return error("e1", r.msg || "No se pudo verificar.");
+    hallados = r.alumnos;
+    $("alumnos").innerHTML = hallados.map((a, i) => `
+      <label class="opcion"><input type="radio" name="alu" value="${i}" ${hallados.length === 1 ? "checked" : ""}>
+        <span><b>${esc(a.alumno)}</b><small>${esc(a.colegio)} · ${esc(a.curso)} · Apoderado: ${esc(a.apoderado)}</small></span></label>`).join("");
+    paso(2);
+  } catch (_) { error("e1", "No hay conexión con el servidor. Inténtalo de nuevo."); }
+  finally { b.disabled = false; b.textContent = "Verificar"; }
+});
 
-$("form").addEventListener("submit", async ev => {
+/* Paso 2 */
+$("f2").addEventListener("submit", ev => {
   ev.preventDefault();
-  $("error").classList.add("oculto");
-  const ids = ["codigo","alumno","curso","colegio","apoderado","telApoderado","emailApoderado","aut1","telAut1","aut2","telAut2","aut3","telAut3"];
-  const d = { accion: "registrar", web: $("web").value, confirmo: $("confirmo").checked };
-  for (const k of ids) { d[k] = $(k).value.trim(); if (!d[k]) { $(k).focus(); return mostrarError("Completa todos los campos."); } }
-  if (!d.confirmo) return mostrarError("Debes marcar la confirmación para continuar.");
-  const b = $("enviar"); b.disabled = true; b.textContent = "Registrando…";
+  const s = document.querySelector('input[name="alu"]:checked');
+  if (!s) return;
+  elegido = hallados[+s.value];
+  $("resumen").textContent = `${elegido.alumno} · ${elegido.colegio} · ${elegido.curso}`;
+  paso(3);
+});
+$("atras2").onclick = () => paso(1);
+$("atras3").onclick = () => paso(2);
+
+/* Paso 3 */
+$("f3").addEventListener("submit", async ev => {
+  ev.preventDefault(); $("e3").classList.add("oculto");
+  const d = { accion: "registrar", codigo: datos.codigo, telefono: datos.telefono, id: elegido.id, confirmo: $("confirmo").checked };
+  for (const k of ["emailApoderado", "aut1", "telAut1", "aut2", "telAut2", "aut3", "telAut3"]) {
+    d[k] = $(k).value.trim(); if (!d[k]) { $(k).focus(); return error("e3", "Completa todos los campos."); }
+  }
+  if (!d.confirmo) return error("e3", "Debes marcar la confirmación para continuar.");
+  const b = $("b3"); b.disabled = true; b.textContent = "Registrando…";
   try {
     const r = await api(d);
-    if (!r.ok) { mostrarError(r.msg || "No se pudo registrar."); b.disabled = false; b.textContent = "Registrar al alumno"; return; }
+    if (!r.ok) { error("e3", r.msg || "No se pudo registrar."); b.disabled = false; b.textContent = "Registrar al alumno"; return; }
     try { localStorage.setItem("pase_g30", r.token); } catch (_) {}
     location.href = "pase.html#" + r.token;
   } catch (_) {
-    mostrarError("No hay conexión con el servidor. Inténtalo de nuevo en un momento.");
+    error("e3", "No hay conexión con el servidor. Inténtalo de nuevo en un momento.");
     b.disabled = false; b.textContent = "Registrar al alumno";
   }
 });
