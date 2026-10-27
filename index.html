@@ -2,173 +2,261 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Promo 2026</title>
-<meta name="description" content="Fotos, videos y recuerdos de la Promo">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Prom Party G'30</title>
+<meta name="description" content="Prom Party G'30 · The Mackay School & St Margaret's · La primera fiesta de la generación 2030">
+<meta name="theme-color" content="#070a1c">
+<meta property="og:title" content="Prom Party G'30">
+<meta property="og:description" content="La primera fiesta de la generación 2030 · 16 de diciembre · Patio 511, Reñaca">
+<meta property="og:image" content="flyer.jpg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Playfair+Display:ital,wght@1,600&display=swap" rel="stylesheet">
 <style>
   /* ============================================================
      EDITA AQUÍ LOS COLORES DE LA PROMO
      ============================================================ */
   :root {
-    --color-1: #f5a623;   /* dorado */
-    --color-2: #19d3e6;   /* cian neón */
-    --fondo:   #070a1c;   /* fondo azul noche */
-    --texto:   #ffffff;
-    --texto-suave: #b9c3de;
+    --oro:   #f5a623;
+    --oro-2: #ffd36b;
+    --cian:  #19d3e6;
+    --viol:  #8a4dff;
+    --fondo: #070a1c;
+    --texto: #ffffff;
+    --suave: #b9c3de;
+    --vidrio: rgba(255,255,255,.07);
+    --borde:  rgba(255,255,255,.14);
   }
-  .hero {
-    display: block;
-    width: 100%;
-    border-radius: 22px;
-    margin-bottom: 18px;
-    box-shadow: 0 0 40px rgba(245,166,35,.25), 0 0 80px rgba(25,211,230,.15);
-  }
-  .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
-  .btn.principal { color: #1a1204; }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  html, body { min-height: 100%; }
+  /* Escala todo según el tamaño de pantalla: portátil 15,4", 17" y 27" */
+  html { font-size: clamp(13px, min(1.95vh, 1.15vw), 26px); }
+  html, body { height: 100%; }
   body {
     font-family: 'Inter', system-ui, sans-serif;
     background: var(--fondo);
     color: var(--texto);
-    display: flex;
-    justify-content: center;
-    padding: 40px 16px 32px;
-    overflow-x: hidden;
+    height: 100vh; height: 100dvh;
+    overflow: hidden;
+    display: grid;
+    grid-template: minmax(0, 1fr) / minmax(0, 1fr);
+    place-items: center;
+    padding: max(1.4rem, env(safe-area-inset-top)) 2rem max(1.4rem, env(safe-area-inset-bottom));
     position: relative;
   }
-  body::before, body::after {
-    content: "";
-    position: fixed;
-    width: 420px; height: 420px;
-    border-radius: 50%;
-    filter: blur(110px);
-    opacity: .45;
-    z-index: 0;
+
+  /* ---------- Fondo aurora ---------- */
+  .aurora { position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; }
+  .aurora i {
+    position: absolute; border-radius: 50%; filter: blur(110px); opacity: .5;
+    width: 46vmax; height: 46vmax;
+    animation: flota 18s ease-in-out infinite alternate;
+  }
+  .aurora i:nth-child(1) { background: var(--oro);  top: -18vmax; left: -14vmax; opacity: .32; }
+  .aurora i:nth-child(2) { background: var(--cian); bottom: -20vmax; right: -12vmax; opacity: .30; animation-delay: -6s; }
+  .aurora i:nth-child(3) { background: var(--viol); top: 25%; left: 38%; width: 30vmax; height: 30vmax; opacity: .28; animation-delay: -11s; }
+  @keyframes flota { to { transform: translate(5vmax, 4vmax) scale(1.15); } }
+  .estrellas {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none; opacity: .55;
+    background-image:
+      radial-gradient(1.5px 1.5px at 12% 22%, #fff, transparent),
+      radial-gradient(1.5px 1.5px at 78% 12%, var(--oro-2), transparent),
+      radial-gradient(1px 1px at 33% 78%, #fff, transparent),
+      radial-gradient(1.5px 1.5px at 88% 68%, var(--cian), transparent),
+      radial-gradient(1px 1px at 55% 40%, #fff, transparent),
+      radial-gradient(1px 1px at 6% 62%, var(--oro-2), transparent),
+      radial-gradient(1.5px 1.5px at 66% 88%, #fff, transparent);
+    animation: titila 4s ease-in-out infinite alternate;
+  }
+  @keyframes titila { to { opacity: .2; } }
+
+  /* ---------- Layout ---------- */
+  .escena {
+    position: relative; z-index: 1;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr);
+    align-items: center;
+    gap: clamp(2rem, 5vw, 6rem);
+    width: min(100%, 120rem);
+    align-self: stretch;
+    min-height: 0;
+  }
+
+  /* Flyer a la izquierda */
+  .flyer-cell {
+    position: relative; min-height: 0;
+    height: 100%; max-height: 62rem;
+    aspect-ratio: 1122 / 1402;
+    justify-self: end; align-self: center;
+  }
+  .flyer {
+    position: absolute; inset: 0; margin: auto;
+    height: 100%;
+    aspect-ratio: 1122 / 1402;
+    max-width: 100%;
+    border-radius: 1.6rem;
+    padding: 3px;
+    background: conic-gradient(from var(--giro, 0deg), var(--oro), var(--cian), var(--viol), var(--oro));
+    box-shadow: 0 0 4rem rgba(245,166,35,.28), 0 0 9rem rgba(25,211,230,.18);
+    animation: gira 8s linear infinite, aparece .9s cubic-bezier(.2,.8,.2,1) both;
+  }
+  @property --giro { syntax: '<angle>'; inherits: false; initial-value: 0deg; }
+  @keyframes gira { to { --giro: 360deg; } }
+  .flyer img { display: block; width: 100%; height: 100%; object-fit: cover; border-radius: calc(1.6rem - 3px); }
+  .flyer::after {   /* brillo que cruza */
+    content: ""; position: absolute; inset: 3px; border-radius: calc(1.6rem - 3px);
+    background: linear-gradient(115deg, transparent 38%, rgba(255,255,255,.22) 50%, transparent 62%);
+    background-size: 250% 100%;
+    animation: brillo 6s ease-in-out infinite;
     pointer-events: none;
   }
-  body::before { background: var(--color-1); top: -140px; left: -160px; }
-  body::after  { background: var(--color-2); bottom: -160px; right: -160px; }
+  @keyframes brillo { 0%, 55% { background-position: 150% 0; } 100% { background-position: -100% 0; } }
+  @keyframes aparece { from { opacity: 0; transform: translateY(2rem) scale(.97); } }
 
-  main {
-    position: relative;
-    z-index: 1;
-    width: 100%;
-    max-width: 440px;
+  /* Panel a la derecha */
+  .panel {
+    display: flex; flex-direction: column; justify-content: center;
+    gap: 1.5rem;
+    max-width: 34rem;
     text-align: center;
+    animation: aparece .9s .15s cubic-bezier(.2,.8,.2,1) both;
   }
+  .chip {
+    align-self: center;
+    font-size: .72rem; font-weight: 700; letter-spacing: .22em; text-transform: uppercase;
+    color: var(--oro-2);
+    padding: .5rem 1rem; border-radius: 99px;
+    background: rgba(245,166,35,.1); border: 1px solid rgba(245,166,35,.35);
+  }
+  .lema {
+    font-family: 'Playfair Display', serif; font-style: italic; font-weight: 600;
+    font-size: 1.9rem; line-height: 1.15;
+    background: linear-gradient(120deg, var(--oro-2), var(--oro) 45%, var(--cian));
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
-  .colegio {
-    font-size: 13px;
-    letter-spacing: .25em;
-    text-transform: uppercase;
-    color: var(--texto-suave);
-    font-weight: 600;
-  }
-  h1 {
-    font-family: 'Bebas Neue', sans-serif;
-    font-weight: 400;
-    font-size: clamp(64px, 22vw, 104px);
-    line-height: .9;
-    margin: 10px 0 6px;
-    background: linear-gradient(120deg, var(--color-1), var(--color-2));
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-  }
-  .lema { color: var(--texto-suave); font-size: 15px; margin-bottom: 28px; }
-
-  .countdown {
-    display: flex;
-    justify-content: center;
-    gap: 10px;
-    margin-bottom: 32px;
-  }
+  .countdown { display: grid; grid-template-columns: repeat(4, 1fr); gap: .7rem; }
   .countdown div {
-    background: rgba(255,255,255,.06);
-    border: 1px solid rgba(255,255,255,.1);
-    border-radius: 14px;
-    padding: 10px 0;
-    width: 70px;
+    background: var(--vidrio); border: 1px solid var(--borde);
+    border-radius: 1rem; padding: .8rem 0 .65rem;
+    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.12);
   }
-  .countdown b { display: block; font-size: 26px; font-weight: 700; }
-  .countdown span { font-size: 11px; color: var(--texto-suave); text-transform: uppercase; letter-spacing: .1em; }
-  .mensaje-post {
-    margin-bottom: 32px;
-    font-size: 17px;
-    font-weight: 600;
+  .countdown b {
+    display: block; font-size: 2.1rem; font-weight: 800; font-variant-numeric: tabular-nums; line-height: 1.1;
+    background: linear-gradient(180deg, #fff, var(--oro-2));
+    -webkit-background-clip: text; background-clip: text; color: transparent;
   }
+  .countdown span { font-size: .62rem; color: var(--suave); text-transform: uppercase; letter-spacing: .14em; }
+  .mensaje-post { font-size: 1.1rem; font-weight: 600; }
 
-  .botones { display: flex; flex-direction: column; gap: 14px; }
+  .botones { display: flex; flex-direction: column; gap: .8rem; }
   .btn {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    padding: 18px 20px;
-    border-radius: 18px;
-    text-decoration: none;
-    color: var(--texto);
-    text-align: left;
-    background: rgba(255,255,255,.06);
-    border: 1px solid rgba(255,255,255,.12);
-    transition: transform .15s ease, background .15s ease;
+    position: relative; overflow: hidden;
+    display: flex; align-items: center; gap: 1rem;
+    padding: 1rem 1.2rem; border-radius: 1.2rem;
+    text-decoration: none; color: var(--texto); text-align: left;
+    background: var(--vidrio); border: 1px solid var(--borde);
+    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+    transition: transform .2s ease, box-shadow .2s ease, background .2s ease;
   }
+  .btn:hover { transform: translateY(-3px); background: rgba(255,255,255,.11); box-shadow: 0 .8rem 2rem rgba(25,211,230,.18); }
   .btn:active { transform: scale(.98); }
-  .btn:hover { background: rgba(255,255,255,.1); }
   .btn.principal {
-    background: linear-gradient(120deg, var(--color-1), var(--color-2));
-    border: none;
+    color: #1a1204; border: none;
+    background: linear-gradient(110deg, var(--oro), var(--oro-2) 50%, var(--oro));
+    background-size: 200% 100%;
+    animation: shimmer 4s linear infinite;
+    box-shadow: 0 .6rem 2.2rem rgba(245,166,35,.4);
   }
-  .btn .icono { font-size: 28px; line-height: 1; }
-  .btn strong { display: block; font-size: 17px; }
-  .btn small { display: block; font-size: 13px; opacity: .8; margin-top: 2px; }
+  .btn.principal:hover { box-shadow: 0 .9rem 2.8rem rgba(245,166,35,.6); }
+  @keyframes shimmer { to { background-position: -200% 0; } }
+  .btn .icono { font-size: 1.9rem; line-height: 1; }
+  .btn strong { display: block; font-size: 1.1rem; font-weight: 700; }
+  .btn small { display: block; font-size: .8rem; opacity: .8; margin-top: .15rem; }
 
   .staff {
-    display: inline-block;
-    margin-top: 36px;
-    font-size: 13px;
-    color: var(--texto-suave);
-    text-decoration: none;
-    border-bottom: 1px dashed var(--texto-suave);
-    padding-bottom: 2px;
+    align-self: center;
+    font-size: .8rem; color: var(--suave); text-decoration: none;
+    border-bottom: 1px dashed var(--suave); padding-bottom: 2px;
+    transition: color .2s;
   }
-  footer { margin-top: 28px; font-size: 12px; color: var(--texto-suave); opacity: .7; }
+  .staff:hover { color: var(--cian); border-color: var(--cian); }
+  footer { font-size: .72rem; color: var(--suave); opacity: .7; }
+
+  /* ---------- Móvil / pantallas verticales ---------- */
+  @media (max-width: 860px), (max-aspect-ratio: 1/1) {
+    html { font-size: clamp(12px, min(2.15vh, 3.6vw), 17px); }
+    body { padding: max(.9rem, env(safe-area-inset-top)) 1.1rem max(.9rem, env(safe-area-inset-bottom)); }
+    .escena {
+      grid-template-columns: 1fr;
+      grid-template-rows: minmax(0, 1fr) auto;
+      gap: 1.1rem;
+      justify-items: center;
+    }
+    .flyer-cell { width: 100%; max-height: none; aspect-ratio: auto; justify-self: stretch; align-self: stretch; }
+    .panel { gap: .9rem; width: 100%; max-width: 30rem; }
+    .chip { display: none; }
+    .lema { font-size: 1.45rem; }
+    .countdown { gap: .5rem; }
+    .countdown div { padding: .55rem 0 .45rem; border-radius: .85rem; }
+    .countdown b { font-size: 1.6rem; }
+    .botones { flex-direction: row; gap: .6rem; }
+    .btn { flex: 1; flex-direction: column; align-items: flex-start; gap: .35rem; padding: .8rem .9rem; border-radius: 1rem; }
+    .btn .icono { font-size: 1.6rem; }
+    .btn strong { font-size: .95rem; }
+    .btn small { font-size: .7rem; }
+    footer { display: none; }
+  }
+  @media (max-height: 640px) and (max-width: 860px) { .lema { display: none; } }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition: none !important; }
+  }
 </style>
 </head>
 <body>
-<main>
-  <img class="hero" src="logo.jpg" alt="Prom Party G'30 – The Mackay School & St Margaret's">
-  <p class="colegio sr-only" id="colegio"></p>
-  <h1 class="sr-only" id="titulo"></h1>
-  <p class="lema" id="lema"></p>
+<div class="aurora" aria-hidden="true"><i></i><i></i><i></i></div>
+<div class="estrellas" aria-hidden="true"></div>
 
-  <div class="countdown" id="countdown" hidden>
-    <div><b id="d">0</b><span>días</span></div>
-    <div><b id="h">0</b><span>horas</span></div>
-    <div><b id="m">0</b><span>min</span></div>
-    <div><b id="s">0</b><span>seg</span></div>
-  </div>
-  <p class="mensaje-post" id="mensaje-post" hidden></p>
-
-  <div class="botones">
-    <a class="btn principal" id="link-subir" target="_blank" rel="noopener">
-      <span class="icono">📸</span>
-      <span><strong>Subir fotos y videos</strong><small>Comparte lo que grabaste</small></span>
-    </a>
-    <a class="btn" id="link-ver" target="_blank" rel="noopener">
-      <span class="icono">🖼️</span>
-      <span><strong>Ver el álbum</strong><small>Todas las fotos de la promo</small></span>
-    </a>
+<div class="escena">
+  <div class="flyer-cell">
+    <div class="flyer">
+      <img src="flyer.jpg" alt="Flyer Prom Party G'30 · The Mackay School & St Margaret's · 16 de diciembre de 2026, 20:00 hrs, Patio 511 Reñaca">
+    </div>
   </div>
 
-  <a class="staff" id="link-staff" target="_blank" rel="noopener">🎟️ Registro de ingreso (solo staff)</a>
+  <main class="panel">
+    <span class="chip">Inicio de la Generación 2030</span>
+    <h1 class="sr-only" id="titulo"></h1>
+    <p class="sr-only" id="colegio"></p>
+    <p class="lema" id="lema"></p>
 
-  <footer id="footer"></footer>
-</main>
+    <div class="countdown" id="countdown" hidden>
+      <div><b id="d">0</b><span>días</span></div>
+      <div><b id="h">0</b><span>horas</span></div>
+      <div><b id="m">0</b><span>min</span></div>
+      <div><b id="s">0</b><span>seg</span></div>
+    </div>
+    <p class="mensaje-post" id="mensaje-post" hidden></p>
+
+    <div class="botones">
+      <a class="btn principal" id="link-subir" target="_blank" rel="noopener">
+        <span class="icono">📸</span>
+        <span><strong>Subir fotos y videos</strong><small>Comparte lo que grabaste</small></span>
+      </a>
+      <a class="btn" id="link-ver" target="_blank" rel="noopener">
+        <span class="icono">🖼️</span>
+        <span><strong>Ver el álbum</strong><small>Todas las fotos de la promo</small></span>
+      </a>
+    </div>
+
+    <a class="staff" id="link-staff" target="_blank" rel="noopener">🎟️ Registro de ingreso (solo staff)</a>
+    <footer id="footer"></footer>
+  </main>
+</div>
 
 <script>
 /* ============================================================
@@ -177,8 +265,8 @@
 const PROMO = {
   colegio:    "The Mackay School & St Margaret's",
   titulo:     "Prom Party G'30",
-  lema:       "La última noche juntos",
-  fechaFiesta: "2026-12-12T22:00:00-03:00",   // fecha y hora de la fiesta (hora Chile)
+  lema:       "La primera fiesta de la Generación 2030",
+  fechaFiesta: "2026-12-16T20:00:00-03:00",   // 16 de diciembre 2026, 20:00 hrs (hora Chile)
   linkSubir:  "https://photos.app.goo.gl/REEMPLAZAR",  // álbum compartido de Google Fotos (con colaboración)
   linkVer:    "https://photos.app.goo.gl/REEMPLAZAR",  // puede ser el mismo link del álbum
   linkStaff:  "https://forms.gle/REEMPLAZAR",          // Google Form de registro de ingreso
@@ -219,3 +307,4 @@ tick();
 setInterval(tick, 1000);
 </script>
 </body>
+</html>
