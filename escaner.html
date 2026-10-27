@@ -107,7 +107,16 @@ async function contadores() {
   } catch (_) {}
 }
 
-async function alLeer(token) {
+/* El QR de la pulsera trae una dirección (…/pulsera.html#TOKEN); el QR del pase en pantalla igual.
+   También se acepta el token solo. */
+function extraerToken(txt) {
+  txt = String(txt || "").trim();
+  const i = txt.lastIndexOf("#");
+  return (i >= 0 ? txt.slice(i + 1) : txt).trim();
+}
+
+async function alLeer(leido) {
+  const token = extraerToken(leido);
   const ahora = Date.now();
   if (ocupado || (token === ultimo.t && ahora - ultimo.at < 4000)) return;
   ocupado = true; ultimo = { t: token, at: ahora };
