@@ -74,8 +74,9 @@
   .escena {
     position: relative; z-index: 1;
     display: grid;
-    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-columns: auto minmax(0, 40rem);
     grid-template-rows: minmax(0, 1fr);
+    justify-content: center;
     align-items: center;
     gap: clamp(2rem, 5vw, 6rem);
     width: min(100%, 120rem);
@@ -117,8 +118,9 @@
   /* Panel a la derecha */
   .panel {
     display: flex; flex-direction: column; justify-content: center;
-    gap: 1.5rem;
-    max-width: 34rem;
+    gap: 1.7rem;
+    width: min(100%, 40rem);
+    justify-self: start;
     text-align: center;
     animation: aparece .9s .15s cubic-bezier(.2,.8,.2,1) both;
   }
@@ -131,32 +133,41 @@
   }
   .lema {
     font-family: 'Playfair Display', serif; font-style: italic; font-weight: 600;
-    font-size: 1.9rem; line-height: 1.15;
+    font-size: 2.5rem; line-height: 1.12;
     background: linear-gradient(120deg, var(--oro-2), var(--oro) 45%, var(--cian));
     -webkit-background-clip: text; background-clip: text; color: transparent;
+    filter: drop-shadow(0 0 1.2rem rgba(245,166,35,.35));
   }
+  .etiqueta { font-size: .72rem; font-weight: 700; letter-spacing: .26em; text-transform: uppercase; color: var(--suave); margin-bottom: -.9rem; }
+  .datos { display: flex; justify-content: center; flex-wrap: wrap; gap: .6rem; }
+  .datos span {
+    font-size: .85rem; font-weight: 600; padding: .5rem .95rem; border-radius: 99px;
+    background: var(--vidrio); border: 1px solid var(--borde); white-space: nowrap;
+  }
+  .btn .flecha { margin-left: auto; font-size: 1.3rem; opacity: .7; transition: transform .2s; }
+  .btn:hover .flecha { transform: translateX(.3rem); opacity: 1; }
   .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
-  .countdown { display: grid; grid-template-columns: repeat(4, 1fr); gap: .7rem; }
+  .countdown { display: grid; grid-template-columns: repeat(4, 1fr); gap: .9rem; }
   .countdown div {
     background: var(--vidrio); border: 1px solid var(--borde);
-    border-radius: 1rem; padding: .8rem 0 .65rem;
+    border-radius: 1.2rem; padding: 1.1rem 0 .9rem;
     backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
     box-shadow: inset 0 1px 0 rgba(255,255,255,.12);
   }
   .countdown b {
-    display: block; font-size: 2.1rem; font-weight: 800; font-variant-numeric: tabular-nums; line-height: 1.1;
+    display: block; font-size: 3.2rem; font-weight: 800; font-variant-numeric: tabular-nums; line-height: 1.1;
     background: linear-gradient(180deg, #fff, var(--oro-2));
     -webkit-background-clip: text; background-clip: text; color: transparent;
   }
-  .countdown span { font-size: .62rem; color: var(--suave); text-transform: uppercase; letter-spacing: .14em; }
+  .countdown span { font-size: .72rem; color: var(--suave); text-transform: uppercase; letter-spacing: .14em; }
   .mensaje-post { font-size: 1.1rem; font-weight: 600; }
 
-  .botones { display: flex; flex-direction: column; gap: .8rem; }
+  .botones { display: flex; flex-direction: column; gap: 1rem; }
   .btn {
     position: relative; overflow: hidden;
-    display: flex; align-items: center; gap: 1rem;
-    padding: 1rem 1.2rem; border-radius: 1.2rem;
+    display: flex; align-items: center; gap: 1.1rem;
+    padding: 1.3rem 1.5rem; border-radius: 1.3rem;
     text-decoration: none; color: var(--texto); text-align: left;
     background: var(--vidrio); border: 1px solid var(--borde);
     backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
@@ -173,13 +184,13 @@
   }
   .btn.principal:hover { box-shadow: 0 .9rem 2.8rem rgba(245,166,35,.6); }
   @keyframes shimmer { to { background-position: -200% 0; } }
-  .btn .icono { font-size: 1.9rem; line-height: 1; }
-  .btn strong { display: block; font-size: 1.1rem; font-weight: 700; }
-  .btn small { display: block; font-size: .8rem; opacity: .8; margin-top: .15rem; }
+  .btn .icono { font-size: 2.3rem; line-height: 1; }
+  .btn strong { display: block; font-size: 1.3rem; font-weight: 700; }
+  .btn small { display: block; font-size: .9rem; opacity: .8; margin-top: .2rem; }
 
   .staff {
     align-self: center;
-    font-size: .8rem; color: var(--suave); text-decoration: none;
+    font-size: .9rem; color: var(--suave); text-decoration: none;
     border-bottom: 1px dashed var(--suave); padding-bottom: 2px;
     transition: color .2s;
   }
@@ -191,18 +202,20 @@
     html { font-size: clamp(12px, min(2.15vh, 3.6vw), 17px); }
     body { padding: max(.9rem, env(safe-area-inset-top)) 1.1rem max(.9rem, env(safe-area-inset-bottom)); }
     .escena {
-      grid-template-columns: 1fr;
+      grid-template-columns: minmax(0, 1fr);
       grid-template-rows: minmax(0, 1fr) auto;
       gap: 1.1rem;
       justify-items: center;
     }
     .flyer-cell { width: 100%; max-height: none; aspect-ratio: auto; justify-self: stretch; align-self: stretch; }
     .panel { gap: .9rem; width: 100%; max-width: 30rem; }
-    .chip { display: none; }
-    .lema { font-size: 1.45rem; }
+    .chip, .datos, .etiqueta, .btn .flecha { display: none; }
+    .panel { justify-self: center; }
+    .lema { font-size: 1.5rem; }
     .countdown { gap: .5rem; }
     .countdown div { padding: .55rem 0 .45rem; border-radius: .85rem; }
-    .countdown b { font-size: 1.6rem; }
+    .countdown b { font-size: 1.7rem; }
+    .countdown span { font-size: .6rem; }
     .botones { flex-direction: row; gap: .6rem; }
     .btn { flex: 1; flex-direction: column; align-items: flex-start; gap: .35rem; padding: .8rem .9rem; border-radius: 1rem; }
     .btn .icono { font-size: 1.6rem; }
@@ -234,6 +247,8 @@
     <p class="sr-only" id="colegio"></p>
     <p class="lema" id="lema"></p>
 
+    <div class="datos"><span>📅 16 de diciembre</span><span>🕗 20:00 hrs</span><span>📍 Patio 511, Reñaca</span></div>
+    <p class="etiqueta">Faltan para la fiesta</p>
     <div class="countdown" id="countdown" hidden>
       <div><b id="d">0</b><span>días</span></div>
       <div><b id="h">0</b><span>horas</span></div>
@@ -246,10 +261,12 @@
       <a class="btn principal" id="link-subir" target="_blank" rel="noopener">
         <span class="icono">📸</span>
         <span><strong>Subir fotos y videos</strong><small>Comparte lo que grabaste</small></span>
+        <span class="flecha">→</span>
       </a>
       <a class="btn" id="link-ver" target="_blank" rel="noopener">
         <span class="icono">🖼️</span>
         <span><strong>Ver el álbum</strong><small>Todas las fotos de la promo</small></span>
+        <span class="flecha">→</span>
       </a>
     </div>
 
