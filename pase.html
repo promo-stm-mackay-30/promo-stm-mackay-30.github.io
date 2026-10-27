@@ -2,69 +2,11 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Tu pase · Prom Party G'30</title>
-<meta name="theme-color" content="#070a1c">
+<title>Prom Party G'30</title>
 <meta name="robots" content="noindex">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="estilo.css">
-<style>
-  .pase { text-align:center; }
-  .qr { background:#fff; border-radius:1.2rem; padding:1rem; width:min(78vw,18rem); margin:1rem auto; box-shadow:0 0 3rem rgba(245,166,35,.35); }
-  .qr img { display:block; width:100%; height:auto; image-rendering:pixelated; }
-  .folio { font-size:.8rem; letter-spacing:.22em; text-transform:uppercase; color:var(--oro-2); font-weight:700; }
-  .nombre { font-size:1.5rem; font-weight:800; margin:.2rem 0; }
-  .datos { color:var(--suave); font-size:.9rem; line-height:1.6; margin:.8rem 0 1.2rem; }
-</style>
+<!-- El QR ya no se muestra en pantalla: la entrada es la pulsera impresa. Enlaces antiguos llevan al inicio. -->
+<meta http-equiv="refresh" content="0; url=./">
+<script>location.replace("./");</script>
 </head>
-<body>
-<div class="aurora" aria-hidden="true"><i></i><i></i><i></i></div>
-<main class="contenedor pase">
-  <a class="volver" href="./" style="float:left">← Inicio</a><div style="clear:both"></div>
-  <h1>Tu pase</h1>
-
-  <div id="cargando" class="sub">Cargando tu pase…</div>
-  <div id="error" class="msg mal oculto"></div>
-
-  <section id="pase" class="tarjeta oculto">
-    <div class="folio" id="folio"></div>
-    <div class="nombre" id="nombre"></div>
-    <div class="sub" id="curso" style="margin:0"></div>
-    <div class="qr"><img id="qr" alt="Código QR de acceso"></div>
-    <p class="datos">Presenta este QR en la puerta.<br>Miércoles 16 de diciembre de 2026<br>Fotografías 19:00 hrs · Fiesta 20:00 a 01:00 hrs<br>Patio 511, Reñaca</p>
-    <a class="btn" id="guardar" download="pase-prom-g30.png">Guardar imagen del pase</a>
-    <p class="sub" style="margin:1rem 0 0;font-size:.78rem">Guarda una captura por si no hay señal. Sube el brillo de la pantalla al escanear.</p>
-  </section>
-
-  <p class="pie">Prom Party G'30 · The Mackay School &amp; St Margaret's</p>
-</main>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
-<script src="config.js"></script>
-<script>
-const $ = id => document.getElementById(id);
-const token = decodeURIComponent((location.hash || "").slice(1)) || (() => { try { return localStorage.getItem("pase_g30") || ""; } catch (_) { return ""; } })();
-
-function fallo(t) { $("cargando").classList.add("oculto"); const e = $("error"); e.textContent = t; e.classList.remove("oculto"); }
-
-(async () => {
-  if (!token) return fallo("No encontramos tu pase. Abre el enlace que recibiste por correo.");
-  if (!window.API_URL) return fallo("El sistema todavía no está habilitado.");
-  try {
-    const r = await (await fetch(window.API_URL, { method: "POST", body: JSON.stringify({ accion: "pase", token }) })).json();
-    if (!r.ok) return fallo(r.msg || "Pase no encontrado.");
-    /* Mismo contenido que la pulsera impresa: con el celular abre el inicio (que oculta el token) y el escáner de puerta lee el token. */
-    const qr = qrcode(0, "M"); qr.addData(new URL("./", location.href).href + "#" + token); qr.make();
-    const url = qr.createDataURL(10, 2);
-    $("qr").src = url; $("guardar").href = url;
-    $("folio").textContent = "Cupo N.º " + r.folio;
-    $("nombre").textContent = r.alumno;
-    $("curso").textContent = r.curso;
-    $("cargando").classList.add("oculto"); $("pase").classList.remove("oculto");
-  } catch (_) { fallo("No hay conexión. Inténtalo de nuevo."); }
-})();
-</script>
-</body>
+<body style="background:#070a1c"></body>
 </html>
