@@ -395,10 +395,10 @@ const PROMO = {
   titulo:     "Prom Party G'30",
   lema:       "La primera fiesta de la Generación 2030",
   fechaFiesta: "2026-12-16T20:00:00-03:00",   // 16 de diciembre 2026, 20:00 hrs (hora Chile)
-  linkRegistro: "https://forms.gle/REEMPLAZAR",         // Google Form de registro de apoderados
+  linkRegistro: "registro.html",                        // formulario propio de registro de apoderados
   linkSubir:  "https://photos.app.goo.gl/REEMPLAZAR",  // álbum compartido de Google Fotos (con colaboración)
   linkVer:    "https://photos.app.goo.gl/REEMPLAZAR",  // puede ser el mismo link del álbum
-  linkStaff:  "https://forms.gle/REEMPLAZAR",          // Google Form de registro de ingreso
+  linkStaff:  "escaner.html",                          // escáner de puerta (staff, con PIN)
 };
 /* ============================================================ */
 
@@ -409,6 +409,7 @@ document.getElementById("link-registro").href = PROMO.linkRegistro;
 document.getElementById("link-subir").href = PROMO.linkSubir;
 document.getElementById("link-ver").href = PROMO.linkVer;
 document.getElementById("link-staff").href = PROMO.linkStaff;
+document.querySelectorAll("a.btn, a.staff").forEach(a => { if (!/^https?:/.test(a.getAttribute("href"))) a.removeAttribute("target"); });
 document.getElementById("footer").textContent = PROMO.colegio + " · " + PROMO.titulo;
 
 /* Mientras un link siga siendo REEMPLAZAR, el botón muestra el aviso "en construcción".
