@@ -255,6 +255,20 @@
   .btn.principal { --edge: #a86a0c; --brillo: rgba(245,166,35,.55); }
   .btn.registro  { --edge: #4a24a8; --brillo: rgba(138,77,255,.6); }
   .btn:not(.principal):not(.registro) { --edge: rgba(0,0,0,.55); background: rgba(255,255,255,.1); }
+  .btn[hidden] { display: none; }
+
+  /* Botón de registro como protagonista: más grande, con pulso de luz */
+  .btn.registro { padding: 1.7rem 1.8rem; border-radius: 1.5rem; gap: 1.3rem; }
+  .btn.registro .icono { font-size: 2.8rem; }
+  .btn.registro strong { font-size: 1.5rem; letter-spacing: .01em; }
+  .btn.registro small { font-size: .98rem; opacity: .92; }
+  .btn.registro .flecha { font-size: 1.8rem; opacity: 1; }
+  .btn.registro::before {   /* halo que respira alrededor del botón */
+    content: ""; position: absolute; inset: -2px; border-radius: inherit; pointer-events: none;
+    box-shadow: 0 0 0 0 rgba(138,77,255,.55);
+    animation: latido 2.4s ease-out infinite;
+  }
+  @keyframes latido { 0% { box-shadow: 0 0 0 0 rgba(138,77,255,.55); } 70%, 100% { box-shadow: 0 0 0 1.1rem rgba(138,77,255,0); } }
 
   /* ---------- Aviso "en construcción" ---------- */
   .aviso {
@@ -302,7 +316,10 @@
     .countdown b { font-size: 1.7rem; }
     .countdown span { font-size: .6rem; }
     .botones { flex-direction: row; flex-wrap: wrap; gap: .9rem .7rem; }
-    .btn.registro { flex: 1 1 100%; flex-direction: row; align-items: center; padding: .7rem .9rem; }
+    .btn.registro { flex: 1 1 100%; flex-direction: row; align-items: center; padding: 1rem 1.1rem; gap: .9rem; }
+    .btn.registro .icono { font-size: 2.1rem; }
+    .btn.registro strong { font-size: 1.1rem; }
+    .btn.registro small { font-size: .8rem; }
     .btn { flex: 1; flex-direction: column; align-items: flex-start; gap: .35rem; padding: .8rem .9rem; border-radius: 1rem; }
     .btn .icono { font-size: 1.6rem; }
     .btn strong { font-size: .95rem; }
@@ -360,12 +377,13 @@
         <span><strong>Registro de apoderados</strong><small>Inscribe al alumno y autoriza el retiro</small></span>
         <span class="flecha">→</span>
       </a>
-      <a class="btn principal" id="link-subir" target="_blank" rel="noopener">
+      <!-- Ocultos por ahora (solo funciona el registro). Para mostrarlos: quitar "hidden" y poner los links en PROMO. -->
+      <a class="btn principal" id="link-subir" target="_blank" rel="noopener" hidden>
         <span class="icono">📸</span>
         <span><strong>Subir fotos y videos</strong><small>Comparte lo que grabaste</small></span>
         <span class="flecha">→</span>
       </a>
-      <a class="btn" id="link-ver" target="_blank" rel="noopener">
+      <a class="btn" id="link-ver" target="_blank" rel="noopener" hidden>
         <span class="icono">🖼️</span>
         <span><strong>Ver el álbum</strong><small>Todas las fotos de la promo</small></span>
         <span class="flecha">→</span>
