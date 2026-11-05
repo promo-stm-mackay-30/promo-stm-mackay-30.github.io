@@ -53,7 +53,8 @@
       <div class="tarjeta">
         <h2>Paso 1 · Verificación</h2>
         <label for="codigo">Código de acceso (te lo entregó la organización)</label>
-        <input type="text" id="codigo" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" required>
+        <input type="text" id="codigo" maxlength="10" placeholder="6 LETRAS + 4 NÚMEROS" autocapitalize="characters" autocorrect="off" autocomplete="off" spellcheck="false" style="text-transform:uppercase;letter-spacing:.12em" required>
+        <small style="display:block;opacity:.7;margin-top:.3rem">Son 6 letras seguidas de 4 números. Se escribe en mayúsculas solo.</small>
         <label for="telefono">Teléfono del apoderado</label>
         <input type="tel" id="telefono" placeholder="+56 9 1234 5678" inputmode="tel" required>
       </div>
@@ -191,6 +192,18 @@ document.querySelectorAll('input[type="tel"]').forEach(inp => {
     else if (inp.value) marcar(inp, telOk(inp.value));
   });
 });
+/* Código de acceso: 6 letras + 4 números, siempre en mayúsculas. Al escribir o pegar se descarta lo que no corresponde a cada posición. */
+function codigoFormato(v) {
+  const s = String(v || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toUpperCase();
+  let out = "";
+  for (const ch of s) {
+    if (out.length < 6) { if (/[A-Z]/.test(ch)) out += ch; }
+    else if (out.length < 10 && /[0-9]/.test(ch)) out += ch;
+  }
+  return out;
+}
+const codigoValido = v => /^[A-Z]{6}[0-9]{4}$/.test(v);
+$("codigo").addEventListener("input", e => { const f = codigoFormato(e.target.value); if (f !== e.target.value) e.target.value = f; });
 const valor = id => { const v = $(id).value.trim(); return v === PREFIJO.trim() ? "" : v; };
 
 async function api(body) {
@@ -233,8 +246,9 @@ async function iniciar() {
 /* Paso 1 */
 $("f1").addEventListener("submit", async ev => {
   ev.preventDefault(); $("e1").classList.add("oculto");
-  datos.codigo = $("codigo").value.trim(); datos.telefono = valor("telefono");
+  datos.codigo = codigoFormato($("codigo").value); datos.telefono = valor("telefono");
   if (!datos.codigo) return campoError("codigo", "Escribe el código de acceso.");
+  if (!codigoValido(datos.codigo)) return campoError("codigo", "El código tiene 6 letras seguidas de 4 números. Revísalo.");
   if (!datos.telefono) return campoError("telefono", "Escribe el teléfono del apoderado.");
   if (!telOk(datos.telefono)) return campoError("telefono", "Faltan dígitos: deben ser 8 después de +56 9.");
   const b = $("b1"); b.disabled = true; b.textContent = "Verificando…";
