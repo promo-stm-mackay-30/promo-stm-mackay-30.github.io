@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="es">
+<html lang="es" class="p1">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -23,6 +23,27 @@
   .campo-error::before { content:"⚠ "; }
   input.invalido { border-color:var(--mal) !important; box-shadow:0 0 0 3px rgba(255,90,110,.2); animation:tiembla .35s; }
   @keyframes tiembla { 20%,60% { transform:translateX(-5px); } 40%,80% { transform:translateX(5px); } }
+
+  /* Paso 1 en celular: todo cabe en la pantalla, sin scroll. Los tamaños (rem) se escalan con el alto disponible. */
+  @media (max-width: 640px) {
+    html.p1 { font-size: clamp(11px, min(2.1vh, 3.9vw), 15.5px); }
+    html.p1 body { padding: max(.6rem, env(safe-area-inset-top)) 1rem max(.8rem, env(safe-area-inset-bottom)); }
+    html.p1 .contenedor { min-height: calc(100dvh - 1.6rem - env(safe-area-inset-top) - env(safe-area-inset-bottom)); display: flex; flex-direction: column; }
+    html.p1 #app { flex: 1; display: flex; flex-direction: column; }
+    html.p1 #f1 { flex: 1; display: flex; flex-direction: column; }
+    html.p1 #f1 .btn { margin-top: auto; }
+    html.p1 .volver { margin: 0 0 .4rem; }
+    html.p1 h1 { font-size: 1.55rem; margin-bottom: .25rem; }
+    html.p1 .contenedor > .sub { font-size: .82rem; line-height: 1.35; margin-bottom: .7rem; }
+    html.p1 .pasos { margin-bottom: .6rem; }
+    html.p1 #cupos { margin: 0 0 .6rem; padding: .5rem .8rem; font-size: .85rem; }
+    html.p1 #f1 .sub { font-size: .85rem; line-height: 1.35; margin-bottom: .7rem; }
+    html.p1 #f1 .tarjeta { padding: 1rem; margin-bottom: .8rem; }
+    html.p1 #f1 .tarjeta h2 { margin-bottom: .6rem; }
+    html.p1 #f1 label { margin: .6rem 0 .25rem; }
+    html.p1 #f1 input[type=text], html.p1 #f1 input[type=tel] { padding: .7rem .85rem; font-size: 1rem; }
+    html.p1 #f1 .btn { padding: .9rem; }
+  }
 </style>
 </head>
 <body>
@@ -229,6 +250,7 @@ document.addEventListener("input", e => { if (e.target.id && document.getElement
 function paso(n) {
   ["f1", "f2", "f3"].forEach((f, i) => $(f).classList.toggle("oculto", i !== n - 1));
   ["p1", "p2", "p3"].forEach((p, i) => $(p).classList.toggle("on", i < n));
+  document.documentElement.classList.toggle("p1", n === 1);   // el ajuste "sin scroll" del celular solo aplica al paso 1
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
