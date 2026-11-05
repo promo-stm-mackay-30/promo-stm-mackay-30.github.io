@@ -225,6 +225,15 @@ function codigoFormato(v) {
 }
 const codigoValido = v => /^[A-Z]{6}[0-9]{4}$/.test(v);
 $("codigo").addEventListener("input", e => { const f = codigoFormato(e.target.value); if (f !== e.target.value) e.target.value = f; });
+/* Correo: siempre en minúsculas y sin espacios; avisa de errores típicos de tipeo (gmail.con, gmail.cl…). */
+const correoFormato = v => String(v || "").replace(/\s+/g, "").toLowerCase();
+function correoSospechoso(e) {
+  const dom = String(e).split("@")[1] || "", i = dom.indexOf("."), base = dom.slice(0, i), fin = dom.slice(i + 1);
+  const ok = { gmail: ["com"], icloud: ["com"], outlook: ["com", "cl", "es"], hotmail: ["com", "cl", "es"], live: ["com", "cl"], yahoo: ["com", "es", "cl", "com.ar", "com.mx"] };
+  return ok[base] && !ok[base].includes(fin) ? `"@${dom}" no existe. ¿Quisiste decir "@${base}.${ok[base][0]}"?` : "";
+}
+$("emailApoderado").setAttribute("autocapitalize", "none");
+$("emailApoderado").addEventListener("input", e => { const f = correoFormato(e.target.value); if (f !== e.target.value) e.target.value = f; });
 const valor = id => { const v = $(id).value.trim(); return v === PREFIJO.trim() ? "" : v; };
 
 async function api(body) {
@@ -309,9 +318,11 @@ $("atras3").onclick = () => paso(2);
 $("f3").addEventListener("submit", async ev => {
   ev.preventDefault(); $("e3").classList.add("oculto");
   const d = { accion: "registrar", codigo: datos.codigo, telefono: datos.telefono, id: elegido.id, confirmo: $("confirmo").checked };
-  d.emailApoderado = $("emailApoderado").value.trim(); d.rutApoderado = $("rutApoderado").value.trim();
+  d.emailApoderado = correoFormato($("emailApoderado").value); d.rutApoderado = $("rutApoderado").value.trim();
   if (!d.emailApoderado) return campoError("emailApoderado", "Escribe el correo del apoderado.");
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(d.emailApoderado)) return campoError("emailApoderado", "El correo no es válido (ej.: nombre@gmail.com).");
+  const avisoCorreo = correoSospechoso(d.emailApoderado);
+  if (avisoCorreo) return campoError("emailApoderado", "Revisa el correo: " + avisoCorreo);
   if (!d.rutApoderado) return campoError("rutApoderado", "Escribe el RUT del apoderado.");
   if (!rutValido(d.rutApoderado)) return campoError("rutApoderado", "RUT incorrecto: el dígito verificador no coincide.");
   /* Persona autorizada N.º 1 obligatoria; la 2 y la 3 opcionales, pero completas si se escriben. */
