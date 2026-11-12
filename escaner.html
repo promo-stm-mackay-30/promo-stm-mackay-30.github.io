@@ -33,6 +33,19 @@
   .persona:active { background:rgba(46,229,157,.25); }
   .persona small { display:block; color:var(--suave); }
   .persona.no { border-color:var(--mal); color:#ffd0d6; text-align:center; font-weight:700; }
+  details.herr { margin-top:.9rem; background:var(--vidrio); border:1px solid var(--borde); border-radius:1rem; padding:.2rem 1rem; }
+  details.herr summary { cursor:pointer; font-weight:700; padding:.8rem 0; list-style:none; }
+  details.herr summary::-webkit-details-marker { display:none; }
+  details.herr[open] summary { border-bottom:1px solid var(--borde); margin-bottom:.8rem; }
+  .busca { display:flex; gap:.5rem; margin-bottom:.8rem; }
+  .busca input { flex:1; min-width:0; }
+  .busca button { flex:none; width:auto; padding:.8rem 1rem; }
+  .reg { border:1px solid var(--borde); border-radius:.9rem; padding:.8rem; margin-bottom:.6rem; background:rgba(255,255,255,.05); }
+  .reg b { display:block; }
+  .reg small { display:block; color:var(--suave); margin-bottom:.5rem; }
+  .reg .res { font-size:.85rem; margin-top:.5rem; }
+  .reg .res.ok { color:var(--ok); }
+  .reg .res.mal { color:#ff8a98; }
 </style>
 </head>
 <body>
@@ -62,6 +75,15 @@
     </div>
     <div id="lector"></div>
     <p class="sub" style="margin-top:.8rem;text-align:center">Apunta la cámara al QR del pase.</p>
+    <details class="herr">
+      <summary>✉️ Reenviar correo de registro</summary>
+      <p class="sub" style="margin-bottom:.6rem">Busca por nombre del alumno, apoderado, correo o número de pulsera.</p>
+      <div class="busca">
+        <input type="text" id="rQ" placeholder="Ej.: Ayala o 66" autocomplete="off" autocapitalize="none" spellcheck="false">
+        <button class="btn" id="rBuscar" type="button">Buscar</button>
+      </div>
+      <div id="rLista"></div>
+    </details>
     <button class="btn sec" id="salir" type="button" style="margin-top:.6rem">Cerrar sesión</button>
   </section>
 </main>
@@ -164,6 +186,44 @@ async function retirar(token, quien) {
     $("ok").onclick = cerrar;
   }
 }
+
+/* Reenviar el correo de registro a una familia ya registrada (se puede corregir el correo antes de reenviar). */
+async function buscarRegistros() {
+  const q = $("rQ").value.trim(), out = $("rLista");
+  if (q.length < 2) { out.innerHTML = '<p class="sub">Escribe al menos 2 letras o el número de pulsera.</p>'; return; }
+  out.innerHTML = '<p class="sub">Buscando…</p>';
+  try {
+    const r = await api({ accion: "buscarRegistros", q });
+    if (r.auth === false) return cerrarSesion();
+    if (!r.ok) { out.innerHTML = `<p class="msg mal">${esc(r.msg)}</p>`; return; }
+    if (!r.resultados.length) { out.innerHTML = '<p class="sub">No se encontró ningún registro con ese dato.</p>'; return; }
+    out.innerHTML = r.resultados.map(x => `<div class="reg" data-f="${esc(x.folio)}">
+        <b>${esc(x.alumno)}</b>
+        <small>${esc(x.colegio)} · ${esc(x.curso)} · Pulsera N.º ${esc(x.folio)}<br>Apoderado/a: ${esc(x.apoderado)} · Último envío: ${esc(x.enviado || "–")}</small>
+        <input type="email" value="${esc(x.email)}" autocapitalize="none" autocomplete="off" spellcheck="false" aria-label="Correo del apoderado">
+        <button class="btn sec" type="button" style="margin-top:.5rem">Reenviar correo</button>
+        <p class="res"></p></div>`).join("");
+    out.querySelectorAll(".reg").forEach(card => {
+      const inp = card.querySelector("input");
+      inp.addEventListener("input", () => { const f = inp.value.replace(/\s+/g, "").toLowerCase(); if (f !== inp.value) inp.value = f; });
+      card.querySelector("button").onclick = () => reenviarCorreo(card);
+    });
+  } catch (_) { out.innerHTML = '<p class="msg mal">Sin conexión con el servidor.</p>'; }
+}
+async function reenviarCorreo(card) {
+  const b = card.querySelector("button"), res = card.querySelector(".res"), inp = card.querySelector("input");
+  b.disabled = true; b.textContent = "Enviando…"; res.className = "res"; res.textContent = "";
+  try {
+    const r = await api({ accion: "reenviarCorreo", folio: card.dataset.f, email: inp.value });
+    if (r.auth === false) return cerrarSesion();
+    res.className = "res " + (r.ok ? "ok" : "mal");
+    res.textContent = (r.ok ? "✅ " : "⛔ ") + r.msg + (r.ok ? ". Si no le llega, que revise spam." : "");
+    if (r.ok && r.email) inp.value = r.email;
+  } catch (_) { res.className = "res mal"; res.textContent = "⛔ Sin conexión: no se envió nada."; }
+  b.disabled = false; b.textContent = "Reenviar correo";
+}
+$("rBuscar").onclick = buscarRegistros;
+$("rQ").addEventListener("keydown", ev => { if (ev.key === "Enter") buscarRegistros(); });
 
 async function iniciarLector() {
   if (lector) return;
