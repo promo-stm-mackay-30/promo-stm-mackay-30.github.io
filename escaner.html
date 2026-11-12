@@ -33,19 +33,37 @@
   .persona:active { background:rgba(46,229,157,.25); }
   .persona small { display:block; color:var(--suave); }
   .persona.no { border-color:var(--mal); color:#ffd0d6; text-align:center; font-weight:700; }
-  details.herr { margin-top:.9rem; background:var(--vidrio); border:1px solid var(--borde); border-radius:1rem; padding:.2rem 1rem; }
-  details.herr summary { cursor:pointer; font-weight:700; padding:.8rem 0; list-style:none; }
-  details.herr summary::-webkit-details-marker { display:none; }
-  details.herr[open] summary { border-bottom:1px solid var(--borde); margin-bottom:.8rem; }
+
+  /* Pestañas del panel */
+  .tabs { display:grid; grid-template-columns:repeat(3,1fr); gap:.4rem; margin-bottom:1rem; position:sticky; top:0; z-index:5; padding:.4rem 0 .5rem; background:linear-gradient(var(--fondo) 75%, transparent); }
+  .tabs button { font:inherit; font-weight:700; font-size:.85rem; color:var(--suave); cursor:pointer; padding:.7rem .2rem; border-radius:.9rem; border:1px solid var(--borde); background:var(--vidrio); transition:.15s; }
+  .tabs button.on { color:#1a1204; background:linear-gradient(110deg,var(--oro),var(--oro-2)); border-color:transparent; }
+  textarea, select { width:100%; font:inherit; color:var(--texto); background:rgba(0,0,0,.3); border:1px solid var(--borde); border-radius:.8rem; padding:.8rem .9rem; outline:none; }
+  textarea { resize:vertical; min-height:8rem; line-height:1.45; }
+  select option { color:#000; }
+  textarea:focus, select:focus { border-color:var(--cian); box-shadow:0 0 0 3px rgba(25,211,230,.2); }
+  .nota { font-size:.8rem; color:var(--suave); margin:.4rem 0 .8rem; line-height:1.4; }
   .busca { display:flex; gap:.5rem; margin-bottom:.8rem; }
   .busca input { flex:1; min-width:0; }
   .busca button { flex:none; width:auto; padding:.8rem 1rem; }
   .reg { border:1px solid var(--borde); border-radius:.9rem; padding:.8rem; margin-bottom:.6rem; background:rgba(255,255,255,.05); }
   .reg b { display:block; }
   .reg small { display:block; color:var(--suave); margin-bottom:.5rem; }
-  .reg .res { font-size:.85rem; margin-top:.5rem; }
-  .reg .res.ok { color:var(--ok); }
-  .reg .res.mal { color:#ff8a98; }
+  .res { font-size:.85rem; margin-top:.5rem; line-height:1.4; }
+  .res.ok { color:var(--ok); }
+  .res.mal { color:#ff8a98; }
+  .confirma { border:2px solid var(--oro); border-radius:1rem; padding:.9rem; margin:.8rem 0; background:rgba(245,166,35,.08); }
+  .fila-btn { display:flex; gap:.5rem; margin-top:.6rem; }
+  .fila-btn .btn { padding:.8rem; }
+  .barra { height:.5rem; border-radius:9px; background:rgba(255,255,255,.12); overflow:hidden; margin:.25rem 0 .7rem; }
+  .barra i { display:block; height:100%; background:linear-gradient(90deg,var(--oro),var(--cian)); }
+  .avance b { font-weight:700; }
+  .avance small { color:var(--suave); float:right; }
+  .camp { border:1px solid var(--borde); border-radius:.9rem; padding:.7rem .8rem; margin-bottom:.5rem; background:rgba(255,255,255,.05); font-size:.9rem; }
+  .camp small { display:block; color:var(--suave); }
+  .pronto { list-style:none; display:grid; gap:.5rem; }
+  .pronto li { padding:.7rem .8rem; border:1px dashed var(--borde); border-radius:.9rem; color:var(--suave); font-size:.9rem; }
+  .pronto li b { color:var(--texto); }
 </style>
 </head>
 <body>
@@ -64,26 +82,101 @@
   </section>
 
   <section id="panel" class="oculto">
-    <div class="contadores">
-      <div><b id="cDentro">–</b><span>Dentro</span></div>
-      <div><b id="cRetirados">–</b><span>Retirados</span></div>
-      <div><b id="cRegistrados">–</b><span>Registrados</span></div>
-    </div>
-    <div class="modos">
-      <button type="button" id="mE" class="activo e">⬇ ENTRADA</button>
-      <button type="button" id="mS" class="s">⬆ SALIDA</button>
-    </div>
-    <div id="lector"></div>
-    <p class="sub" style="margin-top:.8rem;text-align:center">Apunta la cámara al QR del pase.</p>
-    <details class="herr">
-      <summary>✉️ Reenviar correo de registro</summary>
-      <p class="sub" style="margin-bottom:.6rem">Busca por nombre del alumno, apoderado, correo o número de pulsera.</p>
-      <div class="busca">
-        <input type="text" id="rQ" placeholder="Ej.: Ayala o 66" autocomplete="off" autocapitalize="none" spellcheck="false">
-        <button class="btn" id="rBuscar" type="button">Buscar</button>
+    <nav class="tabs" id="tabs" aria-label="Secciones del panel">
+      <button type="button" data-tab="puerta" class="on">🚪 Puerta</button>
+      <button type="button" data-tab="correos">✉️ Correos</button>
+      <button type="button" data-tab="mas">⚙️ Más</button>
+    </nav>
+
+    <!-- ===== Puerta ===== -->
+    <section id="tab-puerta">
+      <div class="contadores">
+        <div><b id="cDentro">–</b><span>Dentro</span></div>
+        <div><b id="cRetirados">–</b><span>Retirados</span></div>
+        <div><b id="cRegistrados">–</b><span>Registrados</span></div>
       </div>
-      <div id="rLista"></div>
-    </details>
+      <div class="modos">
+        <button type="button" id="mE" class="activo e">⬇ ENTRADA</button>
+        <button type="button" id="mS" class="s">⬆ SALIDA</button>
+      </div>
+      <div id="lector"></div>
+      <p class="sub" style="margin-top:.8rem;text-align:center">Apunta la cámara al QR de la pulsera.</p>
+    </section>
+
+    <!-- ===== Correos ===== -->
+    <section id="tab-correos" class="oculto">
+      <div class="tarjeta">
+        <h2>Reenviar confirmación de registro</h2>
+        <p class="nota">Para una familia que ya se registró. Busca por nombre del alumno, apoderado, correo o número de pulsera. Se puede corregir el correo antes de reenviar.</p>
+        <div class="busca">
+          <input type="text" id="rQ" placeholder="Ej.: Ayala o 66" autocomplete="off" autocapitalize="none" spellcheck="false">
+          <button class="btn" id="rBuscar" type="button">Buscar</button>
+        </div>
+        <div id="rLista"></div>
+      </div>
+
+      <div class="tarjeta">
+        <h2>Enviar anuncio a las familias</h2>
+        <label for="mColegio">Para</label>
+        <div class="fila">
+          <select id="mColegio"><option value="">Todos los colegios</option><option value="The Mackay School">The Mackay School</option><option value="St Margaret's">St Margaret's</option></select>
+          <select id="mCurso"><option value="">Todos los cursos</option><option value="8A">8A</option><option value="8B">8B</option><option value="8C">8C</option></select>
+        </div>
+        <label for="mAsunto">Asunto</label>
+        <input type="text" id="mAsunto" maxlength="120" placeholder="Ej.: Entrega de pulseras" autocomplete="off">
+        <label for="mMensaje">Mensaje</label>
+        <textarea id="mMensaje" maxlength="3000" placeholder="Escribe aquí el anuncio. Cada familia lo recibirá con «Hola (nombre del apoderado),» al inicio."></textarea>
+        <p class="nota" id="mContador">0 / 3000 caracteres · Solo llega a familias ya registradas.</p>
+
+        <label for="mPrueba">Enviarte una prueba antes</label>
+        <div class="busca">
+          <input type="email" id="mPrueba" placeholder="tu-correo@gmail.com" autocomplete="off" autocapitalize="none" spellcheck="false">
+          <button class="btn sec" id="mProbar" type="button">Probar</button>
+        </div>
+        <p class="res" id="mPruebaRes"></p>
+
+        <button class="btn" id="mEnviar" type="button" style="margin-top:.6rem">Enviar a las familias</button>
+        <div id="mConfirm" class="confirma oculto">
+          <p id="mConfirmTxt" style="margin-bottom:.6rem"></p>
+          <label for="mClave">Escribe ENVIAR para confirmar</label>
+          <input type="text" id="mClave" autocomplete="off" autocapitalize="characters" spellcheck="false">
+          <div class="fila-btn">
+            <button class="btn sec" id="mCancelar" type="button">Cancelar</button>
+            <button class="btn" id="mConfirmar" type="button">Confirmar envío</button>
+          </div>
+        </div>
+        <p class="res" id="mRes"></p>
+      </div>
+    </section>
+
+    <!-- ===== Más ===== -->
+    <section id="tab-mas" class="oculto">
+      <div class="tarjeta">
+        <h2>Resumen del registro</h2>
+        <div class="contadores">
+          <div><b id="kReg">–</b><span>Registrados</span></div>
+          <div><b id="kLibres">–</b><span>Cupos libres</span></div>
+          <div><b id="kCuota">–</b><span>Correos hoy</span></div>
+        </div>
+        <div id="kAvance"></div>
+        <p class="nota" id="kNota"></p>
+      </div>
+      <div class="tarjeta">
+        <h2>Envíos de anuncios</h2>
+        <div id="kCamp"><p class="nota">Aún no hay envíos.</p></div>
+      </div>
+      <div class="tarjeta">
+        <h2>Próximamente</h2>
+        <ul class="pronto">
+          <li><b>💳 Plataforma de pago</b><br>Pendiente.</li>
+          <li><b>🔁 Salida temporal y reingreso</b><br>Que un alumno pueda salir y volver a entrar.</li>
+          <li><b>👨‍👩‍👧 Panel para apoderados</b><br>Ver si su hijo/a está dentro, con horas de entrada y salida.</li>
+          <li><b>🔐 Acceso del staff con huella o Face ID</b></li>
+          <li><b>🎓 Baúl de los recuerdos</b><br>Panel del estudiante a lo largo de los 4 años.</li>
+        </ul>
+      </div>
+    </section>
+
     <button class="btn sec" id="salir" type="button" style="margin-top:.6rem">Cerrar sesión</button>
   </section>
 </main>
@@ -129,8 +222,7 @@ async function contadores() {
   } catch (_) {}
 }
 
-/* El QR de la pulsera trae una dirección (…/pulsera.html#TOKEN); el QR del pase en pantalla igual.
-   También se acepta el token solo. */
+/* El QR de la pulsera trae una dirección (…/#TOKEN). También se acepta el token solo. */
 function extraerToken(txt) {
   txt = String(txt || "").trim();
   const i = txt.lastIndexOf("#");
@@ -187,16 +279,38 @@ async function retirar(token, quien) {
   }
 }
 
-/* Reenviar el correo de registro a una familia ya registrada (se puede corregir el correo antes de reenviar). */
+async function iniciarLector() {
+  if (lector) return;
+  lector = new Html5Qrcode("lector");
+  try {
+    await lector.start({ facingMode: "environment" }, { fps: 10, qrbox: (w, h) => { const l = Math.min(w, h) * .75; return { width: l, height: l }; } },
+      txt => alLeer(txt.trim()), () => {});
+  } catch (_) {
+    $("lector").innerHTML = '<p class="msg mal" style="margin:1rem">No se pudo abrir la cámara. Da permiso de cámara al navegador.</p>';
+  }
+}
+async function detenerLector() { if (lector) { const l = lector; lector = null; try { await l.stop(); l.clear(); } catch (_) {} } }
+
+/* ===== Pestañas: para agregar una sección nueva, suma un botón en #tabs, un <section id="tab-NOMBRE"> y el nombre aquí ===== */
+const TABS = ["puerta", "correos", "mas"];
+function irTab(n) {
+  TABS.forEach(t => $("tab-" + t).classList.toggle("oculto", t !== n));
+  document.querySelectorAll("#tabs button").forEach(b => b.classList.toggle("on", b.dataset.tab === n));
+  if (n === "puerta") iniciarLector(); else detenerLector();   // la cámara solo está encendida en la pestaña Puerta
+  if (n === "mas") cargarResumen();
+}
+document.querySelectorAll("#tabs button").forEach(b => b.onclick = () => irTab(b.dataset.tab));
+
+/* ===== Correos: reenviar la confirmación a una familia ya registrada ===== */
 async function buscarRegistros() {
   const q = $("rQ").value.trim(), out = $("rLista");
-  if (q.length < 2) { out.innerHTML = '<p class="sub">Escribe al menos 2 letras o el número de pulsera.</p>'; return; }
-  out.innerHTML = '<p class="sub">Buscando…</p>';
+  if (q.length < 2) { out.innerHTML = '<p class="nota">Escribe al menos 2 letras o el número de pulsera.</p>'; return; }
+  out.innerHTML = '<p class="nota">Buscando…</p>';
   try {
     const r = await api({ accion: "buscarRegistros", q });
     if (r.auth === false) return cerrarSesion();
     if (!r.ok) { out.innerHTML = `<p class="msg mal">${esc(r.msg)}</p>`; return; }
-    if (!r.resultados.length) { out.innerHTML = '<p class="sub">No se encontró ningún registro con ese dato.</p>'; return; }
+    if (!r.resultados.length) { out.innerHTML = '<p class="nota">No se encontró ningún registro con ese dato.</p>'; return; }
     out.innerHTML = r.resultados.map(x => `<div class="reg" data-f="${esc(x.folio)}">
         <b>${esc(x.alumno)}</b>
         <small>${esc(x.colegio)} · ${esc(x.curso)} · Pulsera N.º ${esc(x.folio)}<br>Apoderado/a: ${esc(x.apoderado)} · Último envío: ${esc(x.enviado || "–")}</small>
@@ -225,21 +339,85 @@ async function reenviarCorreo(card) {
 $("rBuscar").onclick = buscarRegistros;
 $("rQ").addEventListener("keydown", ev => { if (ev.key === "Enter") buscarRegistros(); });
 
-async function iniciarLector() {
-  if (lector) return;
-  lector = new Html5Qrcode("lector");
+/* ===== Correos: anuncio a las familias registradas ===== */
+const filtros = () => ({ colegio: $("mColegio").value, curso: $("mCurso").value });
+const textoPublico = () => ({ asunto: $("mAsunto").value.trim(), mensaje: $("mMensaje").value.trim() });
+const mostrarRes = (id, ok, txt) => { const e = $(id); e.className = "res " + (ok ? "ok" : "mal"); e.textContent = (ok ? "✅ " : "⛔ ") + txt; };
+$("mMensaje").addEventListener("input", () => { $("mContador").textContent = `${$("mMensaje").value.length} / 3000 caracteres · Solo llega a familias ya registradas.`; });
+$("mPrueba").addEventListener("input", () => { const f = $("mPrueba").value.replace(/\s+/g, "").toLowerCase(); if (f !== $("mPrueba").value) $("mPrueba").value = f; });
+
+$("mProbar").onclick = async () => {
+  const { asunto, mensaje } = textoPublico(), b = $("mProbar");
+  $("mPruebaRes").className = "res"; $("mPruebaRes").textContent = "";
+  if (asunto.length < 3 || mensaje.length < 5) return mostrarRes("mPruebaRes", false, "Escribe el asunto y el mensaje antes de probar.");
+  b.disabled = true; b.textContent = "Enviando…";
   try {
-    await lector.start({ facingMode: "environment" }, { fps: 10, qrbox: (w, h) => { const l = Math.min(w, h) * .75; return { width: l, height: l }; } },
-      txt => alLeer(txt.trim()), () => {});
-  } catch (_) {
-    $("lector").innerHTML = '<p class="msg mal" style="margin:1rem">No se pudo abrir la cámara. Da permiso de cámara al navegador.</p>';
-  }
+    const r = await api({ accion: "probarMasivo", email: $("mPrueba").value, asunto, mensaje });
+    if (r.auth === false) return cerrarSesion();
+    mostrarRes("mPruebaRes", r.ok, r.msg);
+  } catch (_) { mostrarRes("mPruebaRes", false, "Sin conexión: no se envió nada."); }
+  b.disabled = false; b.textContent = "Probar";
+};
+
+$("mEnviar").onclick = async () => {
+  const { asunto, mensaje } = textoPublico(), b = $("mEnviar");
+  $("mRes").className = "res"; $("mRes").textContent = "";
+  if (asunto.length < 3) return mostrarRes("mRes", false, "Escribe el asunto.");
+  if (mensaje.length < 5) return mostrarRes("mRes", false, "Escribe el mensaje.");
+  b.disabled = true;
+  try {
+    const r = await api(Object.assign({ accion: "vistaMasivo" }, filtros()));
+    if (r.auth === false) return cerrarSesion();
+    if (!r.ok) return mostrarRes("mRes", false, r.msg);
+    if (!r.total) return mostrarRes("mRes", false, "No hay familias registradas con correo válido para ese filtro.");
+    const quien = [$("mColegio").value, $("mCurso").value].filter(Boolean).join(" · ") || "todas las familias registradas";
+    const hoy = Math.min(r.total, r.hoy);
+    $("mConfirmTxt").innerHTML = `Vas a enviar «<b>${esc(asunto)}</b>» a <b>${r.total}</b> familias (${esc(quien)}).`
+      + (hoy < r.total ? `<br><small>Hoy solo se pueden enviar ${hoy} (cuota de Gmail; se reservan ${r.reserva} para confirmaciones). El resto queda pendiente y se envía después con «Continuar».</small>` : "");
+    $("mClave").value = ""; $("mConfirm").classList.remove("oculto"); $("mClave").focus();
+  } catch (_) { mostrarRes("mRes", false, "Sin conexión con el servidor."); }
+  b.disabled = false;
+};
+$("mCancelar").onclick = () => $("mConfirm").classList.add("oculto");
+$("mConfirmar").onclick = async () => {
+  const { asunto, mensaje } = textoPublico(), b = $("mConfirmar");
+  b.disabled = true; b.textContent = "Enviando… no cierres esta pantalla";
+  try {
+    const r = await api(Object.assign({ accion: "enviarMasivo", asunto, mensaje, confirmo: $("mClave").value.trim().toUpperCase() }, filtros()));
+    if (r.auth === false) return cerrarSesion();
+    mostrarRes("mRes", r.ok, r.msg + (r.ok && r.errores ? ` (${r.errores} con error)` : ""));
+    if (r.ok) { $("mConfirm").classList.add("oculto"); if (!r.pendientes) { $("mAsunto").value = ""; $("mMensaje").value = ""; $("mMensaje").dispatchEvent(new Event("input")); } }
+  } catch (_) { mostrarRes("mRes", false, "Sin conexión: revisa la pestaña Más para ver si se envió algo antes de repetir."); }
+  b.disabled = false; b.textContent = "Confirmar envío";
+};
+
+/* ===== Más: resumen y envíos pendientes ===== */
+const barra = (reg, tot) => `<div class="barra"><i style="width:${tot ? Math.round(reg * 100 / tot) : 0}%"></i></div>`;
+async function cargarResumen() {
+  try {
+    const r = await api({ accion: "resumen" });
+    if (r.auth === false) return cerrarSesion();
+    if (!r.ok) return;
+    $("kReg").textContent = r.cupos.registrados; $("kLibres").textContent = r.cupos.libres; $("kCuota").textContent = r.correos.cuota;
+    const fila = (k, v) => `<div class="avance"><b>${esc(k)}</b><small>${v.registrados} / ${v.total}</small>${barra(v.registrados, v.total)}</div>`;
+    $("kAvance").innerHTML = Object.keys(r.colegios).map(k => fila(k, r.colegios[k])).join("")
+      + '<p class="nota" style="margin-top:.4rem">Por curso</p>' + Object.keys(r.cursos).sort().map(k => fila(k, r.cursos[k])).join("");
+    $("kNota").textContent = `Correos de hoy: te quedan ${r.correos.cuota} (se reservan ${r.correos.reserva} para confirmaciones).` + (r.correos.pendientes ? ` Hay ${r.correos.pendientes} confirmaciones pendientes de envío.` : "");
+    $("kCamp").innerHTML = r.campanas.length ? r.campanas.map(c => `<div class="camp"><b>${esc(c.asunto)}</b><small>${esc(c.fecha)} · ${esc(c.enviados)} de ${esc(c.total)} enviados · ${esc(c.estado)}</small>`
+      + (c.estado === "Pendiente" ? `<button class="btn sec" type="button" data-c="${esc(c.id)}" style="margin-top:.5rem">Continuar envío</button><p class="res"></p>` : "") + "</div>").join("")
+      : '<p class="nota">Aún no hay envíos.</p>';
+    $("kCamp").querySelectorAll("button[data-c]").forEach(b => b.onclick = async () => {
+      const res = b.parentElement.querySelector(".res"); b.disabled = true; b.textContent = "Enviando…";
+      try { const x = await api({ accion: "continuarMasivo", campana: b.dataset.c }); if (x.auth === false) return cerrarSesion(); res.className = "res " + (x.ok ? "ok" : "mal"); res.textContent = (x.ok ? "✅ " : "⛔ ") + x.msg; if (x.ok) cargarResumen(); }
+      catch (_) { res.className = "res mal"; res.textContent = "⛔ Sin conexión."; }
+      b.disabled = false; b.textContent = "Continuar envío";
+    });
+  } catch (_) {}
 }
-async function detenerLector() { if (lector) { try { await lector.stop(); } catch (_) {} lector = null; } }
 
 function entrarPanel() {
   $("login").classList.add("oculto"); $("panel").classList.remove("oculto");
-  iniciarLector(); contadores(); clearInterval(window._c); window._c = setInterval(contadores, 8000);
+  irTab("puerta"); contadores(); clearInterval(window._c); window._c = setInterval(contadores, 8000);
 }
 function cerrarSesion() {
   pin = ""; try { sessionStorage.removeItem("pin_g30"); } catch (_) {}
