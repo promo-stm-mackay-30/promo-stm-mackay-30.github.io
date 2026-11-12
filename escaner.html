@@ -61,6 +61,24 @@
   .avance small { color:var(--suave); float:right; }
   .camp { border:1px solid var(--borde); border-radius:.9rem; padding:.7rem .8rem; margin-bottom:.5rem; background:rgba(255,255,255,.05); font-size:.9rem; }
   .camp small { display:block; color:var(--suave); }
+  .avance.clic { cursor:pointer; border-radius:.7rem; padding:.35rem .5rem; margin:0 -.5rem; transition:background .15s; }
+  .avance.clic:hover, .avance.clic:focus-visible { background:rgba(255,255,255,.08); outline:none; }
+  .avance.clic b::after { content:" ›"; color:var(--oro); }
+
+  /* Ventana con el detalle de una sala */
+  .modal { position:fixed; inset:0; z-index:30; display:grid; place-items:center; padding:.8rem; background:rgba(4,6,18,.9); backdrop-filter:blur(8px); }
+  .modal .hoja { width:min(100%,34rem); max-height:94dvh; overflow:auto; border-radius:1.4rem; border:1px solid var(--borde); background:#0c1230; padding:1.1rem; }
+  .modal .cab { display:flex; justify-content:space-between; align-items:flex-start; gap:.6rem; }
+  .modal .cab h3 { font-size:1.2rem; line-height:1.2; }
+  .modal .cab button { flex:none; font:inherit; font-size:1.3rem; line-height:1; color:var(--texto); background:rgba(255,255,255,.1); border:1px solid var(--borde); border-radius:.7rem; padding:.3rem .65rem; cursor:pointer; }
+  .modal .resumen-sala { color:var(--suave); font-size:.9rem; margin:.3rem 0 .8rem; }
+  .descargas { display:grid; grid-template-columns:1fr 1fr; gap:.5rem; margin-bottom:1rem; }
+  .descargas .btn { padding:.75rem .5rem; font-size:.9rem; }
+  .modal h4 { font-size:.8rem; letter-spacing:.14em; text-transform:uppercase; margin:.9rem 0 .4rem; }
+  .modal h4.ok { color:var(--ok); } .modal h4.falta { color:var(--oro-2); }
+  .fila-alu { display:flex; justify-content:space-between; align-items:center; gap:.6rem; padding:.55rem .1rem; border-bottom:1px solid rgba(255,255,255,.08); font-size:.92rem; }
+  .fila-alu small { display:block; color:var(--suave); }
+  .fila-alu a { flex:none; color:var(--cian); font-size:.8rem; text-decoration:none; border:1px solid var(--borde); border-radius:.6rem; padding:.3rem .55rem; }
   .pronto { list-style:none; display:grid; gap:.5rem; }
   .pronto li { padding:.7rem .8rem; border:1px dashed var(--borde); border-radius:.9rem; color:var(--suave); font-size:.9rem; }
   .pronto li b { color:var(--texto); }
@@ -159,6 +177,7 @@
           <div><b id="kCuota">–</b><span>Correos hoy</span></div>
         </div>
         <div id="kAvance"></div>
+        <p class="nota">Toca un colegio o un curso para ver quién ya se registró y quién falta, y descargar la lista.</p>
         <p class="nota" id="kNota"></p>
       </div>
       <div class="tarjeta">
@@ -182,6 +201,21 @@
 </main>
 
 <div id="resultado" class="resultado oculto"><div class="caja" id="caja"></div></div>
+
+<div id="sala" class="modal oculto" role="dialog" aria-modal="true" aria-labelledby="salaTit">
+  <div class="hoja">
+    <div class="cab"><h3 id="salaTit"></h3><button type="button" id="salaCerrar" aria-label="Cerrar">×</button></div>
+    <p class="resumen-sala" id="salaResumen"></p>
+    <div class="descargas" id="salaDescargas">
+      <button class="btn" type="button" id="dImg">🖼️ Imagen</button>
+      <button class="btn" type="button" id="dPdf">📄 PDF</button>
+      <button class="btn sec" type="button" id="dCsv">📊 Excel (CSV)</button>
+      <button class="btn sec oculto" type="button" id="dComp">📤 Compartir</button>
+    </div>
+    <p class="res" id="salaRes"></p>
+    <div id="salaListas"></div>
+  </div>
+</div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
 <script src="config.js"></script>
@@ -399,9 +433,13 @@ async function cargarResumen() {
     if (r.auth === false) return cerrarSesion();
     if (!r.ok) return;
     $("kReg").textContent = r.cupos.registrados; $("kLibres").textContent = r.cupos.libres; $("kCuota").textContent = r.correos.cuota;
-    const fila = (k, v) => `<div class="avance"><b>${esc(k)}</b><small>${v.registrados} / ${v.total}</small>${barra(v.registrados, v.total)}</div>`;
-    $("kAvance").innerHTML = Object.keys(r.colegios).map(k => fila(k, r.colegios[k])).join("")
-      + '<p class="nota" style="margin-top:.4rem">Por curso</p>' + Object.keys(r.cursos).sort().map(k => fila(k, r.cursos[k])).join("");
+    const fila = (k, v, colegio, curso) => `<div class="avance clic" role="button" tabindex="0" data-col="${esc(colegio)}" data-cur="${esc(curso)}"><b>${esc(k)}</b><small>${v.registrados} / ${v.total}</small>${barra(v.registrados, v.total)}</div>`;
+    $("kAvance").innerHTML = Object.keys(r.colegios).map(k => fila(k, r.colegios[k], k, "")).join("")
+      + '<p class="nota" style="margin-top:.4rem">Por curso</p>' + Object.keys(r.cursos).sort().map(k => { const [c, cu] = k.split(" · "); return fila(k, r.cursos[k], c, cu); }).join("");
+    $("kAvance").querySelectorAll(".avance.clic").forEach(el => {
+      el.onclick = () => abrirSala(el.dataset.col, el.dataset.cur);
+      el.onkeydown = ev => { if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); abrirSala(el.dataset.col, el.dataset.cur); } };
+    });
     $("kNota").textContent = `Correos de hoy: te quedan ${r.correos.cuota} (se reservan ${r.correos.reserva} para confirmaciones).` + (r.correos.pendientes ? ` Hay ${r.correos.pendientes} confirmaciones pendientes de envío.` : "");
     $("kCamp").innerHTML = r.campanas.length ? r.campanas.map(c => `<div class="camp"><b>${esc(c.asunto)}</b><small>${esc(c.fecha)} · ${esc(c.enviados)} de ${esc(c.total)} enviados · ${esc(c.estado)}</small>`
       + (c.estado === "Pendiente" ? `<button class="btn sec" type="button" data-c="${esc(c.id)}" style="margin-top:.5rem">Continuar envío</button><p class="res"></p>` : "") + "</div>").join("")
@@ -415,13 +453,150 @@ async function cargarResumen() {
   } catch (_) {}
 }
 
+/* ===== Más: detalle de una sala (registrados y faltantes) y descargas: imagen, PDF y Excel ===== */
+let sala = null;   // { colegio, curso, registrados[], pendientes[] }
+const RE_TILDES = new RegExp("[\\u0300-\\u036f]", "g");
+const slug = s => String(s).normalize("NFD").replace(RE_TILDES, "").replace(/[^a-zA-Z0-9]+/g, "-").replace(/^-|-$/g, "");
+const hoyTexto = () => new Date().toLocaleString("es-CL", { dateStyle: "short", timeStyle: "short" });
+const tituloSala = () => sala.colegio + (sala.curso && sala.curso !== "Todos" ? " · " + sala.curso : "");
+const nombreArchivo = ext => `registro_${slug(sala.colegio)}_${slug(sala.curso || "todos")}_${new Date().toISOString().slice(0, 10)}.${ext}`;
+const linkWhatsapp = tel => { const d = String(tel || "").replace(/\D/g, ""); return /^569\d{8}$/.test(d) ? "https://wa.me/" + d : ""; };
+const estadoSala = (ok, txt) => { const e = $("salaRes"); e.className = "res" + (ok === null ? "" : ok ? " ok" : " mal"); e.textContent = txt; };
+
+async function abrirSala(colegio, curso) {
+  sala = null;
+  $("salaTit").textContent = colegio + (curso ? " · " + curso : "");
+  $("salaResumen").textContent = "Cargando…"; $("salaListas").innerHTML = ""; estadoSala(null, "");
+  $("salaDescargas").classList.add("oculto"); $("sala").classList.remove("oculto");
+  try {
+    const r = await api({ accion: "detalleSala", colegio, curso });
+    if (r.auth === false) { cerrarSala(); return cerrarSesion(); }
+    if (!r.ok) { $("salaResumen").textContent = r.msg; return; }
+    sala = r;
+    const total = r.registrados.length + r.pendientes.length;
+    $("salaResumen").textContent = `${r.registrados.length} de ${total} registrados · faltan ${r.pendientes.length}`;
+    $("salaDescargas").classList.remove("oculto");
+    let puedeCompartir = false;
+    try { puedeCompartir = !!(navigator.canShare && navigator.canShare({ files: [new File(["x"], "a.png", { type: "image/png" })] })); } catch (_) {}
+    $("dComp").classList.toggle("oculto", !puedeCompartir);
+    $("salaListas").innerHTML =
+      `<h4 class="falta">Faltan por registrar (${r.pendientes.length})</h4>`
+      + (r.pendientes.length ? r.pendientes.map(a => { const w = linkWhatsapp(a.tel);
+          return `<div class="fila-alu"><div>${esc(a.alumno)}<small>${esc(a.apoderado)} · ${esc(a.tel)}</small></div>${w ? `<a href="${w}" target="_blank" rel="noopener">WhatsApp</a>` : ""}</div>`; }).join("")
+        : '<p class="nota">Todos los alumnos de esta sala ya se registraron 🎉</p>')
+      + `<h4 class="ok">Registrados (${r.registrados.length})</h4>`
+      + (r.registrados.length ? r.registrados.map(a => `<div class="fila-alu"><div>${esc(a.alumno)}<small>Pulsera N.º ${esc(a.folio)}</small></div></div>`).join("") : '<p class="nota">Todavía no se registra nadie.</p>');
+  } catch (_) { $("salaResumen").textContent = "Sin conexión con el servidor."; }
+}
+function cerrarSala() { $("sala").classList.add("oculto"); sala = null; }
+$("salaCerrar").onclick = cerrarSala;
+$("sala").addEventListener("click", e => { if (e.target === $("sala")) cerrarSala(); });
+document.addEventListener("keydown", e => { if (e.key === "Escape" && !$("sala").classList.contains("oculto")) cerrarSala(); });
+
+const recortar = (g, t, max) => { let s = String(t); if (g.measureText(s).width <= max) return s; while (s.length > 1 && g.measureText(s + "…").width > max) s = s.slice(0, -1); return s.trimEnd() + "…"; };
+function descargar(blob, nombre) {
+  const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = nombre; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+}
+
+/* Imagen PNG: dos columnas (registrados / faltan), con el mismo estilo oscuro de la página. */
+async function generarImagen() {
+  try { await document.fonts.ready; } catch (_) {}
+  const reg = sala.registrados, pen = sala.pendientes, N = Math.max(reg.length, pen.length, 1);
+  const W = 1000, M = 40, colW = (W - M * 3) / 2, FILA = 56, ALTO = 205 + N * FILA + 60, S = 2, fam = "Inter, Arial, sans-serif";
+  const c = document.createElement("canvas"); c.width = W * S; c.height = ALTO * S;
+  const g = c.getContext("2d"); g.scale(S, S);
+  g.fillStyle = "#070a1c"; g.fillRect(0, 0, W, ALTO);
+  const grad = g.createLinearGradient(0, 0, W, 0); grad.addColorStop(0, "#ffd36b"); grad.addColorStop(1, "#19d3e6"); g.fillStyle = grad; g.fillRect(0, 0, W, 8);
+  g.fillStyle = "#ffd36b"; g.font = `800 40px ${fam}`; g.fillText(recortar(g, tituloSala(), W - 2 * M), M, 70);
+  g.fillStyle = "#b9c3de"; g.font = `400 21px ${fam}`; g.fillText(recortar(g, `Prom Party G'30 · Registro de apoderados · ${hoyTexto()}`, W - 2 * M), M, 105);
+  g.fillStyle = "#ffffff"; g.font = `700 26px ${fam}`; g.fillText(`${reg.length} de ${reg.length + pen.length} registrados · faltan ${pen.length}`, M, 145);
+  const columna = (x, titulo, color, lista, sub) => {
+    g.fillStyle = color; g.beginPath(); g.arc(x + 9, 183, 9, 0, Math.PI * 2); g.fill();
+    g.font = `800 22px ${fam}`; g.fillText(`${titulo} (${lista.length})`, x + 28, 191);
+    g.strokeStyle = "rgba(255,255,255,.22)"; g.lineWidth = 1; g.beginPath(); g.moveTo(x, 207); g.lineTo(x + colW, 207); g.stroke();
+    if (!lista.length) { g.fillStyle = "#b9c3de"; g.font = `400 20px ${fam}`; g.fillText("—", x, 240); }
+    lista.forEach((a, i) => {
+      const y = 207 + i * FILA + 30;
+      g.fillStyle = "#ffffff"; g.font = `700 21px ${fam}`; g.fillText(recortar(g, a.alumno, colW), x, y);
+      g.fillStyle = "#b9c3de"; g.font = `400 17px ${fam}`; g.fillText(recortar(g, sub(a), colW), x, y + 22);
+    });
+  };
+  columna(M, "Faltan por registrar", "#f5a623", pen, a => `${a.apoderado} · ${a.tel}`);
+  columna(M * 2 + colW, "Registrados", "#2ee59d", reg, a => `Pulsera N.º ${a.folio}`);
+  g.fillStyle = "rgba(185,195,222,.7)"; g.font = `400 15px ${fam}`; g.fillText("Uso interno de la organización · contiene datos de familias: no compartir en público", M, ALTO - 20);
+  return new Promise(ok => c.toBlob(ok, "image/png"));
+}
+
+/* PDF (A4): el generador jsPDF se descarga solo al pedir el PDF. */
+function cargarJsPdf() {
+  return window.jspdf ? Promise.resolve() : new Promise((ok, mal) => {
+    const s = document.createElement("script"); s.src = "https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js";
+    s.onload = ok; s.onerror = () => mal(new Error("jspdf")); document.head.appendChild(s);
+  });
+}
+async function generarPdf() {
+  await cargarJsPdf();
+  const doc = new window.jspdf.jsPDF({ unit: "mm", format: "a4" }), reg = sala.registrados, pen = sala.pendientes, L = 16, R = 194;
+  let y = 18;
+  const salto = n => { if (y + n > 281) { doc.addPage(); y = 18; } };
+  const una = (t, ancho) => doc.splitTextToSize(String(t), ancho)[0];
+  doc.setFont("helvetica", "bold"); doc.setFontSize(16); doc.setTextColor(0); doc.text(una(tituloSala(), R - L), L, y); y += 7;
+  doc.setFont("helvetica", "normal"); doc.setFontSize(10); doc.setTextColor(90); doc.text(`Prom Party G'30 · Registro de apoderados · ${hoyTexto()}`, L, y); y += 7;
+  doc.setFont("helvetica", "bold"); doc.setFontSize(12); doc.setTextColor(0); doc.text(`${reg.length} de ${reg.length + pen.length} registrados · faltan ${pen.length}`, L, y); y += 9;
+  const seccion = (titulo, lista, color, derecha, marcado) => {
+    salto(16); doc.setFont("helvetica", "bold"); doc.setFontSize(12); doc.setTextColor(...color); doc.text(`${titulo} (${lista.length})`, L, y); y += 2;
+    doc.setDrawColor(190); doc.line(L, y, R, y); y += 6;
+    if (!lista.length) { doc.setFont("helvetica", "normal"); doc.setFontSize(10); doc.setTextColor(90); doc.text("—", L, y); y += 8; return; }
+    lista.forEach((a, i) => {
+      salto(7); doc.setFont("helvetica", "normal"); doc.setFontSize(10); doc.setTextColor(0); doc.setDrawColor(120); doc.rect(L, y - 3.1, 3.2, 3.2);
+      if (marcado) { doc.setDrawColor(0, 135, 85); doc.setLineWidth(0.5); doc.line(L + 0.6, y - 1.4, L + 1.4, y - 0.5); doc.line(L + 1.4, y - 0.5, L + 2.7, y - 2.6); doc.setLineWidth(0.2); }
+      doc.text(`${i + 1}. ${una(a.alumno, 84)}`, L + 6, y); doc.setTextColor(80); doc.text(una(derecha(a), 82), 112, y); y += 6.2;
+    });
+    y += 5;
+  };
+  seccion("Faltan por registrar", pen, [190, 105, 0], a => `${a.apoderado} · ${a.tel}`);
+  seccion("Registrados", reg, [0, 135, 85], a => `Pulsera N.º ${a.folio}`, true);
+  const n = doc.getNumberOfPages();
+  for (let i = 1; i <= n; i++) { doc.setPage(i); doc.setFont("helvetica", "normal"); doc.setFontSize(8); doc.setTextColor(120);
+    doc.text("Uso interno de la organización · contiene datos de familias: no compartir en público", L, 291); doc.text(`${i}/${n}`, R, 291, { align: "right" }); }
+  return doc.output("blob");
+}
+
+/* Excel: CSV con ; como separador y BOM, que Excel en español abre con tildes bien. */
+function generarCsv() {
+  const f = v => '"' + String(v == null ? "" : v).replace(/"/g, '""') + '"';
+  const filas = [["Estado", "Alumno", "Curso", "Pulsera N.º", "Apoderado", "Teléfono"]]
+    .concat(sala.pendientes.map(a => ["Falta registrar", a.alumno, a.curso, "", a.apoderado, a.tel]))
+    .concat(sala.registrados.map(a => ["Registrado", a.alumno, a.curso, a.folio, a.apoderado, ""]));
+  return new Blob([String.fromCharCode(0xFEFF) + filas.map(r => r.map(f).join(";")).join("\r\n")], { type: "text/csv;charset=utf-8" });
+}
+
+async function accionDescarga(btn, texto, hacer, ext, compartir) {
+  if (!sala) return;
+  const orig = btn.textContent; btn.disabled = true; btn.textContent = "Preparando…"; estadoSala(null, "");
+  try {
+    const blob = await hacer(), nombre = nombreArchivo(ext);
+    if (compartir) await navigator.share({ files: [new File([blob], nombre, { type: blob.type })], title: tituloSala() });
+    else { descargar(blob, nombre); estadoSala(true, texto + " descargado: " + nombre); }
+  } catch (e) {
+    if (e && e.name === "AbortError") estadoSala(null, "");
+    else estadoSala(false, e && e.message === "jspdf" ? "No se pudo cargar el generador de PDF (revisa tu conexión). Usa la imagen o el Excel." : "No se pudo generar el archivo.");
+  }
+  btn.disabled = false; btn.textContent = orig;
+}
+$("dImg").onclick = () => accionDescarga($("dImg"), "Imagen", generarImagen, "png");
+$("dPdf").onclick = () => accionDescarga($("dPdf"), "PDF", generarPdf, "pdf");
+$("dCsv").onclick = () => accionDescarga($("dCsv"), "Excel", async () => generarCsv(), "csv");
+$("dComp").onclick = () => accionDescarga($("dComp"), "Imagen", generarImagen, "png", true);
+
 function entrarPanel() {
   $("login").classList.add("oculto"); $("panel").classList.remove("oculto");
   irTab("puerta"); contadores(); clearInterval(window._c); window._c = setInterval(contadores, 8000);
 }
 function cerrarSesion() {
   pin = ""; try { sessionStorage.removeItem("pin_g30"); } catch (_) {}
-  clearInterval(window._c); detenerLector(); cerrar();
+  clearInterval(window._c); detenerLector(); cerrar(); cerrarSala();
   $("panel").classList.add("oculto"); $("login").classList.remove("oculto");
   $("pin").value = "";
 }
