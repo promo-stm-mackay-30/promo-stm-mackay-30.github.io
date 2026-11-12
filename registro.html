@@ -350,7 +350,9 @@ $("f3").addEventListener("submit", async ev => {
     }
     $("listoAlumno").textContent = elegido.alumno;
     $("listoPulsera").innerHTML = `${esc(elegido.colegio)} · ${esc(elegido.curso)}<br>Pulsera N.º <b>${esc(r.folio)}</b>`;
-    $("listoCorreo").textContent = r.correo ? `Te enviamos la confirmación a ${d.emailApoderado}.` : "La confirmación por correo llegará más tarde.";
+    $("listoCorreo").textContent = r.correo
+      ? `Te enviamos la confirmación a ${d.emailApoderado}. Si no la ves en unos minutos, revisa spam o promociones y agrega promo.stm.mackay.30@gmail.com a tus contactos.`
+      : "La confirmación por correo llegará más tarde.";
     $("f3").classList.add("oculto"); document.querySelector(".pasos").classList.add("oculto"); $("cupos").classList.add("oculto");
     $("listo").classList.remove("oculto"); window.scrollTo({ top: 0, behavior: "smooth" });
   } catch (_) {
