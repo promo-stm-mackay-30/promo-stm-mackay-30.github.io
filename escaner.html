@@ -181,6 +181,27 @@
         <p class="nota" id="kNota"></p>
       </div>
       <div class="tarjeta">
+        <h2>Agregar alumno a la lista</h2>
+        <p class="nota">Para un alumno nuevo que no está en la lista. Al agregarlo, su familia ya puede registrarse con el teléfono del apoderado.</p>
+        <form id="aForm" autocomplete="off" novalidate>
+          <label for="aNombre">Nombre del alumno</label>
+          <input type="text" id="aNombre" maxlength="60" autocomplete="off" placeholder="Ej.: María José">
+          <label for="aApellidos">Apellidos del alumno</label>
+          <input type="text" id="aApellidos" maxlength="80" autocomplete="off" placeholder="Ej.: Pérez Soto">
+          <label for="aApoderado">Apoderado (nombre y apellido)</label>
+          <input type="text" id="aApoderado" maxlength="100" autocomplete="off" placeholder="Ej.: Carolina Soto">
+          <label for="aTel">Teléfono del apoderado</label>
+          <input type="tel" id="aTel" placeholder="+56 9 1234 5678" inputmode="numeric" autocomplete="off">
+          <label for="aColegio">Colegio y curso</label>
+          <div class="fila">
+            <select id="aColegio"><option value="">Colegio…</option><option value="The Mackay School">The Mackay School</option><option value="St Margaret's">St Margaret's</option></select>
+            <select id="aCurso"><option value="">Curso…</option><option value="8A">8A</option><option value="8B">8B</option><option value="8C">8C</option></select>
+          </div>
+          <button class="btn" id="aGuardar" type="submit" style="margin-top:1rem">Agregar a la lista</button>
+          <p class="res" id="aRes"></p>
+        </form>
+      </div>
+      <div class="tarjeta">
         <h2>Envíos de anuncios</h2>
         <div id="kCamp"><p class="nota">Aún no hay envíos.</p></div>
       </div>
@@ -452,6 +473,44 @@ async function cargarResumen() {
     });
   } catch (_) {}
 }
+
+/* ===== Más: agregar un alumno nuevo a la lista ===== */
+const PREFIJO = "+56 9 ";
+function telFormato(v) {   // igual que en registro.html: el campo trae fijo "+56 9" y se escriben los 8 dígitos restantes
+  let d = String(v || "").replace(/\D/g, "");
+  if (d.startsWith("569")) d = d.slice(3); else if (d.startsWith("56")) d = d.slice(2);
+  if (d.length > 8) { if (d.startsWith("569")) d = d.slice(3); else if (d.length === 9 && d.startsWith("9")) d = d.slice(1); }
+  d = d.slice(0, 8);
+  return PREFIJO + d.slice(0, 4) + (d.length > 4 ? " " + d.slice(4) : "");
+}
+$("aTel").addEventListener("focus", () => { if (!$("aTel").value) $("aTel").value = PREFIJO; });
+$("aTel").addEventListener("input", () => { $("aTel").value = telFormato($("aTel").value); });
+$("aForm").addEventListener("submit", async ev => {
+  ev.preventDefault();
+  const v = id => $(id).value.replace(/\s+/g, " ").trim(), b = $("aGuardar"), res = $("aRes");
+  const dato = { nombre: v("aNombre"), apellidos: v("aApellidos"), apoderado: v("aApoderado"), telefono: $("aTel").value, colegio: $("aColegio").value, curso: $("aCurso").value };
+  const falla = t => { res.className = "res mal"; res.textContent = "⛔ " + t; };
+  res.className = "res"; res.textContent = "";
+  if (!dato.nombre || !dato.apellidos) return falla("Escribe el nombre y los apellidos del alumno.");
+  if (!dato.apoderado) return falla("Escribe el nombre del apoderado.");
+  if (dato.telefono.replace(/\D/g, "").length !== 11) return falla("El teléfono debe tener 8 dígitos después de +56 9.");
+  if (!dato.colegio) return falla("Elige el colegio.");
+  if (!dato.curso) return falla("Elige el curso.");
+  b.disabled = true; b.textContent = "Guardando…";
+  try {
+    const r = await api(Object.assign({ accion: "agregarAlumno" }, dato));
+    if (r.auth === false) return cerrarSesion();
+    if (!r.ok) falla(r.msg);
+    else {
+      res.className = "res ok";
+      res.textContent = `✅ Agregado: ${r.alumno} · ${r.colegio} ${r.curso}. Su familia ya puede registrarse con ${r.telefono}.`
+        + (r.mismoTel ? ` (Ese teléfono ya estaba en la lista: la familia verá a ambos alumnos.)` : "") + (r.aviso ? " ⚠ " + r.aviso : "");
+      ["aNombre", "aApellidos", "aApoderado"].forEach(i => $(i).value = ""); $("aTel").value = "";   // colegio y curso quedan para agregar varios seguidos
+      cargarResumen(); $("aNombre").focus();
+    }
+  } catch (_) { falla("Sin conexión: revisa la lista antes de repetir, por si se alcanzó a guardar."); }
+  b.disabled = false; b.textContent = "Agregar a la lista";
+});
 
 /* ===== Más: detalle de una sala (registrados y faltantes) y descargas: imagen, PDF y Excel ===== */
 let sala = null;   // { colegio, curso, registrados[], pendientes[] }
