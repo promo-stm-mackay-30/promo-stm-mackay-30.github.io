@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Ficha Viaje UK · Generaciones 2029 y 2030</title>
-<meta name="description" content="Ficha preliminar para la recaudación de fondos del Viaje UK. Directivas de apoderados G29 y G30 · The Mackay School & St Margaret's.">
+<meta name="description" content="Ficha preliminar para la recaudación de fondos del Viaje UK. Directivas de apoderados G29 y G30 · The Mackay School.">
 <meta name="theme-color" content="#0a1230">
 <meta name="robots" content="noindex">
 <link rel="canonical" href="https://promo-stm-mackay-30.github.io/viaje-uk.html">
@@ -88,6 +88,10 @@ input.invalido{border-color:var(--mal);box-shadow:0 0 0 3px rgba(255,106,125,.22
 .msg{border-radius:.9rem;padding:.8rem 1rem;font-size:.9rem;margin:.8rem 0}
 .msg.mal{background:rgba(255,106,125,.14);border:1px solid rgba(255,106,125,.5)}
 .msg.info{background:rgba(79,123,255,.12);border:1px solid rgba(79,123,255,.4)}
+.info-btn{display:inline-flex;align-items:center;gap:.5rem;margin-top:.9rem;background:none;border:0;color:var(--oro2);font:inherit;font-size:.88rem;font-weight:600;cursor:pointer;padding:.3rem 0;min-height:2.4rem}
+.info-btn i{display:grid;place-items:center;width:1.35rem;height:1.35rem;border-radius:50%;border:1.5px solid var(--oro);font-style:normal;font-family:'Playfair Display',serif;font-size:.8rem}
+.info-box{display:none;margin-top:.5rem;padding:.9rem 1rem;border-radius:.9rem;background:rgba(79,123,255,.1);border:1px solid rgba(79,123,255,.4);font-size:.85rem;color:var(--texto)}
+.info-box.abierto{display:block}.info-box p+p,.info-box ul{margin-top:.5rem}.info-box ul{padding-left:1.1rem}.info-box li{margin-top:.3rem}
 .honey{position:absolute;left:-9999px;width:1px;height:1px;opacity:0}
 .oculto{display:none!important}
 .gracias{text-align:center;padding:1.6rem 1.2rem}
@@ -136,7 +140,7 @@ input.invalido{border-color:var(--mal);box-shadow:0 0 0 3px rgba(255,106,125,.22
   <section class="tarjeta">
     <h2><span>2</span>Contacto <em style="text-transform:none;letter-spacing:0;font-weight:400;color:var(--suave)">(opcional)</em></h2>
     <label for="tel">Celular</label>
-    <input type="tel" id="tel" inputmode="tel" autocomplete="tel" placeholder="9 1234 5678">
+    <input type="tel" id="tel" inputmode="tel" autocomplete="tel" placeholder="+56 9 1234 5678">
     <label for="email">Correo</label>
     <input type="email" id="email" inputmode="email" autocomplete="email" autocapitalize="none" placeholder="nombre@correo.com">
     <small class="ayuda">Solo para coordinar las actividades del viaje.</small>
@@ -166,8 +170,16 @@ input.invalido{border-color:var(--mal);box-shadow:0 0 0 3px rgba(255,106,125,.22
 
   <section class="tarjeta">
     <h2><span>4</span>Confirmación</h2>
-    <label class="conf"><input type="checkbox" id="firma"><span>Confirmo que los datos son correctos. Esto reemplaza la firma de la ficha.</span></label>
-    <p class="ayuda" style="margin-top:.8rem;font-size:.78rem;color:var(--suave)">Esta encuesta es preliminar y sirve para dimensionar cuántos apoderados están disponibles para las distintas actividades. Ante dudas, leer el documento adjunto.</p>
+    <label class="conf"><input type="checkbox" id="firma"><span>Confirmo que los datos son correctos y acepto que las directivas los usen para organizar el Viaje UK. Esto reemplaza la firma de la ficha.</span></label>
+    <button type="button" class="info-btn" id="infoBtn" aria-expanded="false" aria-controls="infoBox"><i>i</i> ¿Por qué firmo esto?</button>
+    <div class="info-box" id="infoBox" role="note">
+      <p><b>¿Qué estoy aceptando?</b></p>
+      <ul>
+        <li>Que los datos de la ficha son tuyos y están correctos. Es la firma digital, igual que la firma de la hoja impresa.</li>
+        <li>Que las directivas G29 y G30 usen tus datos solo para organizar el Viaje UK y contactarte por las actividades.</li>
+      </ul>
+      <p><b>¿Qué NO implica?</b> Es una encuesta preliminar: no te obliga a pagar ni a participar. Sirve para saber cuántos apoderados pueden colaborar en cada actividad. Puedes corregir tus respuestas cuando quieras volviendo a enviar la ficha.</p>
+    </div>
   </section>
 
   <div id="error" class="msg mal oculto" role="alert"></div>
@@ -183,7 +195,7 @@ input.invalido{border-color:var(--mal);box-shadow:0 0 0 3px rgba(255,106,125,.22
   <button class="btn sec" id="editar" type="button">Corregir mis respuestas</button>
 </section>
 
-<p class="pie">Directivas de apoderados G29 y G30 · The Mackay School & St Margaret's<br>Tus datos se usan solo para organizar el Viaje UK.</p>
+<p class="pie">Directivas de apoderados G29 y G30 · The Mackay School<br>Tus datos se usan solo para organizar el Viaje UK.</p>
 </div>
 
 <script src="config.js"></script>
@@ -203,6 +215,29 @@ function limpiaMarca(i) { i.classList.remove("invalido"); const s = $(i.id + "-e
 document.querySelectorAll("input").forEach(i => i.addEventListener("input", () => limpiaMarca(i)));
 document.querySelectorAll('input[type=radio],input[type=checkbox]').forEach(i => i.addEventListener("change", () => $("error").classList.add("oculto")));
 
+/* Nombres: primera letra de cada palabra en mayúscula (al terminar el campo, el resto en minúscula) */
+const mayus = (v, resto) => v.replace(/\S+/g, w => w.charAt(0).toUpperCase() + (resto ? w.slice(1).toLowerCase() : w.slice(1)));
+["alumno", "apoderado"].forEach(id => {
+  $(id).addEventListener("input", e => { const v = mayus(e.target.value, false); if (v !== e.target.value) e.target.value = v; });
+  $(id).addEventListener("blur", e => { e.target.value = mayus(e.target.value.trim().replace(/\s+/g, " "), true); });
+});
+$("infoBtn").addEventListener("click", () => { const a = $("infoBox").classList.toggle("abierto"); $("infoBtn").setAttribute("aria-expanded", a); });
+
+/* Celular chileno: el campo trae fijo "+56 9" y se escriben los 8 dígitos restantes */
+const PREFIJO = "+56 9 ";
+function telFormato(v) {
+  let d = String(v || "").replace(/\D/g, "");
+  if (d.startsWith("569")) d = d.slice(3); else if (d.startsWith("56")) d = d.slice(2);
+  if (d.length > 8 && d.length === 9 && d.startsWith("9")) d = d.slice(1);
+  d = d.slice(0, 8);
+  return PREFIJO + d.slice(0, 4) + (d.length > 4 ? " " + d.slice(4) : "");
+}
+const telCompleto = v => String(v || "").replace(/\D/g, "").length === 11;
+$("tel").setAttribute("inputmode", "numeric");
+$("tel").addEventListener("focus", e => { if (!e.target.value) e.target.value = PREFIJO; });
+$("tel").addEventListener("input", e => { e.target.value = telFormato(e.target.value); });
+$("tel").addEventListener("blur", e => { if (e.target.value.trim() === PREFIJO.trim()) e.target.value = ""; });
+
 $("curso").addEventListener("input", e => e.target.value = e.target.value.toUpperCase().replace(/\s+/g, ""));
 $("otroCurso").addEventListener("input", e => e.target.value = e.target.value.toUpperCase().replace(/\s+/g, ""));
 $("email").addEventListener("input", e => e.target.value = e.target.value.toLowerCase().replace(/\s+/g, ""));
@@ -217,6 +252,11 @@ document.querySelectorAll('input[name="gen"]').forEach(i => i.addEventListener("
 $("otroChk").addEventListener("change", actualizaOtro);
 document.querySelectorAll('input[name="ayuda"]').forEach(i => i.addEventListener("change", () => mostrarCond($("modBox"), radio("ayuda") === "Sí")));
 
+/* correo real: usuario@dominio.terminación, sin puntos dobles ni errores comunes (.con, .cmo) */
+function correoOk(e) {
+  if (!/^[a-z0-9][a-z0-9._%+-]*@[a-z0-9-]+(\.[a-z0-9-]+)*\.[a-z]{2,}$/.test(e) || /\.\./.test(e) || /\.$/.test(e.split("@")[0])) return false;
+  return !/\.(con|cmo|coom|vom|comm|cim|clo)$/.test(e);
+}
 /* teléfono chileno: acepta +56, espacios, guiones; devuelve los 9 dígitos o "" */
 function tel9(v) { const d = String(v).replace(/\D/g, ""); return d.length >= 9 ? d.slice(-9) : ""; }
 
@@ -231,7 +271,7 @@ $("f").addEventListener("submit", async ev => {
   const alumno = $("alumno").value.trim().replace(/\s+/g, " "), apoderado = $("apoderado").value.trim().replace(/\s+/g, " ");
   const gen = radio("gen"), curso = $("curso").value.trim(), viaja = radio("viaja"), ayuda = radio("ayuda");
   const mods = [...document.querySelectorAll("#mods input:checked")].map(i => i.value);
-  const tel = $("tel").value.trim(), email = $("email").value.trim();
+  const tel = telCompleto($("tel").value) ? $("tel").value.trim() : ($("tel").value.trim() === PREFIJO.trim() ? "" : $("tel").value.trim()), email = $("email").value.trim();
   const otro = $("otroChk").checked, otroCurso = $("otroCurso").value.trim();
 
   if (alumno.split(" ").length < 2 || alumno.length < 5) return marca("alumno", "Escribe nombre y apellido del alumno.");
@@ -239,8 +279,8 @@ $("f").addEventListener("submit", async ev => {
   if (!gen) { $("gen").scrollIntoView({ behavior: "smooth", block: "center" }); return error("Indica la generación del alumno (G29 o G30)."); }
   if (!/^[0-9]{1,2}\s?[A-Z]$/.test(curso)) return marca("curso", "Escribe el curso, por ejemplo 8A.");
   if (otro && !/^[0-9]{1,2}\s?[A-Z]$/.test(otroCurso)) return marca("otroCurso", "Escribe el curso del otro hijo, por ejemplo 9A.");
-  if (tel && !tel9(tel)) return marca("tel", "Revisa el celular: faltan dígitos.");
-  if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) return marca("email", "Revisa el correo.");
+  if (tel && tel !== PREFIJO.trim() && !telCompleto(tel)) return marca("tel", "El celular debe tener 8 dígitos después de +56 9.");
+  if (email && !correoOk(email)) return marca("email", "Escribe un correo real, con @ y terminación (ej.: nombre@gmail.com).");
   if (!viaja) { $("viaja").scrollIntoView({ behavior: "smooth", block: "center" }); return error("Indica si tu hijo realizará el Viaje UK."); }
   if (!ayuda) { $("ayuda").scrollIntoView({ behavior: "smooth", block: "center" }); return error("Indica si deseas trabajar en las actividades."); }
   if (ayuda === "Sí" && !mods.length) { $("mods").scrollIntoView({ behavior: "smooth", block: "center" }); return error("Marca al menos una modalidad de participación."); }
