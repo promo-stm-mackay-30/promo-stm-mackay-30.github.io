@@ -179,7 +179,7 @@ select option{background:#101c4a;color:#fff}
         <li>Que los datos de la ficha son tuyos y están correctos. Es la firma digital, igual que la firma de la hoja impresa.</li>
         <li>Que las directivas G29 y G30 usen tus datos solo para organizar el Viaje UK y contactarte por las actividades.</li>
       </ul>
-      <p><b>¿Qué NO implica?</b> Es una encuesta preliminar: no te obliga a pagar ni a participar. Sirve para saber cuántos apoderados pueden colaborar en cada actividad. Puedes corregir tus respuestas cuando quieras volviendo a enviar la ficha.</p>
+      <p><b>¿Qué NO implica?</b> Es una encuesta preliminar: no te obliga a pagar ni a participar. Sirve para saber cuántos apoderados pueden colaborar en cada actividad. Si necesitas corregir algún dato después de enviarla, avisa a las directivas.</p>
     </div>
   </section>
 
@@ -193,7 +193,6 @@ select option{background:#101c4a;color:#fff}
   <h1 style="font-size:1.6rem" id="gTitulo">¡Gracias!</h1>
   <p class="lead" id="gTexto">Recibimos tu ficha.</p>
   <div class="resumen" id="resumen"></div>
-  <button class="btn sec" id="editar" type="button">Corregir mis respuestas</button>
 </section>
 
 <p class="pie">Directivas de apoderados G29 y G30 · The Mackay School<br>Tus datos se usan solo para organizar el Viaje UK.</p>
@@ -299,15 +298,14 @@ $("f").addEventListener("submit", async ev => {
 });
 
 function mostrarGracias(act, d) {
-  $("gTitulo").textContent = act ? "Ficha actualizada" : "¡Gracias!";
-  $("gTexto").textContent = act ? "Reemplazamos tu respuesta anterior por esta." : "Recibimos tu ficha. Las directivas se pondrán en contacto si hace falta.";
+  $("gTitulo").textContent = "¡Gracias!";
+  $("gTexto").textContent = "Recibimos tu ficha. Las directivas se pondrán en contacto si hace falta.";
   const filas = [["Alumno", d.alumno], ["Apoderado/a", d.apoderado], ["Generación · curso", d.gen + " · " + d.curso], ["Viaje UK", d.viaja], ["Trabajar en actividades", d.ayuda]];
   if (d.mods.length) filas.push(["Modalidad", d.mods.join(", ")]);
   const r = $("resumen"); r.textContent = "";
   filas.forEach(([k, v]) => { const x = document.createElement("div"), a = document.createElement("span"), c = document.createElement("b"); a.textContent = k; c.textContent = v; x.append(a, c); r.append(x); });
   $("formulario").classList.add("oculto"); $("listo").classList.remove("oculto"); window.scrollTo({ top: 0, behavior: "smooth" });
 }
-$("editar").addEventListener("click", () => { $("listo").classList.add("oculto"); $("formulario").classList.remove("oculto"); window.scrollTo({ top: 0 }); });
 </script>
 </body>
 </html>
