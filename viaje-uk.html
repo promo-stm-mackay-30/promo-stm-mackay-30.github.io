@@ -115,20 +115,20 @@ input.invalido{border-color:var(--mal);box-shadow:0 0 0 3px rgba(255,106,125,.22
 
   <section class="tarjeta">
     <h2><span>1</span>Datos de la familia</h2>
-    <label for="alumno">Nombre del alumno/a</label>
+    <label for="alumno">Nombre del alumno</label>
     <input type="text" id="alumno" autocomplete="off" autocapitalize="words" placeholder="Nombre y apellido">
     <label for="apoderado">Nombre del apoderado/a</label>
     <input type="text" id="apoderado" autocomplete="name" autocapitalize="words" placeholder="Nombre y apellido">
-    <div class="etq">Generación del alumno/a</div>
+    <div class="etq">Generación del alumno</div>
     <div class="opc" id="gen">
       <input type="radio" name="gen" id="g29" value="G29"><label for="g29">G29</label>
       <input type="radio" name="gen" id="g30" value="G30"><label for="g30">G30</label>
     </div>
     <label for="curso">Curso</label>
     <input type="text" id="curso" autocapitalize="characters" maxlength="6" placeholder="Ej: 8A">
-    <label class="otro"><input type="checkbox" id="otroChk"><span>Tengo también un hijo/a en la otra generación</span></label>
+    <label class="otro"><input type="checkbox" id="otroChk"><span>Tengo también un hijo en la otra generación</span></label>
     <div class="cond" id="otroBox">
-      <label for="otroCurso" id="otroEtq">Curso del otro hijo/a</label>
+      <label for="otroCurso" id="otroEtq">Curso del otro hijo</label>
       <input type="text" id="otroCurso" autocapitalize="characters" maxlength="6" placeholder="Ej: 9A">
     </div>
   </section>
@@ -144,7 +144,7 @@ input.invalido{border-color:var(--mal);box-shadow:0 0 0 3px rgba(255,106,125,.22
 
   <section class="tarjeta">
     <h2><span>3</span>Viaje y actividades</h2>
-    <div class="etq">Mi hijo/a realizará el Viaje UK</div>
+    <div class="etq">Mi hijo realizará el Viaje UK</div>
     <div class="opc si-no" id="viaja">
       <input type="radio" name="viaja" id="v1" value="Sí"><label for="v1">Sí</label>
       <input type="radio" name="viaja" id="v0" value="No"><label for="v0">No</label>
@@ -210,7 +210,7 @@ $("email").addEventListener("input", e => e.target.value = e.target.value.toLowe
 function otraGen() { const g = radio("gen"); return g === "G29" ? "G30" : g === "G30" ? "G29" : ""; }
 function actualizaOtro() {
   const og = otraGen();
-  $("otroEtq").textContent = og ? "Curso del hijo/a en " + og : "Curso del otro hijo/a";
+  $("otroEtq").textContent = og ? "Curso del hijo en " + og : "Curso del otro hijo";
   mostrarCond($("otroBox"), $("otroChk").checked);
 }
 document.querySelectorAll('input[name="gen"]').forEach(i => i.addEventListener("change", actualizaOtro));
@@ -234,14 +234,14 @@ $("f").addEventListener("submit", async ev => {
   const tel = $("tel").value.trim(), email = $("email").value.trim();
   const otro = $("otroChk").checked, otroCurso = $("otroCurso").value.trim();
 
-  if (alumno.split(" ").length < 2 || alumno.length < 5) return marca("alumno", "Escribe nombre y apellido del alumno/a.");
+  if (alumno.split(" ").length < 2 || alumno.length < 5) return marca("alumno", "Escribe nombre y apellido del alumno.");
   if (apoderado.split(" ").length < 2 || apoderado.length < 5) return marca("apoderado", "Escribe nombre y apellido del apoderado/a.");
-  if (!gen) { $("gen").scrollIntoView({ behavior: "smooth", block: "center" }); return error("Indica la generación del alumno/a (G29 o G30)."); }
+  if (!gen) { $("gen").scrollIntoView({ behavior: "smooth", block: "center" }); return error("Indica la generación del alumno (G29 o G30)."); }
   if (!/^[0-9]{1,2}\s?[A-Z]$/.test(curso)) return marca("curso", "Escribe el curso, por ejemplo 8A.");
-  if (otro && !/^[0-9]{1,2}\s?[A-Z]$/.test(otroCurso)) return marca("otroCurso", "Escribe el curso del otro hijo/a, por ejemplo 9A.");
+  if (otro && !/^[0-9]{1,2}\s?[A-Z]$/.test(otroCurso)) return marca("otroCurso", "Escribe el curso del otro hijo, por ejemplo 9A.");
   if (tel && !tel9(tel)) return marca("tel", "Revisa el celular: faltan dígitos.");
   if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) return marca("email", "Revisa el correo.");
-  if (!viaja) { $("viaja").scrollIntoView({ behavior: "smooth", block: "center" }); return error("Indica si tu hijo/a realizará el Viaje UK."); }
+  if (!viaja) { $("viaja").scrollIntoView({ behavior: "smooth", block: "center" }); return error("Indica si tu hijo realizará el Viaje UK."); }
   if (!ayuda) { $("ayuda").scrollIntoView({ behavior: "smooth", block: "center" }); return error("Indica si deseas trabajar en las actividades."); }
   if (ayuda === "Sí" && !mods.length) { $("mods").scrollIntoView({ behavior: "smooth", block: "center" }); return error("Marca al menos una modalidad de participación."); }
   if (!$("firma").checked) return error("Marca la confirmación para enviar la ficha.");
@@ -260,7 +260,7 @@ $("f").addEventListener("submit", async ev => {
 function mostrarGracias(act, d) {
   $("gTitulo").textContent = act ? "Ficha actualizada" : "¡Gracias!";
   $("gTexto").textContent = act ? "Reemplazamos tu respuesta anterior por esta." : "Recibimos tu ficha. Las directivas se pondrán en contacto si hace falta.";
-  const filas = [["Alumno/a", d.alumno], ["Apoderado/a", d.apoderado], ["Generación · curso", d.gen + " · " + d.curso], ["Viaje UK", d.viaja], ["Trabajar en actividades", d.ayuda]];
+  const filas = [["Alumno", d.alumno], ["Apoderado/a", d.apoderado], ["Generación · curso", d.gen + " · " + d.curso], ["Viaje UK", d.viaja], ["Trabajar en actividades", d.ayuda]];
   if (d.mods.length) filas.push(["Modalidad", d.mods.join(", ")]);
   const r = $("resumen"); r.textContent = "";
   filas.forEach(([k, v]) => { const x = document.createElement("div"), a = document.createElement("span"), c = document.createElement("b"); a.textContent = k; c.textContent = v; x.append(a, c); r.append(x); });
