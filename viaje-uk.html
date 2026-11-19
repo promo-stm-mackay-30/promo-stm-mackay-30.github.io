@@ -81,8 +81,6 @@ select option{background:#101c4a;color:#fff}
 .mod small{display:block;font-weight:400;color:var(--suave);font-size:.8rem}
 .cond{overflow:hidden;max-height:0;opacity:0;transition:max-height .35s ease,opacity .25s;}
 .cond.abierto{max-height:40rem;opacity:1}
-.otro{display:flex;gap:.7rem;align-items:flex-start;margin-top:1rem;font-size:.88rem;color:var(--suave);cursor:pointer;font-weight:400}
-.otro input{width:1.3rem;height:1.3rem;margin-top:.1rem;accent-color:var(--oro);flex:none}
 .conf{display:flex;gap:.75rem;align-items:flex-start;font-size:.88rem;font-weight:400;color:var(--texto);cursor:pointer;margin:0}
 .conf input{width:1.4rem;height:1.4rem;accent-color:var(--oro);flex:none;margin-top:.1rem}
 .btn{display:block;width:100%;cursor:pointer;font:inherit;font-weight:700;font-size:1.05rem;color:#2a1d05;border:0;border-radius:1rem;padding:1.05rem;min-height:3.4rem;
@@ -137,14 +135,6 @@ select option{background:#101c4a;color:#fff}
     <div class="fila" id="curso">
       <select id="nivel" aria-label="Nivel"><option value="">Nivel</option><option>8vo</option><option>1ro Medio</option></select>
       <select id="letra" aria-label="Letra del curso"><option value="">Letra</option><option>A</option><option>B</option><option>C</option></select>
-    </div>
-    <label class="otro"><input type="checkbox" id="otroChk"><span>Tengo también un hijo en la otra generación</span></label>
-    <div class="cond" id="otroBox">
-      <div class="etq" id="otroEtq">Curso del otro hijo</div>
-      <div class="fila" id="otroCurso">
-        <select id="otroNivel" aria-label="Nivel del otro hijo"><option value="">Nivel</option><option>8vo</option><option>1ro Medio</option></select>
-        <select id="otroLetra" aria-label="Letra del curso del otro hijo"><option value="">Letra</option><option>A</option><option>B</option><option>C</option></select>
-      </div>
     </div>
   </section>
 
@@ -251,20 +241,14 @@ $("tel").addEventListener("blur", e => { if (e.target.value.trim() === PREFIJO.t
 
 const cursoDe = (n, l) => $(n).value && $(l).value ? $(n).value + " " + $(l).value : "";
 const nivelDe = g => g === "G30" ? "8vo" : g === "G29" ? "1ro Medio" : "";
-["nivel", "letra", "otroNivel", "otroLetra"].forEach(id => $(id).addEventListener("change", () => { $("curso").classList.remove("invalido"); $("otroCurso").classList.remove("invalido"); $("error").classList.add("oculto"); }));
+["nivel", "letra"].forEach(id => $(id).addEventListener("change", () => { $("curso").classList.remove("invalido"); $("error").classList.add("oculto"); }));
 $("email").addEventListener("input", e => e.target.value = e.target.value.toLowerCase().replace(/\s+/g, ""));
 
-function otraGen() { const g = radio("gen"); return g === "G29" ? "G30" : g === "G30" ? "G29" : ""; }
-function actualizaOtro() {
-  const og = otraGen();
-  $("otroEtq").textContent = og ? "Curso del hijo en " + og : "Curso del otro hijo";
-  mostrarCond($("otroBox"), $("otroChk").checked);
+function sugiereNivel() {
   const g = radio("gen");
   if (g && !$("letra").value) $("nivel").value = nivelDe(g);          // sugerencia: G30 = 8vo, G29 = 1ro Medio (se puede cambiar)
-  if (og) $("otroNivel").value = nivelDe(og);
 }
-document.querySelectorAll('input[name="gen"]').forEach(i => i.addEventListener("change", actualizaOtro));
-$("otroChk").addEventListener("change", actualizaOtro);
+document.querySelectorAll('input[name="gen"]').forEach(i => i.addEventListener("change", sugiereNivel));
 document.querySelectorAll('input[name="ayuda"]').forEach(i => i.addEventListener("change", () => {
   mostrarCond($("modBox"), radio("ayuda") === "Sí");
   if (radio("ayuda") !== "Sí") document.querySelectorAll("#mods input").forEach(m => m.checked = false);
@@ -290,13 +274,12 @@ $("f").addEventListener("submit", async ev => {
   const gen = radio("gen"), curso = cursoDe("nivel", "letra"), viaja = radio("viaja"), ayuda = radio("ayuda");
   const mods = [...document.querySelectorAll("#mods input:checked")].map(i => i.value).slice(0, 1);
   const tel = telCompleto($("tel").value) ? $("tel").value.trim() : ($("tel").value.trim() === PREFIJO.trim() ? "" : $("tel").value.trim()), email = $("email").value.trim();
-  const otro = $("otroChk").checked, otroCurso = cursoDe("otroNivel", "otroLetra");
+  
 
   if (alumno.split(" ").length < 2 || alumno.length < 5) return marca("alumno", "Escribe nombre y apellido del alumno.");
   if (apoderado.split(" ").length < 2 || apoderado.length < 5) return marca("apoderado", "Escribe nombre y apellido del apoderado/a.");
   if (!gen) { $("gen").scrollIntoView({ behavior: "smooth", block: "center" }); return error("Indica la generación del alumno (G29 o G30)."); }
   if (!curso) return marca("curso", "Elige el nivel y la letra del curso.");
-  if (otro && !otroCurso) return marca("otroCurso", "Elige el nivel y la letra del curso del otro hijo.");
   if (tel && tel !== PREFIJO.trim() && !telCompleto(tel)) return marca("tel", "El celular debe tener 8 dígitos después de +56 9.");
   if (email && !correoOk(email)) return marca("email", "Escribe un correo real, con @ y terminación (ej.: nombre@gmail.com).");
   if (!viaja) { $("viaja").scrollIntoView({ behavior: "smooth", block: "center" }); return error("Indica si tu hijo realizará el Viaje UK."); }
@@ -307,7 +290,7 @@ $("f").addEventListener("submit", async ev => {
   const b = $("enviar"); b.disabled = true; b.textContent = "Enviando…";
   try {
     const r = await api({ accion: "viajeUK", web: $("web").value, alumno, apoderado, gen, curso,
-      otraGen: otro ? otraGen() : "", otroCurso: otro ? otroCurso : "", tel: tel ? tel9(tel) : "", email, viaja, ayuda, modalidades: ayuda === "Sí" ? mods : [] });
+      tel: tel ? tel9(tel) : "", email, viaja, ayuda, modalidades: ayuda === "Sí" ? mods : [] });
     if (!r.ok) throw new Error(r.msg || "No se pudo enviar.");
     mostrarGracias(r.actualizado, { alumno, apoderado, gen, curso, viaja, ayuda, mods });
   } catch (e) {
