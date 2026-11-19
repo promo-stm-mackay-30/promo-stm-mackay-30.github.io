@@ -59,6 +59,11 @@ input[type=text],input[type=tel],input[type=email]{width:100%;font:inherit;font-
   border-radius:.85rem;padding:.85rem .95rem;outline:none;min-height:3rem;transition:border-color .2s,box-shadow .2s}
 input:focus{border-color:var(--oro);box-shadow:0 0 0 3px rgba(217,178,95,.22)}
 input.invalido{border-color:var(--mal);box-shadow:0 0 0 3px rgba(255,106,125,.22)}
+select{width:100%;font:inherit;font-size:1rem;color:var(--texto);background:rgba(0,0,0,.28);border:1px solid var(--borde);border-radius:.85rem;padding:.85rem .95rem;min-height:3rem;outline:none;appearance:none;-webkit-appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M5 8l5 5 5-5' fill='none' stroke='%23d9b25f' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right .8rem center;background-size:1.2rem;padding-right:2.4rem}
+select:focus{border-color:var(--oro);box-shadow:0 0 0 3px rgba(217,178,95,.22)}
+select option{background:#101c4a;color:#fff}
+.fila.invalido select{border-color:var(--mal)}
 .fila{display:grid;grid-template-columns:1fr 1fr;gap:.7rem}
 .err{display:block;color:var(--mal);font-size:.8rem;margin-top:.35rem}
 /* opciones tipo botón */
@@ -71,8 +76,8 @@ input.invalido{border-color:var(--mal);box-shadow:0 0 0 3px rgba(255,106,125,.22
 .opc input:focus-visible+label{outline:2px solid var(--azul);outline-offset:2px}
 .opc.si-no input[value="No"]:checked+label{border-color:var(--rojo);background:rgba(224,74,95,.14);box-shadow:0 0 0 3px rgba(224,74,95,.15)}
 .mod label{justify-content:flex-start;text-align:left;font-weight:500;font-size:.95rem;line-height:1.35;padding:.8rem .9rem}
-.mod label::before{content:"";flex:none;width:1.3rem;height:1.3rem;border-radius:.4rem;border:1.5px solid var(--suave);transition:all .18s}
-.mod input:checked+label::before{background:var(--oro) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M4 10.5l4 4 8-9' fill='none' stroke='%232a1d05' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/80% no-repeat;border-color:var(--oro)}
+.mod label::before{content:"";flex:none;width:1.3rem;height:1.3rem;border-radius:50%;border:1.5px solid var(--suave);transition:all .18s}
+.mod input:checked+label::before{background:radial-gradient(circle,#2a1d05 0 34%,var(--oro) 38%);border-color:var(--oro)}
 .mod small{display:block;font-weight:400;color:var(--suave);font-size:.8rem}
 .cond{overflow:hidden;max-height:0;opacity:0;transition:max-height .35s ease,opacity .25s;}
 .cond.abierto{max-height:40rem;opacity:1}
@@ -128,12 +133,18 @@ input.invalido{border-color:var(--mal);box-shadow:0 0 0 3px rgba(255,106,125,.22
       <input type="radio" name="gen" id="g29" value="G29"><label for="g29">G29</label>
       <input type="radio" name="gen" id="g30" value="G30"><label for="g30">G30</label>
     </div>
-    <label for="curso">Curso</label>
-    <input type="text" id="curso" autocapitalize="characters" maxlength="6" placeholder="Ej: 8A">
+    <div class="etq">Curso</div>
+    <div class="fila" id="curso">
+      <select id="nivel" aria-label="Nivel"><option value="">Nivel</option><option>8vo</option><option>1ro Medio</option></select>
+      <select id="letra" aria-label="Letra del curso"><option value="">Letra</option><option>A</option><option>B</option><option>C</option></select>
+    </div>
     <label class="otro"><input type="checkbox" id="otroChk"><span>Tengo también un hijo en la otra generación</span></label>
     <div class="cond" id="otroBox">
-      <label for="otroCurso" id="otroEtq">Curso del otro hijo</label>
-      <input type="text" id="otroCurso" autocapitalize="characters" maxlength="6" placeholder="Ej: 9A">
+      <div class="etq" id="otroEtq">Curso del otro hijo</div>
+      <div class="fila" id="otroCurso">
+        <select id="otroNivel" aria-label="Nivel del otro hijo"><option value="">Nivel</option><option>8vo</option><option>1ro Medio</option></select>
+        <select id="otroLetra" aria-label="Letra del curso del otro hijo"><option value="">Letra</option><option>A</option><option>B</option><option>C</option></select>
+      </div>
     </div>
   </section>
 
@@ -159,11 +170,11 @@ input.invalido{border-color:var(--mal);box-shadow:0 0 0 3px rgba(255,106,125,.22
       <input type="radio" name="ayuda" id="a0" value="No"><label for="a0">No</label>
     </div>
     <div class="cond" id="modBox">
-      <div class="etq" style="margin-top:1.3rem">Si respondiste Sí, marca las modalidades en que puedes participar</div>
+      <div class="etq" style="margin-top:1.3rem">Si respondiste Sí, elige <u>una</u> modalidad en que puedes participar</div>
       <div class="opc tres mod" id="mods">
-        <input type="checkbox" id="m1" value="Jefatura de comisión"><label for="m1"><span>Jefatura de alguna comisión<small>Compromiso permanente</small></span></label>
-        <input type="checkbox" id="m2" value="Participación activa"><label for="m2"><span>Participación activa sin jefatura<small>Colaborar con un equipo permanentemente</small></span></label>
-        <input type="checkbox" id="m3" value="Participación ocasional"><label for="m3"><span>Participación ocasional<small>Eventos y horarios puntuales</small></span></label>
+        <input type="radio" name="mod" id="m1" value="Jefatura de comisión"><label for="m1"><span>Jefatura de alguna comisión<small>Compromiso permanente</small></span></label>
+        <input type="radio" name="mod" id="m2" value="Participación activa"><label for="m2"><span>Participación activa sin jefatura<small>Colaborar con un equipo permanentemente</small></span></label>
+        <input type="radio" name="mod" id="m3" value="Participación ocasional"><label for="m3"><span>Participación ocasional<small>Eventos y horarios puntuales</small></span></label>
       </div>
     </div>
   </section>
@@ -238,8 +249,9 @@ $("tel").addEventListener("focus", e => { if (!e.target.value) e.target.value = 
 $("tel").addEventListener("input", e => { e.target.value = telFormato(e.target.value); });
 $("tel").addEventListener("blur", e => { if (e.target.value.trim() === PREFIJO.trim()) e.target.value = ""; });
 
-$("curso").addEventListener("input", e => e.target.value = e.target.value.toUpperCase().replace(/\s+/g, ""));
-$("otroCurso").addEventListener("input", e => e.target.value = e.target.value.toUpperCase().replace(/\s+/g, ""));
+const cursoDe = (n, l) => $(n).value && $(l).value ? $(n).value + " " + $(l).value : "";
+const nivelDe = g => g === "G30" ? "8vo" : g === "G29" ? "1ro Medio" : "";
+["nivel", "letra", "otroNivel", "otroLetra"].forEach(id => $(id).addEventListener("change", () => { $("curso").classList.remove("invalido"); $("otroCurso").classList.remove("invalido"); $("error").classList.add("oculto"); }));
 $("email").addEventListener("input", e => e.target.value = e.target.value.toLowerCase().replace(/\s+/g, ""));
 
 function otraGen() { const g = radio("gen"); return g === "G29" ? "G30" : g === "G30" ? "G29" : ""; }
@@ -247,10 +259,16 @@ function actualizaOtro() {
   const og = otraGen();
   $("otroEtq").textContent = og ? "Curso del hijo en " + og : "Curso del otro hijo";
   mostrarCond($("otroBox"), $("otroChk").checked);
+  const g = radio("gen");
+  if (g && !$("letra").value) $("nivel").value = nivelDe(g);          // sugerencia: G30 = 8vo, G29 = 1ro Medio (se puede cambiar)
+  if (og) $("otroNivel").value = nivelDe(og);
 }
 document.querySelectorAll('input[name="gen"]').forEach(i => i.addEventListener("change", actualizaOtro));
 $("otroChk").addEventListener("change", actualizaOtro);
-document.querySelectorAll('input[name="ayuda"]').forEach(i => i.addEventListener("change", () => mostrarCond($("modBox"), radio("ayuda") === "Sí")));
+document.querySelectorAll('input[name="ayuda"]').forEach(i => i.addEventListener("change", () => {
+  mostrarCond($("modBox"), radio("ayuda") === "Sí");
+  if (radio("ayuda") !== "Sí") document.querySelectorAll("#mods input").forEach(m => m.checked = false);
+}));
 
 /* correo real: usuario@dominio.terminación, sin puntos dobles ni errores comunes (.con, .cmo) */
 function correoOk(e) {
@@ -269,21 +287,21 @@ $("f").addEventListener("submit", async ev => {
   ev.preventDefault();
   if (!API) return error("El formulario aún no está disponible. Intenta más tarde.");
   const alumno = $("alumno").value.trim().replace(/\s+/g, " "), apoderado = $("apoderado").value.trim().replace(/\s+/g, " ");
-  const gen = radio("gen"), curso = $("curso").value.trim(), viaja = radio("viaja"), ayuda = radio("ayuda");
-  const mods = [...document.querySelectorAll("#mods input:checked")].map(i => i.value);
+  const gen = radio("gen"), curso = cursoDe("nivel", "letra"), viaja = radio("viaja"), ayuda = radio("ayuda");
+  const mods = [...document.querySelectorAll("#mods input:checked")].map(i => i.value).slice(0, 1);
   const tel = telCompleto($("tel").value) ? $("tel").value.trim() : ($("tel").value.trim() === PREFIJO.trim() ? "" : $("tel").value.trim()), email = $("email").value.trim();
-  const otro = $("otroChk").checked, otroCurso = $("otroCurso").value.trim();
+  const otro = $("otroChk").checked, otroCurso = cursoDe("otroNivel", "otroLetra");
 
   if (alumno.split(" ").length < 2 || alumno.length < 5) return marca("alumno", "Escribe nombre y apellido del alumno.");
   if (apoderado.split(" ").length < 2 || apoderado.length < 5) return marca("apoderado", "Escribe nombre y apellido del apoderado/a.");
   if (!gen) { $("gen").scrollIntoView({ behavior: "smooth", block: "center" }); return error("Indica la generación del alumno (G29 o G30)."); }
-  if (!/^[0-9]{1,2}\s?[A-Z]$/.test(curso)) return marca("curso", "Escribe el curso, por ejemplo 8A.");
-  if (otro && !/^[0-9]{1,2}\s?[A-Z]$/.test(otroCurso)) return marca("otroCurso", "Escribe el curso del otro hijo, por ejemplo 9A.");
+  if (!curso) return marca("curso", "Elige el nivel y la letra del curso.");
+  if (otro && !otroCurso) return marca("otroCurso", "Elige el nivel y la letra del curso del otro hijo.");
   if (tel && tel !== PREFIJO.trim() && !telCompleto(tel)) return marca("tel", "El celular debe tener 8 dígitos después de +56 9.");
   if (email && !correoOk(email)) return marca("email", "Escribe un correo real, con @ y terminación (ej.: nombre@gmail.com).");
   if (!viaja) { $("viaja").scrollIntoView({ behavior: "smooth", block: "center" }); return error("Indica si tu hijo realizará el Viaje UK."); }
   if (!ayuda) { $("ayuda").scrollIntoView({ behavior: "smooth", block: "center" }); return error("Indica si deseas trabajar en las actividades."); }
-  if (ayuda === "Sí" && !mods.length) { $("mods").scrollIntoView({ behavior: "smooth", block: "center" }); return error("Marca al menos una modalidad de participación."); }
+  if (ayuda === "Sí" && !mods.length) { $("mods").scrollIntoView({ behavior: "smooth", block: "center" }); return error("Elige una modalidad de participación."); }
   if (!$("firma").checked) return error("Marca la confirmación para enviar la ficha.");
 
   const b = $("enviar"); b.disabled = true; b.textContent = "Enviando…";
