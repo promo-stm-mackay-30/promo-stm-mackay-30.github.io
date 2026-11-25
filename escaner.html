@@ -11,18 +11,19 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="estilo.css">
 <style>
-  .modos { display:grid; grid-template-columns:1fr 1fr; gap:.7rem; margin-bottom:1rem; }
+  .modos { display:grid; grid-template-columns:1fr 1fr; gap:.7rem; margin-bottom:.4rem; }
   .modos button { font:inherit; font-weight:800; font-size:1rem; color:var(--texto); cursor:pointer; padding:.9rem; border-radius:1rem; border:2px solid var(--borde); background:var(--vidrio); transition:.15s; }
   .modos button.activo.e { background:rgba(46,229,157,.18); border-color:var(--ok); }
   .modos button.activo.s { background:rgba(245,166,35,.18); border-color:var(--oro); }
   /* Escáner: botón de gatillo + visor */
-  .gatillo { display:grid; place-items:center; align-content:center; gap:.5rem; width:min(76%,17rem,34dvh); aspect-ratio:1; margin:.6rem auto; border-radius:50%; cursor:pointer; font:inherit; color:#1a1204;
+  .gatillo { display:grid; place-items:center; align-content:center; gap:.5rem; width:min(76%,17rem,26dvh); aspect-ratio:1; margin:.35rem auto; gap:.25rem; border-radius:50%; cursor:pointer; font:inherit; color:#1a1204;
     border:.55rem solid rgba(255,211,107,.18); background:radial-gradient(circle at 35% 28%,#fff0c4,var(--oro-2) 35%,var(--oro) 72%,#b9740c) padding-box;
     box-shadow:0 0 0 1px rgba(255,211,107,.55), 0 1.2rem 3rem rgba(245,166,35,.35); transition:transform .12s; animation:latido 2.4s ease-in-out infinite; }
   .gatillo:active { transform:scale(.95); }
-  .gatillo svg { width:5rem; height:5rem; }
-  .gatillo b { font-size:1.6rem; letter-spacing:.12em; font-weight:800; }
-  .gatillo small { font-size:.72rem; font-weight:700; opacity:.7; }
+  .gatillo:disabled { filter:grayscale(1) brightness(.55); animation:none; cursor:default; transform:none; }
+  .gatillo svg { width:min(5rem,8dvh); height:min(5rem,8dvh); }
+  .gatillo b { font-size:min(1.6rem,2.9dvh); letter-spacing:.06em; font-weight:800; }
+  .gatillo small { font-size:min(.72rem,1.7dvh); font-weight:700; opacity:.7; max-width:80%; text-align:center; line-height:1.2; }
   @keyframes latido { 50% { box-shadow:0 0 0 .8rem rgba(255,211,107,.1), 0 1.2rem 3.5rem rgba(245,166,35,.5); } }
   .pantalla-cam { position:fixed; inset:0; z-index:15; display:flex; flex-direction:column; gap:.6rem; background:radial-gradient(90% 40% at 50% 0%,#1b2460,transparent 70%),var(--fondo);
     padding:max(.7rem,env(safe-area-inset-top)) .8rem max(.7rem,env(safe-area-inset-bottom)); }
@@ -43,6 +44,21 @@
   .controles button:disabled { opacity:.35; cursor:default; }
   #bLuz { touch-action:none; user-select:none; -webkit-user-select:none; -webkit-touch-callout:none; }
   .estado-esc { text-align:center; color:var(--suave); font-size:.85rem; margin:.6rem 0 0; min-height:1.2rem; }
+
+  /* Modo de la puerta */
+  .modos button:disabled { opacity:.35; cursor:default; border-color:var(--borde); background:var(--vidrio); }
+  .estado-puerta { text-align:center; font-weight:800; font-size:.78rem; letter-spacing:.12em; text-transform:uppercase; padding:.4rem; border-radius:.7rem; margin-bottom:.6rem; border:1px dashed var(--borde); color:var(--suave); }
+  .estado-puerta.fiesta { border:1px solid var(--ok); color:var(--ok); background:rgba(46,229,157,.12); }
+  .estado-puerta.simulacro { border:1px solid var(--viol); color:#d9c4ff; background:rgba(138,77,255,.2); }
+  .eventos { display:grid; grid-template-columns:7fr 3fr; gap:.5rem; margin-top:.4rem; }
+  .eventos button { font:inherit; font-weight:800; cursor:pointer; min-height:3.5rem; border-radius:1rem; padding:.5rem .3rem; line-height:1.15; border:1px solid rgba(255,255,255,.3); }
+  .eventos button:active { transform:scale(.97); }
+  .eventos button:disabled { opacity:.3; cursor:default; transform:none; }
+  #bFiesta { font-size:1.05rem; letter-spacing:.06em; color:#fff; background:linear-gradient(115deg,#8a4dff,#d9468f 45%,#f5a623); box-shadow:0 .6rem 1.6rem rgba(217,70,143,.35), inset 0 1px 0 rgba(255,255,255,.35); text-shadow:0 1px 3px rgba(0,0,0,.45); }
+  #bSim { font-size:.8rem; color:var(--texto); background:rgba(138,77,255,.16); border-color:rgba(138,77,255,.6); }
+  #bFiesta.fin, #bSim.fin { background:rgba(255,90,110,.16); border-color:var(--mal); color:#ffd0d6; box-shadow:none; }
+  .titulo-cam.sim { border-color:var(--viol); color:#d9c4ff; background:rgba(138,77,255,.22); }
+  .pin-fiesta { text-align:center; font-size:2rem !important; letter-spacing:.5em; margin:.6rem 0; }
 
   /* Credencial al consultar una pulsera */
   .resultado.pase { overflow:auto; }
@@ -69,9 +85,9 @@
   .chip.dentro { border-color:var(--ok); color:var(--ok); background:rgba(46,229,157,.12); }
   .chip.retirado { border-color:var(--oro); color:var(--oro-2); background:rgba(245,166,35,.12); }
   .resultado .btn + .btn { margin-top:.6rem; }
-  .contadores { display:grid; grid-template-columns:repeat(3,1fr); gap:.6rem; margin-bottom:1rem; text-align:center; }
-  .contadores div { background:var(--vidrio); border:1px solid var(--borde); border-radius:.9rem; padding:.6rem 0; }
-  .contadores b { display:block; font-size:1.6rem; }
+  .contadores { display:grid; grid-template-columns:repeat(3,1fr); gap:.6rem; margin-bottom:.7rem; text-align:center; }
+  .contadores div { background:var(--vidrio); border:1px solid var(--borde); border-radius:.9rem; padding:.45rem 0; }
+  .contadores b { display:block; font-size:1.45rem; line-height:1.25; }
   .contadores span { font-size:.65rem; text-transform:uppercase; letter-spacing:.12em; color:var(--suave); }
   .resultado { position:fixed; inset:0; z-index:20; display:grid; place-items:center; padding:1.2rem; background:rgba(4,6,18,.9); backdrop-filter:blur(8px); }
   .resultado .caja { width:min(100%,28rem); text-align:center; border-radius:1.6rem; padding:1.6rem 1.2rem; border:3px solid; background:#0c1230; }
@@ -167,9 +183,10 @@
         <div><b id="cRetirados">–</b><span>Retirados</span></div>
         <div><b id="cRegistrados">–</b><span>Registrados</span></div>
       </div>
+      <div class="estado-puerta" id="estadoPuerta" role="status">Fiesta sin iniciar</div>
       <div class="modos">
-        <button type="button" id="mE" class="activo e">⬇ ENTRADA</button>
-        <button type="button" id="mS" class="s">⬆ SALIDA</button>
+        <button type="button" id="mE" class="activo e" disabled>⬇ ENTRADA</button>
+        <button type="button" id="mS" class="s" disabled>⬆ SALIDA</button>
       </div>
       <div id="slot-puerta">
         <div id="escaner">
@@ -189,6 +206,10 @@
           </div>
           <p class="estado-esc" id="estadoEsc" role="status"></p>
         </div>
+      </div>
+      <div class="eventos">
+        <button type="button" id="bFiesta">✨ INICIAR FIESTA</button>
+        <button type="button" id="bSim">🧪 Simulacro</button>
       </div>
     </section>
 
@@ -294,7 +315,7 @@
       </div>
     </section>
 
-    <button class="btn sec" id="salir" type="button" style="margin-top:.6rem">Cerrar sesión</button>
+    <button class="btn sec" id="salir" type="button" style="margin-top:.5rem;padding:.8rem">Cerrar sesión</button>
   </section>
 </main>
 
@@ -320,7 +341,7 @@
 <script>
 const $ = id => document.getElementById(id);
 const API = window.API_URL;
-let pin = "", modo = "entrada", ocupado = false, tabActual = "puerta";
+let pin = "", modo = "entrada", ocupado = false, tabActual = "puerta", evento = "";   // evento: "" | "fiesta" | "simulacro" (lo define el servidor)
 
 try { pin = sessionStorage.getItem("pin_g30") || ""; } catch (_) {}
 
@@ -352,9 +373,53 @@ async function contadores() {
   try {
     const r = await api({ accion: "presentes" });
     if (r.auth === false) return cerrarSesion();
-    if (r.ok) { $("cDentro").textContent = r.dentro; $("cRetirados").textContent = r.retirados; $("cRegistrados").textContent = r.registrados; }
+    if (r.ok) { $("cDentro").textContent = r.dentro; $("cRetirados").textContent = r.retirados; $("cRegistrados").textContent = r.registrados; pintarEvento(r.evento); }
   } catch (_) {}
 }
+
+/* ===== Iniciar Fiesta / Simulacro: activan ENTRADA, SALIDA y el escáner de la puerta en todos los teléfonos ===== */
+function pintarEvento(nuevo) {
+  const sinServidor = nuevo === undefined;
+  evento = nuevo || "";
+  const on = !!evento;
+  $("mE").disabled = $("mS").disabled = !on;
+  $("gatillo").disabled = tabActual === "puerta" && !on;
+  $("gatilloSub").textContent = tabActual === "consultar" ? "Ver de quién es" : on ? "Pulsa para leer la pulsera" : "Inicia la fiesta primero";
+  const e = $("estadoPuerta");
+  e.className = "estado-puerta " + evento;
+  e.textContent = sinServidor ? "Falta publicar la nueva versión del servidor" : evento === "fiesta" ? "🎉 Fiesta en curso" : evento === "simulacro" ? "🧪 Simulacro · nada es real" : "Fiesta sin iniciar";
+  const f = $("bFiesta"), m = $("bSim");
+  f.textContent = evento === "fiesta" ? "■ Finalizar fiesta" : "✨ INICIAR FIESTA";
+  m.textContent = evento === "simulacro" ? "■ Finalizar" : "🧪 Simulacro";
+  f.classList.toggle("fin", evento === "fiesta"); m.classList.toggle("fin", evento === "simulacro");
+  f.disabled = evento === "simulacro"; m.disabled = evento === "fiesta";
+}
+function pedirPin(tipo) {
+  const fin = evento === tipo, nombre = tipo === "fiesta" ? "la fiesta" : "el simulacro";
+  ocupado = true;
+  mostrar("conf", `<div class="ico">${tipo === "fiesta" ? "🎉" : "🧪"}</div><h2>${fin ? "Finalizar" : "Iniciar"} ${nombre}</h2>
+    <p class="sub">${fin ? "Entrada y salida quedarán desactivadas en todos los teléfonos." : tipo === "fiesta" ? "Los movimientos serán reales y los apoderados recibirán correos." : "Prueba: no toca los datos reales y los correos van solo al organizador."}</p>
+    <input type="password" class="pin-fiesta" id="pinFiesta" inputmode="numeric" maxlength="12" autocomplete="off" aria-label="PIN" placeholder="PIN">
+    <p class="res mal" id="pinRes"></p>
+    <button class="btn" id="pinOk" type="button">Confirmar</button><button class="btn sec" id="pinNo" type="button">Cancelar</button>`);
+  $("pinNo").onclick = cerrar;
+  const enviar = async () => {
+    const b = $("pinOk"), clave = $("pinFiesta").value.trim(); if (!clave) return;
+    b.disabled = true; b.textContent = "Verificando…";
+    try {
+      const r = await api({ accion: fin ? "finalizar" : "activar", tipo, clave });
+      if (r.auth === false) return cerrarSesion();
+      if (!r.ok) { $("pinRes").textContent = r.msg === "Acción desconocida" ? "Falta publicar la nueva versión del servidor." : r.msg; $("pinFiesta").value = ""; }
+      else { cerrar(); pintarEvento(r.evento); contadores(); return; }
+    } catch (_) { $("pinRes").textContent = "Sin conexión con el servidor."; }
+    b.disabled = false; b.textContent = "Confirmar";
+  };
+  $("pinOk").onclick = enviar;
+  $("pinFiesta").addEventListener("keydown", ev => { if (ev.key === "Enter") enviar(); });
+  $("pinFiesta").focus();
+}
+$("bFiesta").onclick = () => pedirPin("fiesta");
+$("bSim").onclick = () => pedirPin("simulacro");
 
 /* El QR de la pulsera trae una dirección (…/#TOKEN). También se acepta el token solo. */
 function extraerToken(txt) {
@@ -372,8 +437,9 @@ async function alLeer(leido) {
   if (tabActual === "consultar") return consultar(token);
   mostrar("conf", '<div class="ico">⏳</div><h2>Verificando…</h2>');
   try {
-    const r = await api({ accion: "escanear", token, modo });
+    const r = await api({ accion: "escanear", token, modo, evento });
     if (r.auth === false) return cerrarSesion();
+    if (r.recargar) contadores();
     if (r.requiere === "confirmar") {
       pitar(true);
       mostrar("conf", `<div class="ico">🧑‍🤝‍🧑</div><h2>${esc(r.alumno)}</h2><p class="sub">${esc(r.curso)} · Cupo ${esc(r.folio)}<br>¿Quién retira al alumno? Verifica su identidad.</p>`
@@ -437,11 +503,11 @@ async function consultar(token) {
 async function retirar(token, quien) {
   mostrar("conf", '<div class="ico">⏳</div><h2>Guardando…</h2>');
   try {
-    const r = await api({ accion: "retirar", token, quien });
+    const r = await api({ accion: "retirar", token, quien, evento });
     pitar(r.ok);
     mostrar(r.ok ? "ok" : "mal",
       `<div class="ico">${r.ok ? "✅" : "⛔"}</div><h2>${esc(r.msg)}</h2>`
-      + (r.ok ? `<p class="alu">${esc(r.alumno)}</p><p class="sub">Retirado por ${esc(r.retiradoPor)}</p>` : "")
+      + (r.ok ? `<p class="alu">${esc(r.alumno)}</p><p class="sub">Retirado por ${esc(r.retiradoPor)}<br>${r.correo === "Enviado" ? "✉️ Correo enviado" + (evento === "simulacro" ? " (simulacro)" : " al apoderado") : "⚠ El correo NO salió (" + esc(r.correo) + ")"}</p>` : "")
       + botonesFin);
     activarFin(); contadores();
   } catch (_) {
@@ -457,8 +523,9 @@ const estadoEsc = t => { $("estadoEsc").textContent = t || ""; };
 const estadoCam = t => { $("estadoCam").textContent = t || ""; };
 function tituloCam() {
   const e = $("tituloCam"), consulta = tabActual === "consultar";
-  e.textContent = consulta ? "CONSULTAR PULSERA" : modo === "entrada" ? "⬇ ENTRADA" : "⬆ SALIDA";
-  e.className = "titulo-cam" + (consulta ? "" : modo === "entrada" ? " e" : " s");
+  const sim = !consulta && evento === "simulacro";
+  e.textContent = consulta ? "CONSULTAR PULSERA" : (sim ? "SIMULACRO · " : "") + (modo === "entrada" ? "⬇ ENTRADA" : "⬆ SALIDA");
+  e.className = "titulo-cam" + (consulta ? "" : sim ? " sim" : modo === "entrada" ? " e" : " s");
 }
 
 function vistaCamara(on) {
@@ -483,7 +550,7 @@ async function camaras() {
 const idActual = () => { try { return lector.getRunningTrackSettings().deviceId || ""; } catch (_) { return ""; } };
 
 async function encender() {
-  if (camEstado !== "off") return;
+  if (camEstado !== "off" || (tabActual === "puerta" && !evento)) return;
   camEstado = "iniciando"; cancelarInicio = false; tituloCam(); vistaCamara(true); estadoEsc(""); estadoCam("Encendiendo cámara…");
   let leido = false;
   const alAcertar = txt => { if (leido) return; leido = true; alLeer(txt.trim()); };
@@ -545,7 +612,7 @@ function irTab(n) {
   document.querySelectorAll("#tabs button").forEach(b => b.classList.toggle("on", b.dataset.tab === n));
   tabActual = n; apagar();                        // la cámara nunca queda encendida al cambiar de pestaña
   if (n === "puerta" || n === "consultar") $("slot-" + n).appendChild($("escaner"));
-  $("gatilloSub").textContent = n === "consultar" ? "Ver de quién es" : "Pulsa para leer la pulsera";
+  pintarEvento(evento);
   if (n === "mas") cargarResumen();
 }
 document.querySelectorAll("#tabs button").forEach(b => b.onclick = () => irTab(b.dataset.tab));
