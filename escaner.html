@@ -60,6 +60,15 @@
   .titulo-cam.sim { border-color:var(--viol); color:#d9c4ff; background:rgba(138,77,255,.22); }
   .pin-fiesta { text-align:center; font-size:2rem !important; letter-spacing:.5em; margin:.6rem 0; }
 
+  /* Verificación con el carnet */
+  .carnet-btn { display:flex; align-items:center; justify-content:center; gap:.6rem; margin:.2rem 0 .5rem; font-size:1.1rem; }
+  .carnet-btn span { font-size:1.6rem; line-height:1; }
+  .o-manual { font-size:.75rem; letter-spacing:.14em; text-transform:uppercase; color:var(--suave); margin:.5rem 0 .4rem; }
+  .persona.match { border:2px solid var(--ok); background:rgba(46,229,157,.14); }
+  .coincide { border:2px solid var(--ok); border-radius:1rem; padding:.9rem; margin:.4rem 0 1rem; background:rgba(46,229,157,.1); }
+  .coincide b { display:block; font-size:1.45rem; line-height:1.2; }
+  .coincide small { display:block; color:var(--suave); margin-top:.2rem; }
+
   /* Credencial al consultar una pulsera */
   .resultado.pase { overflow:auto; }
   .resultado.pase .caja { padding:3px; border:0; background:linear-gradient(150deg,#ffe9ae,var(--oro) 30%,#7a5310 50%,var(--cian) 78%,#ffe9ae); box-shadow:0 0 4rem rgba(245,166,35,.3); }
@@ -434,24 +443,14 @@ async function alLeer(leido) {
   if (ocupado) return;
   ocupado = true;
   if (navigator.vibrate) navigator.vibrate(40);
+  if (carnet) { const c = carnet; carnet = null; return verificarCarnet(c, leido); }
   if (tabActual === "consultar") return consultar(token);
   mostrar("conf", '<div class="ico">⏳</div><h2>Verificando…</h2>');
   try {
     const r = await api({ accion: "escanear", token, modo, evento });
     if (r.auth === false) return cerrarSesion();
     if (r.recargar) contadores();
-    if (r.requiere === "confirmar") {
-      pitar(true);
-      mostrar("conf", `<div class="ico">🧑‍🤝‍🧑</div><h2>${esc(r.alumno)}</h2><p class="sub">${esc(r.curso)} · Cupo ${esc(r.folio)}<br>¿Quién retira al alumno? Verifica su identidad.</p>`
-        + r.personas.map(p => `<button class="persona" data-i="${p.i}"><b>${esc(p.nombre)}</b><small>${esc(p.rol)}${p.rut ? " · RUT " + esc(p.rut) : ""} · ${esc(p.tel)}</small></button>`).join("")
-        + `<button class="persona no" data-i="NO">❌ La persona NO coincide</button>`
-        + `<button class="persona" data-cancel="1" style="text-align:center;opacity:.8">Cancelar</button>`);
-      document.querySelectorAll("#caja .persona").forEach(b => b.onclick = () => {
-        if (b.dataset.cancel) return cerrar();
-        retirar(token, b.dataset.i);
-      });
-      return;
-    }
+    if (r.requiere === "confirmar") { pitar(true); return mostrarPersonas({ token, r }); }
     pitar(r.ok);
     mostrar(r.ok ? "ok" : "mal",
       `<div class="ico">${r.ok ? "✅" : "⛔"}</div><h2>${esc(r.msg)}</h2>`
@@ -463,6 +462,71 @@ async function alLeer(leido) {
     mostrar("mal", `<div class="ico">📡</div><h2>Sin conexión</h2><p class="sub">No se registró nada. Intenta de nuevo.</p>` + botonesFin);
     activarFin();
   }
+}
+
+/* ===== Salida: elegir quién retira, a mano o leyendo el QR del reverso del carnet ===== */
+const ICO_CARNET = '<svg viewBox="0 0 24 24" width="1.3em" height="1.3em" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true" style="vertical-align:-.25em"><rect x="2.5" y="5" width="19" height="14" rx="2.5"/><circle cx="8.5" cy="11" r="2.2"/><path d="M5.3 16.2c.6-1.6 1.8-2.4 3.2-2.4s2.6.8 3.2 2.4M14.5 10h4M14.5 13.5h4"/></svg>';
+let carnet = null;   // { token, r } mientras la cámara está leyendo un carnet
+function mostrarPersonas(c, marcar) {
+  const r = c.r; ocupado = true;
+  mostrar("conf", `<div class="ico">🧑‍🤝‍🧑</div><h2>${esc(r.alumno)}</h2><p class="sub">${esc(r.curso)} · Cupo ${esc(r.folio)}<br>¿Quién retira al alumno? Verifica su identidad.</p>`
+    + `<button class="btn carnet-btn" id="bCarnet" type="button"><span>${ICO_CARNET}</span>Escanear QR del carnet</button>`
+    + `<p class="o-manual">o elige manualmente</p>`
+    + r.personas.map(p => `<button class="persona${marcar === p.i ? " match" : ""}" data-i="${p.i}"><b>${esc(p.nombre)}</b><small>${esc(p.rol)}${p.rut ? " · RUT " + esc(p.rut) : " · sin RUT registrado"} · ${esc(p.tel)}</small></button>`).join("")
+    + `<button class="persona no" data-i="NO">❌ La persona NO coincide</button>`
+    + `<button class="persona" data-cancel="1" style="text-align:center;opacity:.8">Cancelar</button>`);
+  $("bCarnet").onclick = () => leerCarnet(c);
+  document.querySelectorAll("#caja .persona").forEach(b => b.onclick = () => {
+    if (b.dataset.cancel) return cerrar();
+    retirar(c.token, b.dataset.i);
+  });
+}
+function leerCarnet(c) {
+  carnet = c; $("resultado").className = "resultado oculto"; ocupado = false;
+  encender();
+}
+
+/* RUT: "12.345.678-5" si el dígito verificador es correcto, si no "" */
+function normRut(x) {
+  const t = String(x == null ? "" : x).toUpperCase().replace(/[^0-9K]/g, "");
+  if (t.length < 8 || t.length > 9) return "";
+  const cuerpo = t.slice(0, -1), dv = t.slice(-1);
+  if (!/^\d{7,8}$/.test(cuerpo)) return "";
+  let suma = 0, m = 2;
+  for (let i = cuerpo.length - 1; i >= 0; i--) { suma += Number(cuerpo[i]) * m; m = m === 7 ? 2 : m + 1; }
+  const res = 11 - (suma % 11), esperado = res === 11 ? "0" : res === 10 ? "K" : String(res);
+  return dv === esperado ? cuerpo.replace(/\B(?=(\d{3})+(?!\d))/g, ".") + "-" + dv : "";
+}
+/* El QR del carnet chileno es una dirección del Registro Civil con "RUN=12345678-5"; también se acepta un RUT suelto en el texto */
+function rutDelCarnet(txt) {
+  const t = String(txt || ""), run = t.match(/RUN=([0-9.]{7,10}-?[0-9kK])/i);
+  const candidatos = run ? [run[1]] : (t.match(/\d{1,2}\.?\d{3}\.?\d{3}-?[0-9kK]/g) || []);
+  for (const c of candidatos) { const n = normRut(c); if (n) return n; }
+  return "";
+}
+function verificarCarnet(c, leido) {
+  const r = c.r, rut = rutDelCarnet(leido);
+  const otra = `<button class="btn" id="cOtra" type="button">${ICO_CARNET} Escanear otro carnet</button><button class="btn sec" id="cLista" type="button">Elegir manualmente</button>`;
+  const enlazar = () => { $("cOtra").onclick = () => leerCarnet(c); $("cLista").onclick = () => mostrarPersonas(c); };
+  if (!rut) {
+    pitar(false);
+    mostrar("mal", `<div class="ico">${ICO_CARNET}</div><h2>No se encontró un RUT</h2><p class="sub">Ese código no es el QR del reverso del carnet, o no se leyó bien. Prueba de nuevo o elige manualmente.</p>` + otra);
+    return enlazar();
+  }
+  const p = r.personas.find(x => normRut(x.rut) === rut);   // el primero que coincide (apoderado, luego autorizados)
+  if (!p) {
+    pitar(false);
+    mostrar("mal", `<div class="ico">⛔</div><h2>RUT no autorizado</h2><p class="sub">El carnet ${esc(rut)} no está entre las personas autorizadas para retirar a <b>${esc(r.alumno)}</b>.</p>`
+      + otra + `<button class="btn sec" id="cNo" type="button" style="margin-top:.6rem;border-color:var(--mal);color:#ffd0d6">❌ Bloquear salida</button>`);
+    enlazar(); $("cNo").onclick = () => retirar(c.token, "NO");
+    return;
+  }
+  pitar(true);
+  mostrar("ok", `<div class="ico">✅</div><h2>El carnet coincide</h2><p class="sub">Retira a <b>${esc(r.alumno)}</b> · ${esc(r.curso)} · Cupo ${esc(r.folio)}</p>`
+    + `<div class="coincide"><b>${esc(p.nombre)}</b><small>${esc(p.rol)} · RUT ${esc(rut)}</small></div>`
+    + `<button class="btn" id="cOk" type="button">Confirmar retiro</button><button class="btn sec" id="cLista" type="button">Volver a la lista</button>`);
+  $("cOk").onclick = () => retirar(c.token, String(p.i));
+  $("cLista").onclick = () => mostrarPersonas(c, p.i);
 }
 
 /* Consulta: muestra la credencial de la pulsera, sin registrar movimientos de puerta */
@@ -523,6 +587,7 @@ const estadoEsc = t => { $("estadoEsc").textContent = t || ""; };
 const estadoCam = t => { $("estadoCam").textContent = t || ""; };
 function tituloCam() {
   const e = $("tituloCam"), consulta = tabActual === "consultar";
+  if (carnet) { e.textContent = "CARNET · VERIFICAR RETIRO"; e.className = "titulo-cam s"; return; }
   const sim = !consulta && evento === "simulacro";
   e.textContent = consulta ? "CONSULTAR PULSERA" : (sim ? "SIMULACRO · " : "") + (modo === "entrada" ? "⬇ ENTRADA" : "⬆ SALIDA");
   e.className = "titulo-cam" + (consulta ? "" : sim ? " sim" : modo === "entrada" ? " e" : " s");
@@ -571,13 +636,13 @@ async function encender() {
   camEstado = "on";
   if (cancelarInicio) return apagar();
   clearTimeout(tiempoCam);
-  tiempoCam = setTimeout(async () => { await apagar(); estadoEsc("Cámara apagada para ahorrar batería. Pulsa ESCANEAR."); }, 60000);
+  tiempoCam = setTimeout(async () => { await volverCam(); estadoEsc("Cámara apagada para ahorrar batería. Pulsa ESCANEAR."); }, 60000);
   const mio = lector;
   const lista = await camaras();
   if (lector !== mio) return;
   $("bCambiar").disabled = lista.length < 2;
   const n = lista.findIndex(c => c.deviceId === idActual());
-  let aviso = "Apunta al QR de la pulsera" + (lista.length > 1 && n >= 0 ? ` · cámara ${n + 1} de ${lista.length}` : "");
+  let aviso = (carnet ? "Apunta al QR del reverso del carnet" : "Apunta al QR de la pulsera") + (lista.length > 1 && n >= 0 ? ` · cámara ${n + 1} de ${lista.length}` : "");
   if (tieneLuz()) { $("bLuz").disabled = false; aviso += " · mantén pulsada la linterna para alumbrar"; }
   else aviso += " · esta cámara no permite usar la linterna desde la web";
   estadoCam(aviso);
@@ -590,7 +655,8 @@ async function apagar() {
   camEstado = "off"; vistaCamara(false); estadoEsc("");
 }
 $("gatillo").onclick = encender;
-$("bVolver").onclick = apagar;
+async function volverCam() { const c = carnet; carnet = null; await apagar(); if (c) mostrarPersonas(c); }
+$("bVolver").onclick = volverCam;
 const luz = $("bLuz");
 luz.addEventListener("pointerdown", e => { if (luz.disabled) return; e.preventDefault(); try { luz.setPointerCapture(e.pointerId); } catch (_) {} ponerLuz(true); });
 ["pointerup", "pointercancel", "lostpointercapture", "blur"].forEach(ev => luz.addEventListener(ev, () => { if (luzPedida) ponerLuz(false); }));
@@ -603,14 +669,14 @@ $("bCambiar").onclick = async () => {
   camId = lista[(n + 1) % lista.length].deviceId; guardado("camara_g30", camId);   // se recuerda en este teléfono
   await apagar(); await encender();
 };
-document.addEventListener("visibilitychange", () => { if (document.hidden) apagar(); });
+document.addEventListener("visibilitychange", () => { if (document.hidden) volverCam(); });
 
 /* ===== Pestañas: para agregar una sección nueva, suma un botón en #tabs, un <section id="tab-NOMBRE"> y el nombre aquí ===== */
 const TABS = ["puerta", "consultar", "correos", "mas"];
 function irTab(n) {
   TABS.forEach(t => $("tab-" + t).classList.toggle("oculto", t !== n));
   document.querySelectorAll("#tabs button").forEach(b => b.classList.toggle("on", b.dataset.tab === n));
-  tabActual = n; apagar();                        // la cámara nunca queda encendida al cambiar de pestaña
+  tabActual = n; carnet = null; apagar();                        // la cámara nunca queda encendida al cambiar de pestaña
   if (n === "puerta" || n === "consultar") $("slot-" + n).appendChild($("escaner"));
   pintarEvento(evento);
   if (n === "mas") cargarResumen();
@@ -915,7 +981,7 @@ function entrarPanel() {
   irTab("puerta"); contadores(); clearInterval(window._c); window._c = setInterval(contadores, 8000);
 }
 function cerrarSesion() {
-  pin = ""; try { sessionStorage.removeItem("pin_g30"); } catch (_) {}
+  pin = ""; carnet = null; try { sessionStorage.removeItem("pin_g30"); } catch (_) {}
   clearInterval(window._c); apagar(); cerrar(); cerrarSala();
   $("panel").classList.add("oculto"); $("login").classList.remove("oculto");
   $("pin").value = "";
