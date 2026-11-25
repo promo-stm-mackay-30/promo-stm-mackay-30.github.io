@@ -34,20 +34,14 @@
   .leyenda { display:flex; justify-content:center; gap:1.2rem; font-size:.8rem; color:var(--suave); margin:-.2rem 0 .8rem; flex-wrap:wrap; }
   .leyenda span { display:inline-flex; align-items:center; gap:.35rem; }
   .leyenda svg { width:.9rem; height:1.3rem; }
-  .campo { display:grid; grid-template-columns:1fr 1fr; gap:.7rem; }
-  .grupo { border-radius:1rem; padding:.7rem .6rem .8rem; border:1px solid var(--borde); background:rgba(0,0,0,.25); min-height:8rem; }
-  .grupo.m { box-shadow:inset 0 0 2.5rem rgba(61,139,255,.12); }
-  .grupo.s { box-shadow:inset 0 0 2.5rem rgba(255,77,109,.12); }
-  .grupo h3 { font-size:.72rem; letter-spacing:.12em; text-transform:uppercase; display:flex; justify-content:space-between; align-items:baseline; margin-bottom:.6rem; }
-  .grupo.m h3 { color:#8fb9ff; } .grupo.s h3 { color:#ff9aac; }
-  .grupo h3 b { font-size:1.3rem; letter-spacing:0; color:#fff; }
-  .figuras { display:flex; flex-wrap:wrap; gap:.15rem .1rem; align-content:flex-start; }
-  .fig { width:1.15rem; height:1.75rem; padding:0; border:0; background:none; cursor:pointer; animation:entra .5s cubic-bezier(.2,.9,.3,1.3) both; }
-  .fig svg { width:100%; height:100%; display:block; filter:drop-shadow(0 0 .25rem currentColor); }
-  .fig.m { color:var(--mackay); } .fig.s { color:var(--margaret); }
-  .fig:active, .fig:focus-visible { transform:scale(1.35); outline:none; }
-  @keyframes entra { from { opacity:0; transform:translateY(.4rem) scale(.6); } }
-  .vacio-graf { color:var(--suave); font-size:.82rem; padding:.4rem 0; }
+  .grafo { position:relative; margin:0 -.6rem; border-radius:1rem; overflow:hidden; background:radial-gradient(70% 55% at 50% 50%,rgba(138,77,255,.16),transparent 75%),rgba(0,0,0,.32); }
+  .grafo canvas { display:block; width:100%; touch-action:manipulation; cursor:pointer; }
+  .movs { display:grid; gap:.35rem; margin-top:.7rem; }
+  .movs div { display:flex; align-items:center; gap:.5rem; font-size:.85rem; padding:.45rem .7rem; border-radius:.7rem; background:rgba(255,255,255,.05); border:1px solid var(--borde); animation:llega .5s cubic-bezier(.2,.9,.3,1.3) both; }
+  .movs div i { width:.55rem; height:.55rem; border-radius:50%; flex:none; background:var(--ok); box-shadow:0 0 .6rem var(--ok); }
+  .movs div.R i { background:var(--oro); box-shadow:0 0 .6rem var(--oro); }
+  .movs div span { margin-left:auto; color:var(--suave); font-variant-numeric:tabular-nums; flex:none; }
+  @keyframes llega { from { opacity:0; transform:translateY(-.5rem); } }
   .toast { position:fixed; left:50%; bottom:max(1.2rem,env(safe-area-inset-bottom)); transform:translateX(-50%); z-index:30; background:#0c1230; border:1px solid var(--oro-2); color:#fff; padding:.6rem 1rem; border-radius:99px; font-size:.9rem; font-weight:700; box-shadow:0 .6rem 1.6rem rgba(0,0,0,.5); max-width:92vw; text-align:center; }
 
   /* listas */
@@ -114,11 +108,9 @@
           <span><svg style="color:var(--mackay)"><use href="#hombre"/></svg>The Mackay School</span>
           <span><svg style="color:var(--margaret)"><use href="#mujer"/></svg>St Margaret's</span>
         </div>
-        <div class="campo">
-          <div class="grupo m"><h3>Mackay <b id="gM">0</b></h3><div class="figuras" id="figM"></div></div>
-          <div class="grupo s"><h3>St Margaret's <b id="gS">0</b></h3><div class="figuras" id="figS"></div></div>
-        </div>
-        <p class="nota" style="margin:.7rem 0 0;text-align:center">Toca una figura para ver el nombre.</p>
+        <div class="grafo" id="grafo"><canvas id="lienzo" role="img" aria-label="Grafo de alumnos dentro de la fiesta"></canvas></div>
+        <p class="nota" style="margin:.6rem 0 0;text-align:center">Toca una figura para ver el nombre.</p>
+        <div class="movs" id="movs" aria-live="polite"></div>
       </section>
 
       <section class="tarjeta" id="lista-D">
@@ -147,7 +139,9 @@
 <script src="config.js"></script>
 <script>
 const $ = id => document.getElementById(id);
-const API = window.API_URL, CADA = 20000;
+const API = window.API_URL;
+const VID = Math.random().toString(36).slice(2, 10);   // identifica esta pantalla para que el servidor calcule cuántas están mirando
+let cada = 15000;                                      // lo ajusta el servidor: pocos mirando = casi al instante
 const RE_TILDES = new RegExp("[\\u0300-\\u036f]", "g");
 const norm = s => String(s || "").normalize("NFD").replace(RE_TILDES, "").toLowerCase();
 const COLEGIO = { M: "The Mackay School", S: "St Margaret's" };
@@ -168,7 +162,7 @@ $("fAcceso").addEventListener("submit", async e => {
   const c = $("codigo").value.trim(); if (!c) return;
   const b = $("entrar"); b.disabled = true; b.textContent = "Verificando…"; $("errAcceso").classList.add("oculto");
   try {
-    const r = await api({ accion: "asistencia", codigo: c });
+    const r = await api({ accion: "asistencia", codigo: c, vid: VID });
     if (!r.ok) throw new Error(r.msg === "Acción desconocida" ? "La asistencia en vivo aún no está habilitada." : r.msg);
     codigo = c; guardar("codigo_vivo", c); mostrarVista(r);
   } catch (err) {
@@ -179,13 +173,17 @@ $("fAcceso").addEventListener("submit", async e => {
 function mostrarVista(r) {
   $("acceso").classList.add("oculto"); $("vista").classList.remove("oculto");
   pintar(r);
-  clearInterval(reloj); reloj = setInterval(actualizar, CADA);
+  programar();
+}
+function programar() {
+  clearTimeout(reloj);
+  reloj = setTimeout(async () => { await actualizar(); if (codigo) programar(); }, cada * (.9 + Math.random() * .2));
 }
 async function actualizar() {
   if (document.hidden || !codigo) return;
   try {
-    const r = await api({ accion: "asistencia", codigo });
-    if (r.auth === false) { codigo = ""; guardar("codigo_vivo", null); clearInterval(reloj); $("vista").classList.add("oculto"); $("acceso").classList.remove("oculto"); return; }
+    const r = await api({ accion: "asistencia", codigo, vid: VID });
+    if (r.auth === false) { codigo = ""; guardar("codigo_vivo", null); clearTimeout(reloj); $("vista").classList.add("oculto"); $("acceso").classList.remove("oculto"); return; }
     if (r.ok) pintar(r);
   } catch (_) { $("pie").textContent = "Sin conexión · reintentando…"; }
 }
@@ -193,6 +191,7 @@ document.addEventListener("visibilitychange", () => { if (!document.hidden) actu
 
 /* ---------- pintar ---------- */
 function pintar(r) {
+  if (r.cada) cada = r.cada * 1000;
   const sim = r.modo === "simulacro";
   $("chip").classList.toggle("sim", sim);
   $("chipTxt").textContent = sim ? "Simulacro · en vivo" : "En vivo";
@@ -200,13 +199,15 @@ function pintar(r) {
   $("avisoSim").classList.toggle("oculto", !sim);
   $("sinEvento").classList.toggle("oculto", !!r.modo);
   $("datos").classList.toggle("oculto", !r.modo);
-  $("pie").textContent = r.modo ? `Actualizado ${r.hora} · se actualiza solo cada ${CADA / 1000} s` : "";
-  if (!r.modo) { datos = null; return; }
+  $("pie").textContent = r.modo ? `En vivo · actualizado ${r.hora} · se refresca solo cada ${Math.round(cada / 1000)} s` : "";
+  if (!r.modo) { datos = null; reiniciarGrafo(); return; }
+  if (datos && datos.modo !== r.modo) reiniciarGrafo();
   datos = r;
   const dentro = r.alumnos.filter(a => a.e === "D"), fuera = r.alumnos.filter(a => a.e === "R");
   const totalReg = (r.registrados.M || 0) + (r.registrados.S || 0);
   $("nDentro").textContent = dentro.length; $("nFuera").textContent = fuera.length;
   $("nFaltan").textContent = Math.max(0, totalReg - dentro.length - fuera.length);
+  movimientos(r.alumnos);
   grafico(dentro);
   ["D", "R"].forEach(lista);
 }
@@ -218,21 +219,210 @@ function figura(a, cls) {
   if (cls) svg.setAttribute("class", cls);
   return svg;
 }
-function grafico(dentro) {
+/* ===== Grafo en movimiento: cada alumno dentro es una figura que gira alrededor de su colegio ===== */
+const CUERPO = {
+  M: "M5.2 10.4h9.6a2.6 2.6 0 0 1 2.6 2.6v7.6h-2.7v11h-3.4v-9H8.7v9H5.3v-11H2.6V13a2.6 2.6 0 0 1 2.6-2.6z",
+  S: "M7.4 10.4h5.2a2.4 2.4 0 0 1 2.3 1.8l3.4 11.6h-4.1v7.8h-3V23.8H8.8v7.8h-3v-7.8H1.7l3.4-11.6a2.4 2.4 0 0 1 2.3-1.8z"
+};
+const COLOR = { M: "#3d8bff", S: "#ff4d6d" };
+const QUIETO = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+const G = { w: 0, h: 0, R: 0, dpr: 1, alto: 20, hubs: {}, centro: {}, nodos: new Map(), ondas: [], total: { M: 0, S: 0 }, dentro: [], sprites: {}, antes: 0, raf: 0, primera: true };
+const lienzo = $("lienzo"), ctx = lienzo.getContext("2d");
+
+function medir() {
+  const ancho = $("grafo").clientWidth;
+  if (!ancho) return false;
+  const vertical = ancho < 520;
+  G.w = ancho; G.h = Math.round(vertical ? Math.min(ancho * 1.65, 620) : Math.min(ancho * .6, 460));
+  G.R = vertical ? Math.min(G.w / 2 - 16, G.h / 4 - 20) : Math.min(G.w / 4 - 22, G.h / 2 - 22);
+  G.hubs = vertical ? { M: { x: G.w / 2, y: G.h * .25 }, S: { x: G.w / 2, y: G.h * .75 } } : { M: { x: G.w * .25, y: G.h / 2 }, S: { x: G.w * .75, y: G.h / 2 } };
+  G.centro = { x: G.w / 2, y: G.h / 2 };
+  G.dpr = Math.min(window.devicePixelRatio || 1, 2);
+  lienzo.width = Math.round(G.w * G.dpr); lienzo.height = Math.round(G.h * G.dpr); lienzo.style.height = G.h + "px";
+  G.sprites = {};
+  return true;
+}
+/* reparte n figuras en anillos; si no caben, se achican */
+function anillos(n, alto) {
+  const lista = []; let total = 0, r = 27 + alto * .6;
+  while (total < n && r <= G.R) {
+    const caben = Math.max(1, Math.floor(2 * Math.PI * r / (alto * .82)));
+    lista.push({ r, caben }); total += caben; r += alto + 3;
+  }
+  if (total < n) return null;
+  let resto = n;      // se reparten parejo entre los anillos, según el largo de cada uno
+  lista.forEach((f, i) => { f.k = i === lista.length - 1 ? resto : Math.min(resto, f.caben, Math.round(n * f.caben / total)); resto -= f.k; });
+  return lista;
+}
+function ubicar() {
+  const max = Math.max(G.total.M, G.total.S, 1);
+  let alto = 28; while (alto > 8 && !anillos(max, alto)) alto--;
+  if (alto !== G.alto) G.sprites = {};
+  G.alto = alto;
   ["M", "S"].forEach(col => {
-    const caja = $("fig" + col), grupo = dentro.filter(a => a.c === col).sort(orden);
-    $("g" + col).textContent = grupo.length;
-    caja.textContent = "";
-    if (!grupo.length) { const p = document.createElement("p"); p.className = "vacio-graf"; p.textContent = "Nadie todavía"; caja.append(p); return; }
-    grupo.forEach((a, i) => {
-      const b = document.createElement("button");
-      b.type = "button"; b.className = "fig " + col.toLowerCase(); b.title = a.a; b.setAttribute("aria-label", a.a + ", " + a.k);
-      b.style.animationDelay = Math.min(i * 12, 600) + "ms";
-      b.append(figura(a)); b.onclick = () => toast(a.a + " · " + a.k + (a.he ? " · entró " + a.he : ""));
-      caja.append(b);
+    const grupo = G.dentro.filter(a => a.c === col), filas = anillos(grupo.length, alto) || [{ r: G.R, k: grupo.length }];
+    let i = 0;
+    filas.forEach((fila, nivel) => {
+      for (let j = 0; j < fila.k; j++, i++) {
+        const nodo = G.nodos.get(grupo[i].id);
+        nodo.r = fila.r; nodo.base = j / fila.k * Math.PI * 2 + nivel * .6; nodo.vel = (nivel % 2 ? -1 : 1) * (.16 - Math.min(nivel, 5) * .018);
+      }
     });
   });
 }
+function sprite(col) {
+  if (G.sprites[col]) return G.sprites[col];
+  const alto = G.alto, ancho = alto * 20 / 32, m = 8, c = document.createElement("canvas");
+  c.width = Math.ceil((ancho + m * 2) * G.dpr); c.height = Math.ceil((alto + m * 2) * G.dpr);
+  const g = c.getContext("2d");
+  g.scale(G.dpr, G.dpr); g.translate(m, m); g.scale(alto / 32, alto / 32);
+  g.fillStyle = COLOR[col]; g.shadowColor = COLOR[col]; g.shadowBlur = 8 * G.dpr;
+  g.beginPath(); g.arc(10, 4.6, 4.2, 0, Math.PI * 2); g.fill();
+  g.fill(new Path2D(CUERPO[col]));
+  return (G.sprites[col] = { img: c, w: ancho + m * 2, h: alto + m * 2 });
+}
+const conId = lista => { const veces = {}; return lista.map(a => { const k = a.a + "|" + a.c + "|" + a.k; veces[k] = (veces[k] || 0) + 1; return Object.assign({ id: k + "|" + veces[k] }, a); }); };
+
+function grafico(dentro) {
+  G.dentro = conId(dentro.slice().sort(orden));
+  G.total = { M: G.dentro.filter(a => a.c === "M").length, S: G.dentro.filter(a => a.c === "S").length };
+  if (!G.w && !medir()) return;
+  const ahora = performance.now(), vistos = new Set();
+  G.dentro.forEach((a, i) => {
+    vistos.add(a.id);
+    let n = G.nodos.get(a.id);
+    if (!n || n.sale) {          // alumno que acaba de entrar: aparece en la puerta (centro) y vuela a su colegio
+      const nuevo = !G.primera;
+      n = { x: G.centro.x, y: G.centro.y, alfa: 0, espera: nuevo ? 0 : ahora + Math.min(i * 25, 1500), brilla: nuevo ? ahora + 6000 : 0 };
+      G.nodos.set(a.id, n);
+      if (nuevo) G.ondas.push({ x: G.centro.x, y: G.centro.y, t: ahora, color: "#2ee59d" });
+    }
+    n.a = a; n.sale = false;
+  });
+  G.nodos.forEach((n, id) => {
+    if (vistos.has(id) || n.sale) return;
+    n.sale = true; n.brilla = ahora + 3000; n.vence = ahora + 3000;
+    G.ondas.push({ x: n.x, y: n.y, t: ahora, color: "#f5a623" });
+  });
+  G.primera = false;
+  ubicar();
+  if (!G.raf) G.raf = requestAnimationFrame(cuadro);
+}
+function reiniciarGrafo() { G.nodos.clear(); G.ondas = []; G.dentro = []; G.total = { M: 0, S: 0 }; G.primera = true; previos = null; $("movs").textContent = ""; }
+
+function circulo(x, y, r, relleno, borde, sombra) {
+  ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2);
+  if (sombra) { ctx.shadowColor = sombra; ctx.shadowBlur = 22; }
+  ctx.fillStyle = relleno; ctx.fill(); ctx.shadowBlur = 0;
+  ctx.lineWidth = 2; ctx.strokeStyle = borde; ctx.stroke();
+}
+function texto(t, x, y, px, color, peso) { ctx.font = `${peso || 800} ${px}px Inter, Arial, sans-serif`; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillStyle = color; ctx.fillText(t, x, y); }
+
+function cuadro(ms) {
+  G.raf = requestAnimationFrame(cuadro);
+  const dt = Math.min((ms - (G.antes || ms)) / 1000, .05); G.antes = ms;
+  const t = QUIETO ? 0 : ms / 1000, c = G.centro;
+  ctx.setTransform(G.dpr, 0, 0, G.dpr, 0, 0); ctx.clearRect(0, 0, G.w, G.h);
+
+  // enlaces entre la fiesta y cada colegio (puntos de luz que viajan)
+  ["M", "S"].forEach(col => {
+    const h = G.hubs[col];
+    ctx.beginPath(); ctx.moveTo(c.x, c.y); ctx.lineTo(h.x, h.y); ctx.strokeStyle = COLOR[col]; ctx.globalAlpha = .45; ctx.lineWidth = 2; ctx.stroke(); ctx.globalAlpha = 1;
+    for (let k = 0; k < 3; k++) { const f = (t * .35 + k / 3) % 1; ctx.beginPath(); ctx.arc(c.x + (h.x - c.x) * f, c.y + (h.y - c.y) * f, 2.2, 0, Math.PI * 2); ctx.fillStyle = "#fff"; ctx.globalAlpha = .8 * Math.sin(f * Math.PI); ctx.fill(); ctx.globalAlpha = 1; }
+  });
+  // órbitas
+  const orbitas = { M: new Set(), S: new Set() };
+  G.nodos.forEach(n => { if (!n.sale) orbitas[n.a.c].add(n.r); });
+  ["M", "S"].forEach(col => orbitas[col].forEach(r => { ctx.beginPath(); ctx.arc(G.hubs[col].x, G.hubs[col].y, r, 0, Math.PI * 2); ctx.strokeStyle = "rgba(255,255,255,.07)"; ctx.lineWidth = 1; ctx.stroke(); }));
+
+  // figuras y sus enlaces
+  const figuras = [];
+  G.nodos.forEach((n, id) => {
+    if (n.espera > ms) return;
+    const h = G.hubs[n.a.c];
+    let tx, ty;
+    if (n.sale) {                 // se va: se aleja de su colegio y se desvanece
+      const dx = n.x - h.x, dy = n.y - h.y, d = Math.hypot(dx, dy) || 1;
+      tx = n.x + dx / d * 60; ty = n.y + dy / d * 60;
+      n.alfa = Math.max(0, n.alfa - dt * .45);
+      if (n.alfa <= 0 || ms > n.vence) { G.nodos.delete(id); return; }
+    } else {
+      const ang = n.base + t * n.vel, flota = QUIETO ? 0 : Math.sin(t * 2 + n.base * 5) * 1.6;
+      tx = h.x + Math.cos(ang) * (n.r + flota); ty = h.y + Math.sin(ang) * (n.r + flota);
+      n.alfa = Math.min(1, n.alfa + dt * 2.5);
+    }
+    const paso = QUIETO ? 1 : Math.min(1, dt * (n.sale ? 1.2 : 4));
+    n.x += (tx - n.x) * paso; n.y += (ty - n.y) * paso;
+    ctx.beginPath(); ctx.moveTo(h.x, h.y); ctx.lineTo(n.x, n.y); ctx.strokeStyle = COLOR[n.a.c]; ctx.globalAlpha = .13 * n.alfa; ctx.lineWidth = 1; ctx.stroke(); ctx.globalAlpha = 1;
+    figuras.push(n);
+  });
+  figuras.forEach(n => {
+    const sp = sprite(n.a.c), grande = n.brilla > ms ? 1.5 + Math.sin(ms / 140) * .15 : 1;
+    ctx.globalAlpha = n.alfa;
+    ctx.drawImage(sp.img, n.x - sp.w * grande / 2, n.y - sp.h * grande / 2, sp.w * grande, sp.h * grande);
+    ctx.globalAlpha = 1;
+  });
+
+  // colegios y centro
+  ["M", "S"].forEach(col => {
+    const h = G.hubs[col];
+    circulo(h.x, h.y, 25, "#0b1130", COLOR[col], COLOR[col]);
+    texto(String(G.total[col]), h.x, h.y - 3, 18, "#fff");
+    texto(col === "M" ? "MACKAY" : "ST MARG.", h.x, h.y + 12, 7, col === "M" ? "#8fb9ff" : "#ff9aac");
+  });
+  const late = QUIETO ? 0 : Math.sin(t * 2.4) * 1.5;
+  circulo(c.x, c.y, 24 + late, "#f5a623", "#ffe9ae", "#f5a623");
+  texto("PROM", c.x, c.y - 6, 9, "#1a1204"); texto("G'30", c.x, c.y + 6, 12, "#1a1204");
+
+  // ondas de entrada y salida
+  G.ondas = G.ondas.filter(o => ms - o.t < 1400);
+  G.ondas.forEach(o => { const f = Math.max(0, ms - o.t) / 1400; ctx.beginPath(); ctx.arc(o.x, o.y, 10 + f * 60, 0, Math.PI * 2); ctx.strokeStyle = o.color; ctx.globalAlpha = 1 - f; ctx.lineWidth = 3; ctx.stroke(); ctx.globalAlpha = 1; });
+
+  // nombre de quien acaba de entrar o salir
+  figuras.filter(n => n.brilla > ms).slice(-4).forEach(n => {
+    const t2 = (n.sale ? "Salió " : "Entró ") + n.a.a;
+    ctx.font = "700 11px Inter, Arial, sans-serif";
+    const w = ctx.measureText(t2).width + 14, x = Math.max(w / 2 + 3, Math.min(G.w - w / 2 - 3, n.x)), y = Math.max(12, n.y - G.alto - 8);
+    ctx.globalAlpha = Math.max(.25, n.alfa); ctx.fillStyle = "#0c1230"; ctx.strokeStyle = n.sale ? "#f5a623" : "#2ee59d"; ctx.lineWidth = 1.5;
+    ctx.beginPath(); if (ctx.roundRect) ctx.roundRect(x - w / 2, y - 10, w, 20, 10); else ctx.rect(x - w / 2, y - 10, w, 20); ctx.fill(); ctx.stroke();
+    texto(t2, x, y + .5, 11, "#fff", 700); ctx.globalAlpha = 1;
+  });
+  if (!G.total.M && !G.total.S) texto("Nadie dentro todavía", c.x, c.y + 44, 12, "#b9c3de", 600);
+}
+lienzo.addEventListener("pointerdown", e => {
+  const r = lienzo.getBoundingClientRect(), x = (e.clientX - r.left) * G.w / r.width, y = (e.clientY - r.top) * G.h / r.height;
+  let mejor = null, d = Math.max(18, G.alto);
+  G.nodos.forEach(n => { const k = Math.hypot(n.x - x, n.y - y); if (!n.sale && k < d) { d = k; mejor = n; } });
+  if (mejor) { mejor.brilla = performance.now() + 2500; toast(mejor.a.a + " · " + mejor.a.k + (mejor.a.he ? " · entró " + mejor.a.he : "")); }
+});
+let anchoPrevio = 0;
+function reajustar() {
+  const a = $("grafo").clientWidth;
+  if (!a || a === anchoPrevio) return;
+  anchoPrevio = a;
+  if (medir() && datos) { ubicar(); if (!G.raf) G.raf = requestAnimationFrame(cuadro); }
+}
+if (window.ResizeObserver) new ResizeObserver(() => requestAnimationFrame(reajustar)).observe($("grafo")); else window.addEventListener("resize", reajustar);
+
+/* últimos movimientos vistos desde que se abrió la página */
+let previos = null;
+function movimientos(alumnos) {
+  const ahora = new Map(conId(alumnos.slice().sort(orden)).map(a => [a.id, a]));
+  if (previos) {
+    const caja = $("movs");
+    ahora.forEach((a, id) => {
+      const antes = previos.get(id);
+      if (antes && antes.e === a.e) return;
+      const d = document.createElement("div"), n = document.createElement("b"), h = document.createElement("span");
+      d.className = a.e; n.textContent = a.a;
+      h.textContent = (a.e === "D" ? "entró " : "salió ") + ((a.e === "D" ? a.he : a.hs) || "");
+      d.append(document.createElement("i"), n, h); caja.prepend(d);
+    });
+    while (caja.children.length > 4) caja.lastChild.remove();
+  }
+  previos = ahora;
+}
+
 let tToast = null;
 function toast(t) { const e = $("toast"); e.textContent = t; e.classList.remove("oculto"); clearTimeout(tToast); tToast = setTimeout(() => e.classList.add("oculto"), 2600); }
 
