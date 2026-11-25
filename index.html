@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Prom Party G'30 · La primera fiesta de la Generación 2030</title>
-<meta name="description" content="Miércoles 16 de diciembre de 2026 · 20:00 hrs · Patio 511, Reñaca. Regístrate, sube tus fotos y revive la noche en que comienza la Generación 2030.">
+<meta name="description" content="Miércoles 16 de diciembre de 2026 · 20:00 hrs · Patio 511, Reñaca. Portal de apoderados, asistencia y recuerdos de la noche en que comienza la Generación 2030.">
 <meta name="theme-color" content="#070a1c">
 <meta name="color-scheme" content="dark">
 <link rel="canonical" href="https://promo-stm-mackay-30.github.io/">
@@ -17,7 +17,7 @@
 <meta property="og:locale" content="es_CL">
 <meta property="og:url" content="https://promo-stm-mackay-30.github.io/">
 <meta property="og:title" content="✨ Prom Party G'30 · La primera fiesta de la Generación 2030">
-<meta property="og:description" content="📅 16 de diciembre · 🕗 20:00 hrs · 📍 Patio 511, Reñaca. Entra, regístrate y sé parte del inicio de la Generación 2030.">
+<meta property="og:description" content="📅 16 de diciembre · 🕗 20:00 hrs · 📍 Patio 511, Reñaca. Entra y sé parte del inicio de la Generación 2030.">
 <meta property="og:image" content="https://promo-stm-mackay-30.github.io/og-image.jpg">
 <meta property="og:image:secure_url" content="https://promo-stm-mackay-30.github.io/og-image.jpg">
 <meta property="og:image:type" content="image/jpeg">
@@ -405,9 +405,9 @@
     <a class="vivo" id="link-vivo" href="asistencia.html" hidden><span class="punto"></span><span><span id="vivo-txt">Ver asistencia en tiempo real</span><small id="vivo-sub"></small></span></a>
 
     <div class="botones">
-      <a class="btn registro" id="link-registro" target="_blank" rel="noopener">
-        <span class="icono">📝</span>
-        <span><strong>Registro de apoderados</strong><small>Inscribe al alumno y autoriza el retiro</small></span>
+      <a class="btn registro" id="link-portal" target="_blank" rel="noopener">
+        <span class="icono">👨‍👩‍👧</span>
+        <span><strong>Portal de apoderados</strong><small>Retiro autorizado, foto y recuerdos</small></span>
         <span class="flecha">→</span>
       </a>
       <!-- Ocultos por ahora (solo funciona el registro). Para mostrarlos: quitar "hidden" y poner los links en PROMO. -->
@@ -447,7 +447,7 @@ const PROMO = {
   titulo:     "Prom Party G'30",
   lema:       "La primera fiesta de la Generación 2030",
   fechaFiesta: "2026-12-16T20:00:00-03:00",   // 16 de diciembre 2026, 20:00 hrs (hora Chile)
-  linkRegistro: "registro.html",                        // formulario propio de registro de apoderados
+  linkPortal: "apoderados.html",                        // portal de apoderados (el registro quedó en el panel de staff → Más)
   linkSubir:  "https://photos.app.goo.gl/REEMPLAZAR",  // álbum compartido de Google Fotos (con colaboración)
   linkVer:    "https://photos.app.goo.gl/REEMPLAZAR",  // puede ser el mismo link del álbum
   linkStaff:  "escaner.html",                          // escáner de puerta (staff, con PIN)
@@ -460,7 +460,7 @@ if (location.hash.length > 1) history.replaceState(null, "", location.pathname +
 document.getElementById("colegio").textContent = PROMO.colegio;
 document.getElementById("titulo").textContent = PROMO.titulo;
 document.getElementById("lema").textContent = PROMO.lema;
-document.getElementById("link-registro").href = PROMO.linkRegistro;
+document.getElementById("link-portal").href = PROMO.linkPortal;
 document.getElementById("link-subir").href = PROMO.linkSubir;
 document.getElementById("link-ver").href = PROMO.linkVer;
 document.getElementById("link-staff").href = PROMO.linkStaff;

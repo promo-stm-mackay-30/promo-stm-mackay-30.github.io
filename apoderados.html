@@ -1,0 +1,668 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Portal de apoderados · Prom Party G'30</title>
+<meta name="description" content="Revisa a quién autorizas para el retiro, sube la foto del alumno y, después de la fiesta, encuentra sus fotos.">
+<meta name="theme-color" content="#070a1c">
+<meta name="color-scheme" content="dark">
+<meta name="robots" content="noindex">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="es_CL">
+<meta property="og:url" content="https://promo-stm-mackay-30.github.io/apoderados.html">
+<meta property="og:title" content="👨‍👩‍👧 Portal de apoderados · Prom Party G'30">
+<meta property="og:description" content="Autorizados de retiro, foto del alumno y recuerdos de la fiesta · The Mackay School & St Margaret's">
+<meta property="og:image" content="https://promo-stm-mackay-30.github.io/og-image.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<link rel="icon" href="flyer.jpg">
+<link rel="apple-touch-icon" href="flyer.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="estilo.css">
+<style>
+  html { font-size: 16px; }
+  body { padding-bottom: max(2rem, env(safe-area-inset-bottom)); }
+  body.dentro { padding-bottom: calc(6.4rem + env(safe-area-inset-bottom)); }
+  .contenedor { width: min(100%, 30rem); }
+  button, input { font: inherit; }
+  :focus-visible { outline: 3px solid var(--cian); outline-offset: 3px; }
+  h1 { font-size: 1.75rem; }
+  input[type=text], input[type=tel] { font-size: 1.05rem; min-height: 3.1rem; }
+  .btn { min-height: 3.2rem; }
+  .btn.sec { margin-top: .9rem; }
+  .btn.peligro { --edge: #6d1a26; color: #ffd9de; background: rgba(255,90,110,.16); border-color: rgba(255,90,110,.55); animation: none; }
+  .enlace { background: none; border: none; color: var(--cian); font-weight: 700; font-size: .9rem; cursor: pointer; padding: .7rem; text-decoration: underline; text-underline-offset: 3px; }
+  .enlace:disabled { color: var(--suave); cursor: default; text-decoration: none; }
+  .centro { text-align: center; }
+  .nota { color: var(--suave); font-size: .85rem; line-height: 1.5; }
+
+  /* ---------- Entrada ---------- */
+  .candado { display: flex; gap: .7rem; align-items: flex-start; font-size: .82rem; color: var(--suave); line-height: 1.45; padding: .2rem .3rem; margin-top: 1.2rem; }
+  .candado span:first-child { font-size: 1.2rem; }
+  #otp { text-align: center; font-size: 2rem; font-weight: 800; letter-spacing: .45em; padding-left: .45em; min-height: 4.2rem; }
+
+  /* ---------- Cabecera y alumno ---------- */
+  .cabecera { display: flex; align-items: center; justify-content: space-between; gap: .8rem; margin: .2rem 0 .9rem; }
+  .cabecera b { display: block; font-size: 1.15rem; }
+  .cabecera small { color: var(--suave); font-size: .72rem; letter-spacing: .18em; text-transform: uppercase; font-weight: 700; }
+  .salir { background: var(--vidrio); border: 1px solid var(--borde); color: var(--texto); border-radius: 99px; padding: .55rem 1rem; font-size: .82rem; font-weight: 700; cursor: pointer; }
+  .hijos { display: flex; gap: .5rem; overflow-x: auto; padding: 2px 2px .8rem; }
+  .hijos button { flex: none; border-radius: 99px; border: 1px solid var(--borde); background: var(--vidrio); color: var(--texto); padding: .55rem 1rem; font-weight: 700; font-size: .88rem; cursor: pointer; }
+  .hijos button[aria-pressed=true] { background: linear-gradient(110deg, var(--oro), var(--oro-2)); color: #1a1204; border-color: transparent; }
+  .alumno {
+    display: flex; align-items: center; gap: 1rem; padding: 1.1rem; border-radius: 1.4rem; margin-bottom: 1rem;
+    background: linear-gradient(135deg, rgba(138,77,255,.38), rgba(25,211,230,.18)); border: 1px solid rgba(255,255,255,.22);
+    box-shadow: 0 1rem 2.4rem rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.2);
+  }
+  .avatar { width: 4.4rem; height: 4.4rem; flex: none; border-radius: 50%; padding: 3px; background: conic-gradient(var(--oro), var(--cian), var(--viol), var(--oro)); border: none; cursor: pointer; position: relative; }
+  .avatar > span { display: grid; place-items: center; width: 100%; height: 100%; border-radius: 50%; background: #10173a center/cover no-repeat; color: var(--oro-2); font-weight: 800; font-size: 1.35rem; }
+  .avatar i { position: absolute; right: -2px; bottom: -2px; font-style: normal; font-size: .8rem; background: var(--fondo); border: 1px solid var(--borde); border-radius: 50%; width: 1.6rem; height: 1.6rem; display: grid; place-items: center; }
+  .alumno h2 { font-size: 1.25rem; line-height: 1.2; overflow-wrap: anywhere; }
+  .alumno p { color: #dbe3ff; font-size: .85rem; margin-top: .2rem; }
+  .pill { display: inline-block; margin-top: .45rem; font-size: .75rem; font-weight: 800; color: #1a1204; background: var(--oro-2); border-radius: 99px; padding: .2rem .7rem; }
+
+  /* ---------- Inicio ---------- */
+  .acceso {
+    display: flex; align-items: center; gap: .9rem; width: 100%; text-align: left; cursor: pointer; color: var(--texto);
+    background: var(--vidrio); border: 1px solid var(--borde); border-radius: 1.15rem; padding: .95rem 1rem; margin-bottom: .7rem;
+    box-shadow: 0 .3rem 0 rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.14); transition: transform .15s, box-shadow .15s;
+  }
+  .acceso:active { transform: translateY(.22rem); box-shadow: 0 .05rem 0 rgba(0,0,0,.4); }
+  .acceso .ico { font-size: 1.8rem; flex: none; width: 2.4rem; text-align: center; }
+  .acceso strong { display: block; font-size: 1rem; }
+  .acceso small { display: block; color: var(--suave); font-size: .82rem; margin-top: .12rem; }
+  .acceso .der { margin-left: auto; flex: none; font-size: .72rem; font-weight: 800; border-radius: 99px; padding: .25rem .6rem; }
+  .der.ok { background: rgba(46,229,157,.18); color: #7ff3c4; }
+  .der.falta { background: rgba(245,166,35,.2); color: var(--oro-2); }
+  .der.pronto { background: rgba(255,255,255,.1); color: var(--suave); }
+  .evento-vivo { display: block; text-decoration: none; color: #fff; text-align: center; font-weight: 800; border-radius: 1.1rem; padding: .95rem; margin-bottom: .9rem; background: linear-gradient(110deg, #ff3d7f, var(--viol)); }
+  dl.datos { margin: 0; }
+  dl.datos div { display: flex; justify-content: space-between; gap: 1rem; padding: .6rem 0; border-bottom: 1px solid rgba(255,255,255,.09); }
+  dl.datos div:last-child { border-bottom: none; }
+  dl.datos dt { color: var(--suave); font-size: .84rem; flex: none; }
+  dl.datos dd { margin: 0; text-align: right; font-weight: 700; font-size: .9rem; overflow-wrap: anywhere; }
+  a.mail { color: var(--cian); }
+
+  /* ---------- Autorizados ---------- */
+  .persona { display: flex; gap: .85rem; align-items: center; padding: .85rem .95rem; border-radius: 1.1rem; background: var(--vidrio); border: 1px solid var(--borde); margin-bottom: .6rem; }
+  .persona .n { width: 2.5rem; height: 2.5rem; flex: none; border-radius: 50%; display: grid; place-items: center; font-weight: 800; background: rgba(25,211,230,.18); color: #8ff0fb; }
+  .persona.yo .n { background: rgba(245,166,35,.2); color: var(--oro-2); }
+  .persona b { display: block; overflow-wrap: anywhere; }
+  .persona small { display: block; color: var(--suave); font-size: .8rem; margin-top: .1rem; }
+  .persona .fija { margin-left: auto; font-size: .9rem; opacity: .7; }
+  .bloque h3 { display: flex; justify-content: space-between; align-items: center; font-size: .95rem; margin-bottom: .6rem; }
+  .quitar { background: none; border: 1px solid rgba(255,90,110,.5); color: #ff9aa6; border-radius: 99px; padding: .3rem .8rem; font-size: .76rem; font-weight: 700; cursor: pointer; }
+  .agregar { width: 100%; background: none; border: 1.5px dashed rgba(255,255,255,.3); color: var(--texto); border-radius: 1.1rem; padding: .95rem; font-weight: 700; cursor: pointer; margin-bottom: 1rem; }
+  .campo-error { display: block; color: #ff8a98; font-size: .8rem; font-weight: 600; margin-top: .35rem; }
+  .campo-error::before { content: "⚠ "; }
+  input.invalido { border-color: var(--mal) !important; box-shadow: 0 0 0 3px rgba(255,90,110,.2); }
+
+  /* ---------- Foto ---------- */
+  .marco { width: min(100%, 17rem); aspect-ratio: 3 / 4; margin: 0 auto 1rem; border-radius: 1.6rem; overflow: hidden; display: grid; place-items: center; text-align: center; background: rgba(0,0,0,.35); border: 2px dashed rgba(255,255,255,.25); }
+  .marco.con { border: 2px solid var(--oro-2); box-shadow: 0 0 2.4rem rgba(245,166,35,.25); }
+  .marco img { width: 100%; height: 100%; object-fit: contain; }
+  .marco .vacio { padding: 1rem; color: var(--suave); font-size: .88rem; }
+  .marco .vacio span { display: block; font-size: 4rem; margin-bottom: .4rem; }
+  .dos { display: grid; grid-template-columns: 1fr 1fr; gap: .7rem; margin-bottom: 1rem; }
+  .elegir { display: flex; flex-direction: column; align-items: center; gap: .2rem; cursor: pointer; margin: 0; padding: .85rem .5rem; border-radius: 1.1rem; background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.25); color: var(--texto); font-weight: 700; font-size: .9rem; box-shadow: 0 .3rem 0 rgba(0,0,0,.4); }
+  .elegir span { font-size: 1.6rem; }
+  .elegir input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+  .elegir:focus-within { outline: 3px solid var(--cian); }
+  ul.consejos { list-style: none; padding: 0; margin: 0; }
+  ul.consejos li { padding: .3rem 0; font-size: .86rem; color: var(--suave); }
+  .recuerdos { text-align: center; padding: 2rem 1.2rem; }
+  .recuerdos .grande { font-size: 3.6rem; }
+  .mosaico { display: grid; grid-template-columns: repeat(3, 1fr); gap: .5rem; margin: 1.3rem 0; }
+  .mosaico i { aspect-ratio: 1; border-radius: .9rem; background: linear-gradient(135deg, rgba(138,77,255,.35), rgba(25,211,230,.15)); border: 1px solid rgba(255,255,255,.14); display: grid; place-items: center; font-style: normal; font-size: 1.4rem; opacity: .8; }
+
+  /* ---------- Barra inferior y hoja de confirmación ---------- */
+  .barra { position: fixed; z-index: 5; left: 50%; transform: translateX(-50%); bottom: max(.6rem, env(safe-area-inset-bottom)); width: min(calc(100% - 1.2rem), 29rem); display: grid; grid-template-columns: repeat(4, 1fr); gap: .25rem; padding: .35rem; border-radius: 1.4rem; background: rgba(14,19,48,.94); border: 1px solid var(--borde); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); box-shadow: 0 1rem 2.4rem rgba(0,0,0,.55); }
+  .barra button { display: flex; flex-direction: column; align-items: center; gap: .1rem; background: none; border: none; color: var(--suave); border-radius: 1.05rem; padding: .5rem 0 .4rem; cursor: pointer; font-size: .68rem; font-weight: 700; min-height: 3.4rem; }
+  .barra button span { font-size: 1.35rem; line-height: 1.2; }
+  .barra button[aria-current=page] { background: linear-gradient(135deg, rgba(245,166,35,.28), rgba(25,211,230,.18)); color: #fff; }
+  .velo { position: fixed; inset: 0; z-index: 20; display: flex; align-items: flex-end; justify-content: center; background: rgba(4,6,18,.75); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
+  .hoja { width: min(100%, 30rem); max-height: 90dvh; overflow-y: auto; background: #121942; border: 1px solid var(--borde); border-radius: 1.6rem 1.6rem 0 0; padding: 1.3rem 1.2rem calc(1.2rem + env(safe-area-inset-bottom)); animation: sube .3s cubic-bezier(.2,.9,.3,1); }
+  @keyframes sube { from { transform: translateY(40%); opacity: 0; } }
+  .aviso-flotante { position: fixed; z-index: 30; left: 50%; transform: translateX(-50%); top: max(.8rem, env(safe-area-inset-top)); width: min(calc(100% - 1.6rem), 27rem); border-radius: 1rem; padding: .85rem 1rem; font-weight: 700; font-size: .9rem; text-align: center; background: #0f5b40; border: 1px solid rgba(46,229,157,.7); box-shadow: 0 1rem 2rem rgba(0,0,0,.5); }
+  .aviso-flotante.mal { background: #6d1a26; border-color: rgba(255,90,110,.8); }
+  .girando { width: 3rem; height: 3rem; margin: 3rem auto 1rem; border-radius: 50%; border: 4px solid rgba(255,255,255,.18); border-top-color: var(--oro-2); animation: giro .9s linear infinite; }
+  @keyframes giro { to { transform: rotate(360deg); } }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<div class="aurora" aria-hidden="true"><i></i><i></i><i></i></div>
+<main class="contenedor">
+
+  <!-- ===== Cargando ===== -->
+  <section id="cargando" class="centro"><div class="girando"></div><p class="nota">Abriendo tu portal…</p></section>
+
+  <!-- ===== Entrada, paso 1 ===== -->
+  <section id="entrada" hidden>
+    <a class="volver" href="./">← Volver al inicio</a>
+    <h1>Portal de apoderados</h1>
+    <p class="sub">Revisa quién puede retirar a tu hijo/a, sube su foto y, después de la fiesta, encuentra sus fotos.</p>
+    <form id="f1" class="tarjeta" novalidate autocomplete="off">
+      <label for="codigo">Código de acceso de las familias</label>
+      <input type="text" id="codigo" maxlength="10" placeholder="6 LETRAS + 4 NÚMEROS" autocapitalize="characters" autocorrect="off" autocomplete="off" spellcheck="false" style="text-transform:uppercase;letter-spacing:.1em">
+      <label for="telefono">Teléfono del apoderado</label>
+      <input type="tel" id="telefono" placeholder="+56 9 1234 5678" inputmode="numeric">
+      <input class="honey" type="text" id="web" tabindex="-1" autocomplete="off" aria-hidden="true">
+      <p class="msg mal" id="e1" role="alert" hidden></p>
+      <button class="btn" id="b1" type="submit" style="margin-top:1.1rem">Enviarme el código</button>
+    </form>
+    <div class="candado"><span>🔒</span><span>Para proteger el retiro de los alumnos, te enviaremos un código de 6 números al <b>correo que registraste</b>.</span></div>
+  </section>
+
+  <!-- ===== Entrada, paso 2 ===== -->
+  <section id="verifica" hidden>
+    <button class="enlace" id="cambiarTel" type="button" style="padding-left:0">← Cambiar teléfono</button>
+    <h1>Revisa tu correo</h1>
+    <p class="sub">Enviamos un código a <b id="paraDonde"></b>. Vence en 10 minutos. Si no lo ves, mira en <b>spam</b> o promociones.</p>
+    <form id="f2" class="tarjeta" novalidate>
+      <label for="otp">Código de 6 números</label>
+      <input type="text" id="otp" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="••••••">
+      <p class="msg mal" id="e2" role="alert" hidden></p>
+      <button class="btn" id="b2" type="submit" style="margin-top:1.1rem">Entrar</button>
+    </form>
+    <p class="centro"><button class="enlace" id="reenviar" type="button">Enviar otro código</button></p>
+  </section>
+
+  <!-- ===== Portal ===== -->
+  <section id="portal" hidden>
+    <header class="cabecera">
+      <div><small>Portal de apoderados</small><b id="saludo"></b></div>
+      <button class="salir" id="salir" type="button">Salir</button>
+    </header>
+    <div class="hijos" id="hijos" role="group" aria-label="Elegir alumno"></div>
+    <div class="alumno">
+      <button class="avatar" id="avatar" type="button" aria-label="Foto del alumno"><span id="avatarImg"></span><i>📷</i></button>
+      <div><h2 id="nombre"></h2><p id="curso"></p><span class="pill" id="pulsera"></span></div>
+    </div>
+
+    <div id="v-inicio">
+      <a class="evento-vivo" id="vivo" href="asistencia.html" hidden></a>
+      <button class="acceso" type="button" data-ir="autorizados"><span class="ico">👨‍👩‍👧</span><span><strong>Autorizados para el retiro</strong><small id="rAut"></small></span><span class="der ok">Ver</span></button>
+      <button class="acceso" type="button" data-ir="foto"><span class="ico">📸</span><span><strong>Foto del alumno</strong><small>Ayudará a encontrar sus fotos de la fiesta</small></span><span class="der" id="rFoto"></span></button>
+      <button class="acceso" type="button" data-ir="recuerdos"><span class="ico">🎞️</span><span><strong>Fotos del evento</strong><small>Disponibles después de la fiesta</small></span><span class="der pronto">Pronto</span></button>
+      <div class="tarjeta" style="margin-top:1rem">
+        <h2>La fiesta</h2>
+        <p style="line-height:1.7;font-size:.92rem">📅 Miércoles 16 de diciembre de 2026<br>📸 Fotografías 19:00 hrs<br>🎉 Fiesta 20:00 a 01:00 hrs<br>📍 Patio 511, Reñaca</p>
+      </div>
+      <div class="tarjeta">
+        <h2>Datos del registro 🔒</h2>
+        <dl class="datos" id="misDatos"></dl>
+        <p class="nota" style="margin-top:.8rem">Estos datos no se cambian desde aquí. Si hay un error, escribe a <a class="mail" href="mailto:promo.stm.mackay.30@gmail.com">promo.stm.mackay.30@gmail.com</a>.</p>
+      </div>
+    </div>
+
+    <div id="v-autorizados" hidden>
+      <div id="autVer">
+        <p class="nota" style="margin:0 .2rem .8rem">Solo estas personas pueden retirar al alumno, mostrando su carnet.</p>
+        <div id="listaAut"></div>
+        <p class="msg info" id="bloqueo" hidden>🔒 La fiesta está en curso: las personas autorizadas no se pueden cambiar. Si necesitas un cambio, habla con el staff en la puerta.</p>
+        <button class="btn" id="editar" type="button" style="margin-top:.6rem">Cambiar autorizados</button>
+      </div>
+      <form id="autForm" novalidate autocomplete="off" hidden>
+        <div id="bloques"></div>
+        <button class="agregar" id="agregar" type="button">＋ Agregar otra persona</button>
+        <p class="msg mal" id="e3" role="alert" hidden></p>
+        <button class="btn" type="submit">Revisar y guardar</button>
+        <button class="btn sec" id="cancelar" type="button">Cancelar</button>
+      </form>
+    </div>
+
+    <div id="v-foto" hidden>
+      <div class="marco" id="marco"></div>
+      <div class="dos">
+        <label class="elegir"><span>📷</span>Tomar foto<input type="file" id="fCam" accept="image/*" capture="environment"></label>
+        <label class="elegir"><span>🖼️</span>Elegir de galería<input type="file" id="fGal" accept="image/*"></label>
+      </div>
+      <div class="tarjeta" id="permiso" hidden>
+        <label class="chk"><input type="checkbox" id="consiento">
+          <span>Como apoderado/a, autorizo guardar esta foto y usarla <b>solo para identificar en qué fotos del evento aparece mi hijo/a</b> (puede ser con reconocimiento facial automático). Es voluntario y puedo eliminarla cuando quiera.</span></label>
+        <button class="btn" id="guardarFoto" type="button" style="margin-top:1rem" disabled>Guardar foto</button>
+      </div>
+      <div class="tarjeta">
+        <h2>Para que se reconozca bien</h2>
+        <ul class="consejos">
+          <li>🙂 De frente, mirando a la cámara</li>
+          <li>💡 Con buena luz, sin sombras en la cara</li>
+          <li>🧢 Sin gorro, lentes de sol ni filtros</li>
+          <li>👤 Que aparezca solo el alumno</li>
+        </ul>
+      </div>
+      <button class="btn peligro" id="borrarFoto" type="button" hidden>Eliminar la foto guardada</button>
+    </div>
+
+    <div id="v-recuerdos" hidden>
+      <div class="tarjeta recuerdos">
+        <div class="grande">🎞️</div>
+        <h2 style="margin:.6rem 0;font-size:1rem">Las fotos llegan después de la fiesta</h2>
+        <div class="mosaico" aria-hidden="true"><i>✨</i><i>🎉</i><i>📸</i><i>🎶</i><i>💜</i><i>💃</i></div>
+        <p class="nota">Cuando el fotógrafo entregue el material, aquí podrás ver las fotos del evento. Si subiste la foto del alumno, la usaremos para ayudarte a encontrar aquellas donde aparece.</p>
+        <button class="btn sec" type="button" data-ir="foto">Subir la foto del alumno</button>
+      </div>
+    </div>
+  </section>
+
+  <p class="pie">The Mackay School &amp; St Margaret's · Prom Party G'30</p>
+</main>
+
+<nav class="barra" id="barra" aria-label="Secciones del portal" hidden>
+  <button type="button" data-ir="inicio" aria-current="page"><span>🏠</span>Inicio</button>
+  <button type="button" data-ir="autorizados"><span>👨‍👩‍👧</span>Autorizados</button>
+  <button type="button" data-ir="foto"><span>📸</span>Foto</button>
+  <button type="button" data-ir="recuerdos"><span>🎞️</span>Recuerdos</button>
+</nav>
+
+<div class="velo" id="velo" role="dialog" aria-modal="true" hidden><div class="hoja" id="hoja"></div></div>
+<div class="aviso-flotante" id="flota" role="status" hidden></div>
+
+<script src="config.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+const API = window.API_URL;
+const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const SESION = "portal_g30", PENDIENTE = "portal_g30_paso2";
+const guardado = {   // el navegador puede negar el almacenamiento (modo privado): nunca debe romper la página
+  leer(a, k) { try { return window[a].getItem(k); } catch (_) { return null; } },
+  poner(a, k, v) { try { v == null ? window[a].removeItem(k) : window[a].setItem(k, v); } catch (_) {} }
+};
+let sesion = guardado.leer("localStorage", SESION) || "";
+let datos = null, idx = 0, vista = "inicio", entrada = {};
+const fotos = {};          // folio → imagen ya descargada
+let nuevaFoto = "";        // foto elegida y aún no guardada
+
+async function api(body) {
+  const r = await fetch(API, { method: "POST", body: JSON.stringify(body) });   // sin cabecera JSON: evita preflight CORS
+  return r.json();
+}
+const SIN_RED = "No hay conexión con el servidor. Inténtalo de nuevo.";
+function mensaje(id, t) { const m = $(id); m.textContent = t || ""; m.hidden = !t; if (t) m.scrollIntoView({ behavior: "smooth", block: "center" }); }
+let relojFlota = null;
+function avisar(t, mal) {
+  const f = $("flota"); f.textContent = t; f.className = "aviso-flotante" + (mal ? " mal" : ""); f.hidden = false;
+  clearTimeout(relojFlota); relojFlota = setTimeout(() => f.hidden = true, 4500);
+}
+function pantalla(p) {
+  ["cargando", "entrada", "verifica", "portal"].forEach(s => $(s).hidden = s !== p);
+  $("barra").hidden = p !== "portal";
+  document.body.classList.toggle("dentro", p === "portal");
+  window.scrollTo(0, 0);
+}
+function cerrarSesion(texto) {
+  sesion = ""; datos = null; nuevaFoto = "";
+  Object.keys(fotos).forEach(k => delete fotos[k]);
+  guardado.poner("localStorage", SESION, null);
+  cerrarHoja(); pantalla("entrada"); mensaje("e1", texto || "");
+}
+
+/* ---------- Formatos (los mismos del registro) ---------- */
+const PREFIJO = "+56 9 ";
+function telFormato(v) {
+  let d = String(v || "").replace(/\D/g, "");
+  if (d.startsWith("569")) d = d.slice(3); else if (d.startsWith("56")) d = d.slice(2);
+  if (d.length > 8) { if (d.startsWith("569")) d = d.slice(3); else if (d.length === 9 && d.startsWith("9")) d = d.slice(1); }
+  d = d.slice(0, 8);
+  return PREFIJO + d.slice(0, 4) + (d.length > 4 ? " " + d.slice(4) : "");
+}
+const telOk = v => String(v || "").replace(/\D/g, "").length === 11;
+function codigoFormato(v) {
+  const s = String(v || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toUpperCase();
+  let out = "";
+  for (const ch of s) {
+    if (out.length < 6) { if (/[A-Z]/.test(ch)) out += ch; }
+    else if (out.length < 10 && /[0-9]/.test(ch)) out += ch;
+  }
+  return out;
+}
+function rutValido(r) {
+  const t = String(r || "").toUpperCase().replace(/[^0-9K]/g, "");
+  if (t.length < 2) return "";
+  const cuerpo = t.slice(0, -1), dv = t.slice(-1);
+  if (!/^\d{6,8}$/.test(cuerpo)) return "";
+  let suma = 0, m = 2;
+  for (let i = cuerpo.length - 1; i >= 0; i--) { suma += +cuerpo[i] * m; m = m === 7 ? 2 : m + 1; }
+  const res = 11 - (suma % 11), esp = res === 11 ? "0" : res === 10 ? "K" : String(res);
+  return dv === esp ? cuerpo.replace(/\B(?=(\d{3})+(?!\d))/g, ".") + "-" + dv : "";
+}
+function rutFormato(v) {
+  let t = String(v || "").toUpperCase().replace(/[^0-9K]/g, "").replace(/K(?=.)/g, "").slice(0, 9);
+  return t.length < 2 ? t : t.slice(0, -1).replace(/\B(?=(\d{3})+(?!\d))/g, ".") + "-" + t.slice(-1);
+}
+function telefonoInput(inp) {
+  inp.addEventListener("focus", () => { if (!inp.value) inp.value = PREFIJO; });
+  inp.addEventListener("input", () => inp.value = telFormato(inp.value));
+  inp.addEventListener("blur", () => { if (inp.value.trim() === PREFIJO.trim()) inp.value = ""; });
+}
+
+/* ---------- Entrada ---------- */
+telefonoInput($("telefono"));
+$("codigo").addEventListener("input", e => { const f = codigoFormato(e.target.value); if (f !== e.target.value) e.target.value = f; });
+
+async function pedirCodigo() {
+  const r = await api({ accion: "portalCodigo", codigo: entrada.codigo, telefono: entrada.telefono, web: $("web").value });
+  if (r.ok) {
+    entrada.correos = r.correos; entrada.hora = Date.now();
+    guardado.poner("sessionStorage", PENDIENTE, JSON.stringify(entrada));   // si vas a la app de correo y la página se recarga, vuelves a este paso
+  }
+  return r;
+}
+function pasoDos() {
+  $("paraDonde").textContent = entrada.correos.join(" y ");
+  $("otp").value = ""; mensaje("e2", ""); pantalla("verifica"); $("otp").focus();
+  esperaReenvio();
+}
+let relojReenvio = null;
+function esperaReenvio() {
+  clearInterval(relojReenvio);
+  const pintar = () => {
+    const falta = Math.ceil((entrada.hora + 60000 - Date.now()) / 1000), b = $("reenviar");
+    b.disabled = falta > 0; b.textContent = falta > 0 ? `Enviar otro código en ${falta} s` : "Enviar otro código";
+    if (falta <= 0) clearInterval(relojReenvio);
+  };
+  pintar(); relojReenvio = setInterval(pintar, 1000);
+}
+$("f1").addEventListener("submit", async ev => {
+  ev.preventDefault(); mensaje("e1", "");
+  const codigo = codigoFormato($("codigo").value), telefono = $("telefono").value;
+  if (!/^[A-Z]{6}[0-9]{4}$/.test(codigo)) return mensaje("e1", "El código de acceso tiene 6 letras seguidas de 4 números.");
+  if (!telOk(telefono)) return mensaje("e1", "Escribe el teléfono completo: 8 números después de +56 9.");
+  entrada = { codigo, telefono };
+  const b = $("b1"); b.disabled = true; b.textContent = "Enviando…";
+  try {
+    const r = await pedirCodigo();
+    if (r.ok) pasoDos();
+    else {
+      mensaje("e1", r.msg === "Acción desconocida" ? "El portal estará disponible muy pronto. Vuelve a intentarlo más tarde." : r.msg || "No se pudo enviar el código.");
+      if (r.pendiente) {
+        const a = document.createElement("a"); a.href = "registro.html"; a.textContent = " Registrarlo ahora →"; a.className = "mail";
+        $("e1").append(a);
+      }
+    }
+  } catch (_) { mensaje("e1", SIN_RED); }
+  b.disabled = false; b.textContent = "Enviarme el código";
+});
+$("reenviar").onclick = async () => {
+  const b = $("reenviar"); b.disabled = true; b.textContent = "Enviando…"; mensaje("e2", "");
+  try {
+    const r = await pedirCodigo();
+    if (r.ok) { avisar("Te enviamos un código nuevo"); $("otp").value = ""; }
+    else mensaje("e2", r.msg);
+  } catch (_) { mensaje("e2", SIN_RED); }
+  if (!entrada.hora) entrada.hora = 0;
+  esperaReenvio();
+};
+$("cambiarTel").onclick = () => { guardado.poner("sessionStorage", PENDIENTE, null); pantalla("entrada"); };
+let entrando = false;
+async function entrar() {
+  const clave = $("otp").value.replace(/\D/g, "");
+  if (clave.length !== 6) return mensaje("e2", "Escribe los 6 números del correo.");
+  if (entrando) return;
+  entrando = true;
+  const b = $("b2"); b.disabled = true; b.textContent = "Entrando…"; mensaje("e2", "");
+  try {
+    const r = await api({ accion: "portalEntrar", telefono: entrada.telefono, clave });
+    if (r.ok) {
+      sesion = r.sesion; guardado.poner("localStorage", SESION, sesion); guardado.poner("sessionStorage", PENDIENTE, null);
+      abrir(r);
+    } else { mensaje("e2", r.msg || "No se pudo entrar."); $("otp").value = ""; }
+  } catch (_) { mensaje("e2", SIN_RED); }
+  entrando = false; b.disabled = false; b.textContent = "Entrar";
+}
+$("f2").addEventListener("submit", ev => { ev.preventDefault(); entrar(); });
+$("otp").addEventListener("input", e => { e.target.value = e.target.value.replace(/\D/g, "").slice(0, 6); if (e.target.value.length === 6) entrar(); });
+$("salir").onclick = () => cerrarSesion("");
+
+/* ---------- Portal ---------- */
+const actual = () => datos.alumnos[idx];
+function abrir(r) {
+  datos = r; if (idx >= datos.alumnos.length) idx = 0;
+  pantalla("portal"); pintar(); ir("inicio"); traerFoto();
+}
+function actualizar(r) { datos = r; if (idx >= datos.alumnos.length) idx = 0; pintar(); }
+
+function ir(v) {
+  if (vista === "autorizados" && v !== "autorizados") verAutorizados();
+  vista = v;
+  ["inicio", "autorizados", "foto", "recuerdos"].forEach(s => $("v-" + s).hidden = s !== v);
+  document.querySelectorAll(".barra button").forEach(b => b.dataset.ir === v ? b.setAttribute("aria-current", "page") : b.removeAttribute("aria-current"));
+  window.scrollTo(0, 0);
+}
+document.querySelectorAll("[data-ir]").forEach(b => b.onclick = () => ir(b.dataset.ir));
+$("avatar").onclick = () => ir("foto");
+
+const iniciales = n => String(n).trim().split(/\s+/).slice(0, 2).map(p => p.charAt(0).toUpperCase()).join("");
+function pintar() {
+  const a = actual();
+  $("saludo").textContent = "Hola, " + (a.apoderado.trim().split(/\s+/)[0] || "");
+  const h = $("hijos"); h.textContent = ""; h.hidden = datos.alumnos.length < 2;
+  datos.alumnos.forEach((x, i) => {
+    const b = document.createElement("button"); b.type = "button"; b.textContent = x.alumno.split(/\s+/)[0]; b.setAttribute("aria-pressed", i === idx);
+    b.onclick = () => { idx = i; nuevaFoto = ""; verAutorizados(); pintar(); traerFoto(); };
+    h.append(b);
+  });
+  $("nombre").textContent = a.alumno;
+  $("curso").textContent = a.curso + " · " + a.colegio;
+  $("pulsera").textContent = "Pulsera N.º " + a.folio;
+  const n = a.autorizados.filter(p => p.nombre).length;
+  $("rAut").textContent = n ? `Tú y ${n} ${n === 1 ? "persona más" : "personas más"}` : "Solo tú";
+  $("rFoto").textContent = a.foto ? "Lista ✓" : "Falta";
+  $("rFoto").className = "der " + (a.foto ? "ok" : "falta");
+  const vivo = $("vivo"); vivo.hidden = !datos.evento;
+  vivo.textContent = datos.evento === "fiesta" ? "🎉 ¡La fiesta comenzó! Ver asistencia en vivo →" : "🧪 Simulacro en curso · ver asistencia →";
+  const dl = $("misDatos"); dl.textContent = "";
+  [["Alumno", a.alumno], ["Apoderado", a.apoderado], ["Teléfono", a.tel], ["Correo", a.email], ["RUT apoderado", a.rut || "—"]].forEach(([t, v]) => {
+    const d = document.createElement("div"), dt = document.createElement("dt"), dd = document.createElement("dd");
+    dt.textContent = t; dd.textContent = v; d.append(dt, dd); dl.append(d);
+  });
+  pintarAutorizados(); pintarFoto();
+}
+
+/* ---------- Autorizados ---------- */
+function persona(n, nombre, detalle, yo) {
+  return `<div class="persona${yo ? " yo" : ""}"><span class="n">${yo ? "★" : n}</span><div><b>${esc(nombre)}</b><small>${detalle}</small></div>${yo ? '<span class="fija" title="No se puede quitar">🔒</span>' : ""}</div>`;
+}
+function pintarAutorizados() {
+  const a = actual();
+  $("listaAut").innerHTML = persona(0, a.apoderado, "Apoderado · siempre puede retirar", true)
+    + a.autorizados.filter(p => p.nombre).map((p, i) => persona(i + 1, p.nombre, `RUT ${esc(p.rut || "sin registrar")} · ${esc(p.tel)}`)).join("");
+  $("bloqueo").hidden = !datos.bloqueado;
+  $("editar").hidden = datos.bloqueado;
+  if (datos.bloqueado) verAutorizados();
+}
+function verAutorizados() { $("autForm").hidden = true; $("autVer").hidden = false; mensaje("e3", ""); }
+let visibles = 1;
+$("editar").onclick = () => {
+  const a = actual(), llenos = a.autorizados.filter(p => p.nombre);
+  visibles = Math.max(1, llenos.length);
+  $("bloques").innerHTML = [1, 2, 3].map(n => `
+    <div class="tarjeta bloque" data-n="${n}">
+      <h3>Persona autorizada ${n}${n > 1 ? `<button class="quitar" type="button" data-quitar="${n}">Quitar</button>` : ""}</h3>
+      <label for="aut${n}">Nombre completo</label><input type="text" id="aut${n}" maxlength="100" autocapitalize="words">
+      <label for="rutAut${n}">RUT</label><input type="text" id="rutAut${n}" maxlength="12" placeholder="12.345.678-5" autocapitalize="characters">
+      <label for="telAut${n}">Teléfono</label><input type="tel" id="telAut${n}" inputmode="numeric" placeholder="+56 9 1234 5678">
+    </div>`).join("");
+  [1, 2, 3].forEach(n => {
+    const p = llenos[n - 1];
+    if (p) { $("aut" + n).value = p.nombre; $("rutAut" + n).value = p.rut; $("telAut" + n).value = telOk(telFormato(p.tel)) ? telFormato(p.tel) : p.tel; }
+    $("rutAut" + n).addEventListener("input", e => e.target.value = rutFormato(e.target.value));
+    telefonoInput($("telAut" + n));
+  });
+  document.querySelectorAll("[data-quitar]").forEach(b => b.onclick = () => quitar(+b.dataset.quitar));
+  mostrarBloques();
+  $("autVer").hidden = true; $("autForm").hidden = false; window.scrollTo(0, 0);
+};
+function mostrarBloques() {
+  document.querySelectorAll(".bloque").forEach(b => b.hidden = +b.dataset.n > visibles);
+  $("agregar").hidden = visibles >= 3;
+}
+function quitar(n) {   // los de abajo suben, así no quedan huecos
+  for (let i = n; i < 3; i++) ["aut", "rutAut", "telAut"].forEach(k => $(k + i).value = $(k + (i + 1)).value);
+  ["aut", "rutAut", "telAut"].forEach(k => $(k + 3).value = "");
+  visibles--; limpiarErrores(); mostrarBloques();
+}
+$("agregar").onclick = () => { visibles++; mostrarBloques(); $("aut" + visibles).focus(); };
+$("cancelar").onclick = () => { verAutorizados(); window.scrollTo(0, 0); };
+function limpiarErrores() {
+  document.querySelectorAll("#autForm .campo-error").forEach(e => e.remove());
+  document.querySelectorAll("#autForm .invalido").forEach(e => e.classList.remove("invalido"));
+  mensaje("e3", "");
+}
+function campoError(id, t) {
+  const inp = $(id), s = document.createElement("small");
+  s.className = "campo-error"; s.setAttribute("role", "alert"); s.textContent = t;
+  inp.insertAdjacentElement("afterend", s); inp.classList.add("invalido");
+  inp.focus({ preventScroll: true }); inp.scrollIntoView({ behavior: "smooth", block: "center" });
+}
+$("autForm").addEventListener("input", limpiarErrores);
+$("autForm").addEventListener("submit", ev => {
+  ev.preventDefault(); limpiarErrores();
+  const d = { accion: "portalGuardar", sesion, folio: actual().folio, confirmo: true }, lista = [];
+  for (const n of [1, 2, 3]) {
+    const v = k => { const t = n <= visibles ? $(k + n).value.trim() : ""; return t === PREFIJO.trim() ? "" : t; };
+    const nom = v("aut"), rut = v("rutAut"), tel = v("telAut");
+    d["aut" + n] = nom; d["rutAut" + n] = rut; d["telAut" + n] = tel;
+    if (n > 1 && !nom && !rut && !tel) continue;
+    if (!nom) return campoError("aut" + n, "Escribe el nombre completo.");
+    if (!rutValido(rut)) return campoError("rutAut" + n, rut ? "RUT incorrecto: el dígito verificador no coincide." : "Escribe el RUT.");
+    if (tel.replace(/\D/g, "").length < 8 || (tel.startsWith("+56 9") && !telOk(tel))) return campoError("telAut" + n, "Faltan dígitos en el teléfono.");
+    lista.push([nom, rutValido(rut)]);
+  }
+  const a = actual();
+  abrirHoja(`<h1 style="font-size:1.35rem">Revisa antes de guardar</h1>
+    <p class="nota" style="margin-bottom:.9rem">Podrán retirar a <b style="color:#fff">${esc(a.alumno)}</b>:</p>
+    ${persona(0, a.apoderado, "Apoderado", true)}${lista.map((p, i) => persona(i + 1, p[0], "RUT " + esc(p[1]))).join("")}
+    <p class="nota" style="margin:.6rem 0 .9rem">Al confirmar declaras, como apoderado/a, que autorizas a estas personas. Te llegará un correo con el cambio.</p>
+    <p class="msg mal" id="e4" role="alert" hidden></p>
+    <button class="btn" id="siGuardar" type="button">Confirmar y guardar</button>
+    <button class="btn sec" id="noGuardar" type="button">Seguir editando</button>`);
+  $("noGuardar").onclick = cerrarHoja;
+  $("siGuardar").onclick = async () => {
+    const b = $("siGuardar"); b.disabled = true; b.textContent = "Guardando…"; mensaje("e4", "");
+    try {
+      const r = await api(d);
+      if (r.sesion === false) return cerrarSesion(r.msg);
+      if (!r.ok) {
+        if (r.bloqueado) { datos.bloqueado = true; pintarAutorizados(); }
+        mensaje("e4", r.msg || "No se pudo guardar."); b.disabled = false; b.textContent = "Confirmar y guardar"; return;
+      }
+      cerrarHoja(); verAutorizados(); actualizar(r); window.scrollTo(0, 0);
+      avisar(r.sinCambios ? "No había cambios que guardar" : "✓ Autorizados guardados" + (r.avisado ? " · te enviamos un correo" : ""));
+    } catch (_) { mensaje("e4", "Sin conexión. No sabemos si se guardó: revisa la lista antes de repetir."); b.disabled = false; b.textContent = "Confirmar y guardar"; }
+  };
+});
+function abrirHoja(html) { $("hoja").innerHTML = html; $("velo").hidden = false; document.body.style.overflow = "hidden"; }
+function cerrarHoja() { $("velo").hidden = true; document.body.style.overflow = ""; }
+document.addEventListener("keydown", e => { if (e.key === "Escape") cerrarHoja(); });
+
+/* ---------- Foto del alumno ---------- */
+async function traerFoto() {
+  const a = actual(), folio = a.folio;
+  if (!a.foto || fotos[folio]) return pintarFoto();
+  fotos[folio] = "";
+  pintarFoto();
+  try {
+    const r = await api({ accion: "portalFotoVer", sesion, folio });
+    if (r.sesion === false) return cerrarSesion(r.msg);
+    if (r.ok && r.foto) fotos[folio] = r.foto; else delete fotos[folio];
+  } catch (_) { delete fotos[folio]; }
+  if (datos) pintarFoto();
+}
+function pintarFoto() {
+  const a = actual(), img = nuevaFoto || fotos[a.folio] || "";
+  const marco = $("marco"); marco.textContent = "";
+  marco.classList.toggle("con", !!img);
+  if (img) { const i = document.createElement("img"); i.src = img; i.alt = "Foto de " + a.alumno; marco.append(i); }
+  else marco.innerHTML = `<div class="vacio"><span>🧑</span>${a.foto ? "Cargando la foto guardada…" : "Todavía no hay foto de " + esc(a.alumno.split(/\s+/)[0])}</div>`;
+  const av = $("avatarImg"), guardada = fotos[a.folio] || "";
+  av.style.backgroundImage = guardada ? `url("${guardada}")` : "";
+  av.textContent = guardada ? "" : iniciales(a.alumno);
+  $("permiso").hidden = !nuevaFoto;
+  $("borrarFoto").hidden = !a.foto || !!nuevaFoto;
+  if (!nuevaFoto) { $("consiento").checked = false; $("guardarFoto").disabled = true; }
+}
+/* La foto se achica en el teléfono antes de enviarla (sube rápido y pesa poco) */
+function achicar(archivo) {
+  return new Promise((listo, error) => {
+    const url = URL.createObjectURL(archivo), img = new Image();
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      const escala = Math.min(1, 1200 / Math.max(img.width, img.height));
+      const c = document.createElement("canvas"); c.width = Math.round(img.width * escala); c.height = Math.round(img.height * escala);
+      c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+      let calidad = .86, res = c.toDataURL("image/jpeg", calidad);
+      while (res.length > 900000 && calidad > .5) res = c.toDataURL("image/jpeg", calidad -= .1);
+      Math.min(img.width, img.height) < 300 ? error("chica") : listo(res);
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); error("mala"); };
+    img.src = url;
+  });
+}
+["fCam", "fGal"].forEach(id => $(id).addEventListener("change", async e => {
+  const archivo = e.target.files[0]; e.target.value = "";
+  if (!archivo) return;
+  try { nuevaFoto = await achicar(archivo); $("consiento").checked = false; $("guardarFoto").disabled = true; pintarFoto(); $("permiso").scrollIntoView({ behavior: "smooth", block: "center" }); }
+  catch (m) { avisar(m === "chica" ? "Esa foto es muy pequeña. Prueba con otra." : "No se pudo abrir esa imagen. Prueba con otra.", true); }
+}));
+$("consiento").onchange = e => $("guardarFoto").disabled = !e.target.checked;
+$("guardarFoto").onclick = async () => {
+  const a = actual(), foto = nuevaFoto, b = $("guardarFoto");
+  if (!foto || !$("consiento").checked) return;
+  b.disabled = true; b.textContent = "Subiendo…";
+  try {
+    const r = await api({ accion: "portalFoto", sesion, folio: a.folio, foto, consiento: true });
+    if (r.sesion === false) return cerrarSesion(r.msg);
+    if (r.ok) { a.foto = true; fotos[a.folio] = foto; nuevaFoto = ""; pintar(); avisar("✓ Foto guardada"); window.scrollTo(0, 0); }
+    else { avisar(r.msg || "No se pudo guardar la foto.", true); b.disabled = false; }
+  } catch (_) { avisar(SIN_RED, true); b.disabled = false; }
+  b.textContent = "Guardar foto";
+};
+$("borrarFoto").onclick = () => {
+  const a = actual();
+  abrirHoja(`<h1 style="font-size:1.3rem">¿Eliminar la foto?</h1><p class="nota" style="margin-bottom:1rem">Se borrará la foto guardada de <b style="color:#fff">${esc(a.alumno)}</b>. Puedes subir otra cuando quieras.</p>
+    <button class="btn peligro" id="siBorrar" type="button">Sí, eliminar</button><button class="btn sec" id="noBorrar" type="button">Conservar</button>`);
+  $("noBorrar").onclick = cerrarHoja;
+  $("siBorrar").onclick = async () => {
+    const b = $("siBorrar"); b.disabled = true; b.textContent = "Eliminando…";
+    try {
+      const r = await api({ accion: "portalFotoBorrar", sesion, folio: a.folio });
+      if (r.sesion === false) return cerrarSesion(r.msg);
+      cerrarHoja();
+      if (r.ok) { a.foto = false; delete fotos[a.folio]; pintar(); avisar("Foto eliminada"); } else avisar(r.msg || "No se pudo eliminar.", true);
+    } catch (_) { cerrarHoja(); avisar(SIN_RED, true); }
+  };
+};
+
+/* ---------- Inicio ---------- */
+async function iniciar() {
+  if (sesion) {
+    try {
+      const r = await api({ accion: "portal", sesion });
+      if (r.ok) return abrir(r);
+      if (r.sesion === false) return cerrarSesion(r.msg);
+      throw 0;
+    } catch (_) {
+      pantalla("entrada");
+      return mensaje("e1", "No pudimos abrir tu portal. Revisa la conexión y vuelve a cargar la página.");
+    }
+  }
+  try {
+    const p = JSON.parse(guardado.leer("sessionStorage", PENDIENTE) || "null");
+    if (p && p.correos && Date.now() - p.hora < 600000) { entrada = p; return pasoDos(); }
+  } catch (_) {}
+  pantalla("entrada");
+}
+/* Al volver a la página, se refrescan los datos (por si empezó la fiesta o se cambió algo desde otro teléfono) */
+document.addEventListener("visibilitychange", async () => {
+  if (document.hidden || !sesion || !datos || !$("autForm").hidden || nuevaFoto) return;
+  try { const r = await api({ accion: "portal", sesion }); if (r.ok) actualizar(r); else if (r.sesion === false) cerrarSesion(r.msg); } catch (_) {}
+});
+iniciar();
+</script>
+</body>
+</html>

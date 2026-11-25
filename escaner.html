@@ -321,6 +321,9 @@
           <button class="btn" id="aGuardar" type="submit" style="margin-top:1rem">Agregar a la lista</button>
           <p class="res" id="aRes"></p>
         </form>
+        <p class="nota" style="margin-top:1rem;padding-top:.9rem;border-top:1px solid var(--borde)">Registro de un alumno que ya está en la lista:
+          <a href="registro.html" target="_blank" rel="noopener" style="color:var(--cian);font-weight:700">Abrir registro</a> ·
+          <button type="button" id="copiarReg" style="font:inherit;font-weight:700;color:var(--cian);background:none;border:none;padding:.3rem 0;cursor:pointer;text-decoration:underline">Copiar enlace para la familia</button></p>
       </div>
       <div class="tarjeta">
         <h2>Envíos de anuncios</h2>
@@ -337,7 +340,7 @@
         <ul class="pronto">
           <li><b>💳 Plataforma de pago</b><br>Pendiente.</li>
           <li><b>🔁 Salida temporal y reingreso</b><br>Que un alumno pueda salir y volver a entrar.</li>
-          <li><b>👨‍👩‍👧 Panel para apoderados</b><br>Ver si su hijo/a está dentro, con horas de entrada y salida.</li>
+          <li><b>🎞️ Fotos del evento en el Portal de apoderados</b><br>Cuando el fotógrafo entregue el material.</li>
           <li><b>🎓 Baúl de los recuerdos</b><br>Panel del estudiante a lo largo de los 4 años.</li>
         </ul>
       </div>
@@ -921,6 +924,14 @@ async function cargarResumen() {
     });
   } catch (_) {}
 }
+
+/* ===== Más: enlace del registro (ya no está en la portada) ===== */
+$("copiarReg").onclick = async () => {
+  const url = new URL("registro.html", location.href).href, b = $("copiarReg");
+  try { await navigator.clipboard.writeText(url); b.textContent = "✓ Enlace copiado"; }
+  catch (_) { prompt("Copia este enlace:", url); }
+  setTimeout(() => b.textContent = "Copiar enlace para la familia", 2500);
+};
 
 /* ===== Más: agregar un alumno nuevo a la lista ===== */
 const PREFIJO = "+56 9 ";

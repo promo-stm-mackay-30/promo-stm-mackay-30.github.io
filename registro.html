@@ -133,7 +133,8 @@
         <p class="sub" style="margin:0">La organización entregará la <b>pulsera con código QR</b> antes de la fiesta. Esa pulsera es la entrada: se escanea en la puerta. Solo podrán retirar al alumno el apoderado y las personas autorizadas, con verificación de identidad.</p>
         <p class="sub" id="listoCorreo" style="margin:.8rem 0 0"></p>
       </div>
-      <a class="btn" href="./">Volver al inicio</a>
+      <a class="btn" href="apoderados.html">Ir al Portal de apoderados</a>
+      <a class="btn sec" href="./" style="margin-top:.9rem">Volver al inicio</a>
     </section>
   </div>
 
@@ -289,7 +290,7 @@ $("f1").addEventListener("submit", async ev => {
       const m = r.msg || "No se pudo verificar.";
       if (/c[oó]digo/i.test(m)) return campoError("codigo", "Código de acceso incorrecto. Revísalo e inténtalo de nuevo.");
       if (/no figura/i.test(m)) return campoError("telefono", "Este teléfono no está en la lista de asistentes. Revisa el número o contacta a la organización.");
-      if (/ya est[aá] registrad/i.test(m)) return campoError("telefono", "El alumno asociado a este teléfono ya está registrado.");
+      if (/ya est[aá] registrad/i.test(m)) return campoError("telefono", "Este alumno ya está registrado. Para cambiar autorizados entra al Portal de apoderados.");
       if (/tel[eé]fono/i.test(m)) return campoError("telefono", m);
       return error("e1", m);   // p. ej. demasiados intentos
     }
