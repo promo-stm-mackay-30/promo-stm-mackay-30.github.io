@@ -118,9 +118,55 @@
   .mosaico { display: grid; grid-template-columns: repeat(3, 1fr); gap: .5rem; margin: 1.3rem 0; }
   .mosaico i { aspect-ratio: 1; border-radius: .9rem; background: linear-gradient(135deg, rgba(138,77,255,.35), rgba(25,211,230,.15)); border: 1px solid rgba(255,255,255,.14); display: grid; place-items: center; font-style: normal; font-size: 1.4rem; opacity: .8; }
 
+  /* ---------- Música ---------- */
+  .der.nuevo { background: rgba(30,215,96,.2); color: #6ff3a6; }
+  .dedica { border-radius: 1.4rem; padding: 1.1rem; margin-bottom: 1rem; background: linear-gradient(135deg, rgba(255,61,127,.3), rgba(138,77,255,.32)); border: 1px solid rgba(255,255,255,.22); box-shadow: 0 1rem 2.2rem rgba(0,0,0,.3); }
+  .dedica small { display: block; font-size: .7rem; font-weight: 800; letter-spacing: .16em; text-transform: uppercase; color: #ffd0e4; margin-bottom: .55rem; }
+  .dedica p { font-size: .9rem; color: #f2e9ff; line-height: 1.45; }
+  .dedica .cita { font-style: italic; margin-top: .6rem; padding-left: .7rem; border-left: 3px solid rgba(255,255,255,.5); overflow-wrap: anywhere; }
+  .dedica .acciones { display: flex; gap: .5rem; margin-top: .9rem; }
+  .dedica .acciones button, .dedica .elegir-ded { flex: 1; font-weight: 800; font-size: .88rem; border-radius: 99px; padding: .7rem; cursor: pointer; border: 1px solid rgba(255,255,255,.4); background: rgba(255,255,255,.12); color: #fff; }
+  .dedica .elegir-ded { width: 100%; margin-top: .8rem; background: #fff; color: #3b145e; border-color: #fff; }
+  .cancion-fila { display: flex; align-items: center; gap: .8rem; min-width: 0; flex: 1; }
+  .cancion-fila > div { min-width: 0; flex: 1; }
+  .cancion-fila b, .cancion-fila span.art { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .cancion-fila span.art { font-size: .82rem; color: var(--suave); }
+  .tapa { width: 3rem; height: 3rem; flex: none; border-radius: .6rem; object-fit: cover; background: linear-gradient(135deg, rgba(138,77,255,.5), rgba(25,211,230,.3)); display: grid; place-items: center; font-size: 1.3rem; }
+  .exp { display: inline-block; font-size: .6rem; font-weight: 800; color: #1a1204; background: var(--suave); border-radius: .25rem; padding: 0 .3rem; margin-left: .35rem; vertical-align: middle; }
+  .buscador { display: flex; align-items: center; gap: .6rem; background: rgba(0,0,0,.3); border: 1px solid var(--borde); border-radius: 99px; padding: 0 .4rem 0 1rem; }
+  .buscador:focus-within { border-color: var(--cian); box-shadow: 0 0 0 3px rgba(25,211,230,.2); }
+  .buscador input { flex: 1; min-width: 0; background: none; border: none; outline: none; color: var(--texto); font-size: 1.05rem; min-height: 3.1rem; }
+  .buscador input::-webkit-search-cancel-button { filter: invert(1); }
+  #resultados { margin-top: .6rem; }
+  .res-cancion { display: flex; width: 100%; align-items: center; gap: .8rem; text-align: left; cursor: pointer; color: var(--texto); background: none; border: none; border-bottom: 1px solid rgba(255,255,255,.08); padding: .6rem .2rem; }
+  .res-cancion:last-child { border-bottom: none; }
+  .res-cancion .mas { flex: none; width: 2.2rem; height: 2.2rem; border-radius: 50%; display: grid; place-items: center; background: rgba(30,215,96,.2); color: #6ff3a6; font-size: 1.3rem; font-weight: 800; }
+  .res-cancion.manual .tapa { font-size: 1.1rem; }
+  .ranking { list-style: none; padding: 0; margin: 0; }
+  .rk { display: flex; align-items: center; gap: .65rem; padding: .6rem 0; border-bottom: 1px solid rgba(255,255,255,.08); }
+  .rk:last-child { border-bottom: none; }
+  .rk .pos { width: 1.4rem; flex: none; text-align: center; font-weight: 800; color: var(--suave); font-size: .85rem; }
+  .rk:nth-child(1) .pos { color: #ffd36b; } .rk:nth-child(2) .pos { color: #dfe6ff; } .rk:nth-child(3) .pos { color: #e8a06b; }
+  .rk .tapa { width: 2.6rem; height: 2.6rem; }
+  .voto { flex: none; display: flex; align-items: center; gap: .3rem; min-width: 3.6rem; justify-content: center; border-radius: 99px; padding: .5rem .7rem; font-weight: 800; font-size: .9rem; cursor: pointer; color: var(--texto); background: rgba(255,255,255,.08); border: 1px solid var(--borde); transition: transform .12s; }
+  .voto:active { transform: scale(.92); }
+  .voto[aria-pressed=true] { background: linear-gradient(110deg, #ff3d7f, var(--viol)); border-color: transparent; color: #fff; }
+  .voto[aria-pressed=false] .cor { filter: grayscale(1) brightness(1.6); }
+  .tuya { flex: none; display: flex; flex-direction: column; align-items: center; gap: .15rem; }
+  .tuya span { font-size: .66rem; font-weight: 800; color: #1a1204; background: var(--oro-2); border-radius: 99px; padding: .1rem .5rem; }
+  .tuya button { background: none; border: none; color: #ff9aa6; font-size: .72rem; font-weight: 700; cursor: pointer; text-decoration: underline; padding: .15rem; }
+  .tuya b { font-size: .8rem; }
+  .musica-hoja .portada-grande { width: 9rem; height: 9rem; border-radius: 1rem; object-fit: cover; display: block; margin: 0 auto .9rem; box-shadow: 0 1rem 2rem rgba(0,0,0,.5); }
+  .musica-hoja h1 { font-size: 1.3rem; text-align: center; margin: 0; overflow-wrap: anywhere; }
+  .musica-hoja .art { text-align: center; color: var(--suave); margin: .2rem 0 .8rem; }
+  .musica-hoja audio { width: 100%; height: 2.6rem; margin-bottom: .9rem; }
+  .musica-hoja .btn + .btn { margin-top: .7rem; }
+  .btn.dedicar { --edge: #5a1f86; color: #fff; background: linear-gradient(110deg, #ff3d7f, var(--viol)); animation: none; }
+  .spotify-marco iframe { display: block; width: 100%; border: 0; border-radius: 12px; }
+
   /* ---------- Barra inferior y hoja de confirmación ---------- */
-  .barra { position: fixed; z-index: 5; left: 50%; transform: translateX(-50%); bottom: max(.6rem, env(safe-area-inset-bottom)); width: min(calc(100% - 1.2rem), 29rem); display: grid; grid-template-columns: repeat(4, 1fr); gap: .25rem; padding: .35rem; border-radius: 1.4rem; background: rgba(14,19,48,.94); border: 1px solid var(--borde); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); box-shadow: 0 1rem 2.4rem rgba(0,0,0,.55); }
-  .barra button { display: flex; flex-direction: column; align-items: center; gap: .1rem; background: none; border: none; color: var(--suave); border-radius: 1.05rem; padding: .5rem 0 .4rem; cursor: pointer; font-size: .68rem; font-weight: 700; min-height: 3.4rem; }
+  .barra { position: fixed; z-index: 5; left: 50%; transform: translateX(-50%); bottom: max(.6rem, env(safe-area-inset-bottom)); width: min(calc(100% - 1.2rem), 29rem); display: grid; grid-template-columns: repeat(5, 1fr); gap: .2rem; padding: .35rem; border-radius: 1.4rem; background: rgba(14,19,48,.94); border: 1px solid var(--borde); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); box-shadow: 0 1rem 2.4rem rgba(0,0,0,.55); }
+  .barra button { display: flex; flex-direction: column; align-items: center; gap: .1rem; background: none; border: none; color: var(--suave); border-radius: 1.05rem; padding: .5rem 0 .4rem; cursor: pointer; font-size: .64rem; font-weight: 700; min-height: 3.4rem; }
   .barra button span { font-size: 1.35rem; line-height: 1.2; }
   .barra button[aria-current=page] { background: linear-gradient(135deg, rgba(245,166,35,.28), rgba(25,211,230,.18)); color: #fff; }
   .velo { position: fixed; inset: 0; z-index: 20; display: flex; align-items: flex-end; justify-content: center; background: rgba(4,6,18,.75); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
@@ -185,6 +231,7 @@
       <a class="evento-vivo" id="vivo" href="asistencia.html" hidden></a>
       <button class="acceso" type="button" data-ir="autorizados"><span class="ico">👨‍👩‍👧</span><span><strong>Autorizados para el retiro</strong><small id="rAut"></small></span><span class="der ok">Ver</span></button>
       <button class="acceso" type="button" data-ir="foto"><span class="ico">📸</span><span><strong>Foto del alumno</strong><small>Ayudará a encontrar sus fotos de la fiesta</small></span><span class="der" id="rFoto"></span></button>
+      <button class="acceso" type="button" data-ir="musica"><span class="ico">🎶</span><span><strong>Música de la fiesta</strong><small>Pide, vota y dedícale una canción</small></span><span class="der nuevo" id="rMus">Nuevo</span></button>
       <button class="acceso" type="button" data-ir="recuerdos"><span class="ico">🎞️</span><span><strong>Fotos del evento</strong><small>Disponibles después de la fiesta</small></span><span class="der pronto">Pronto</span></button>
       <div class="tarjeta" style="margin-top:1rem">
         <h2>La fiesta</h2>
@@ -236,7 +283,32 @@
       <button class="btn peligro" id="borrarFoto" type="button" hidden>Eliminar la foto guardada</button>
     </div>
 
+    <div id="v-musica" hidden>
+      <div class="dedica" id="dedica"></div>
+      <div class="tarjeta">
+        <h2>Pide una canción</h2>
+        <div class="buscador"><span aria-hidden="true">🔎</span><input type="search" id="busca" placeholder="Canción o artista" aria-label="Buscar canción o artista" autocomplete="off" autocorrect="off" spellcheck="false" enterkeyhint="search"></div>
+        <div id="resultados" aria-live="polite"></div>
+        <p class="nota" id="cupoMus" style="margin-top:.7rem"></p>
+      </div>
+      <div class="tarjeta">
+        <h2>Lo más pedido</h2>
+        <p class="nota" style="margin-bottom:.4rem">Toca 💜 para votar. Las más votadas suben y el DJ las ve primero.</p>
+        <ol class="ranking" id="ranking"><li class="nota">Cargando…</li></ol>
+      </div>
+      <div class="tarjeta" id="musLista" hidden>
+        <h2>La playlist del grupo</h2>
+        <div class="spotify-marco" id="musListaPlayer"></div>
+      </div>
+      <p class="nota centro" style="margin-bottom:1rem">El DJ decide qué suena: tus pedidos, votos y dedicatorias lo ayudan a elegir.</p>
+    </div>
+
     <div id="v-recuerdos" hidden>
+      <div class="tarjeta" id="recLista" hidden>
+        <h2>🎶 La banda sonora de la G'30</h2>
+        <p class="nota" style="margin-bottom:.8rem">Después de la fiesta, aquí quedará la música de esa noche.</p>
+        <div class="spotify-marco" id="recListaPlayer"></div>
+      </div>
       <div class="tarjeta recuerdos">
         <div class="grande">🎞️</div>
         <h2 style="margin:.6rem 0;font-size:1rem">Las fotos llegan después de la fiesta</h2>
@@ -252,8 +324,9 @@
 
 <nav class="barra" id="barra" aria-label="Secciones del portal" hidden>
   <button type="button" data-ir="inicio" aria-current="page"><span>🏠</span>Inicio</button>
-  <button type="button" data-ir="autorizados"><span>👨‍👩‍👧</span>Autorizados</button>
+  <button type="button" data-ir="autorizados"><span>👨‍👩‍👧</span>Retiro</button>
   <button type="button" data-ir="foto"><span>📸</span>Foto</button>
+  <button type="button" data-ir="musica"><span>🎶</span>Música</button>
   <button type="button" data-ir="recuerdos"><span>🎞️</span>Recuerdos</button>
 </nav>
 
@@ -293,7 +366,7 @@ function pantalla(p) {
   window.scrollTo(0, 0);
 }
 function cerrarSesion(texto) {
-  sesion = ""; datos = null; nuevaFoto = "";
+  sesion = ""; datos = null; nuevaFoto = ""; musicaDe = {}; playlistId = "";
   Object.keys(fotos).forEach(k => delete fotos[k]);
   guardado.poner("localStorage", SESION, null);
   cerrarHoja(); pantalla("entrada"); mensaje("e1", texto || "");
@@ -421,7 +494,10 @@ function actualizar(r) { datos = r; if (idx >= datos.alumnos.length) idx = 0; pi
 function ir(v) {
   if (vista === "autorizados" && v !== "autorizados") verAutorizados();
   vista = v;
-  ["inicio", "autorizados", "foto", "recuerdos"].forEach(s => $("v-" + s).hidden = s !== v);
+  ["inicio", "autorizados", "foto", "musica", "recuerdos"].forEach(s => $("v-" + s).hidden = s !== v);
+  $("musListaPlayer").textContent = ""; $("recListaPlayer").textContent = "";   // al salir de la vista se detiene la música
+  if (v === "musica") cargarMusica();
+  if (v === "recuerdos") pintarRecuerdos();
   document.querySelectorAll(".barra button").forEach(b => b.dataset.ir === v ? b.setAttribute("aria-current", "page") : b.removeAttribute("aria-current"));
   window.scrollTo(0, 0);
 }
@@ -435,7 +511,7 @@ function pintar() {
   const h = $("hijos"); h.textContent = ""; h.hidden = datos.alumnos.length < 2;
   datos.alumnos.forEach((x, i) => {
     const b = document.createElement("button"); b.type = "button"; b.textContent = x.alumno.split(/\s+/)[0]; b.setAttribute("aria-pressed", i === idx);
-    b.onclick = () => { idx = i; nuevaFoto = ""; verAutorizados(); pintar(); traerFoto(); };
+    b.onclick = () => { idx = i; nuevaFoto = ""; verAutorizados(); pintar(); traerFoto(); if (vista === "musica") cargarMusica(); };
     h.append(b);
   });
   $("nombre").textContent = a.alumno;
@@ -549,7 +625,7 @@ $("autForm").addEventListener("submit", ev => {
   };
 });
 function abrirHoja(html) { $("hoja").innerHTML = html; $("velo").hidden = false; document.body.style.overflow = "hidden"; }
-function cerrarHoja() { $("velo").hidden = true; document.body.style.overflow = ""; }
+function cerrarHoja() { $("hoja").querySelectorAll("audio").forEach(a => a.pause()); $("velo").hidden = true; document.body.style.overflow = ""; }
 document.addEventListener("keydown", e => { if (e.key === "Escape") cerrarHoja(); });
 
 /* ---------- Foto del alumno ---------- */
@@ -629,6 +705,186 @@ $("borrarFoto").onclick = () => {
     } catch (_) { cerrarHoja(); avisar(SIN_RED, true); }
   };
 };
+
+/* ---------- Música: pedir, votar y dedicar ---------- */
+let musicaDe = {}, playlistId = "", resultados = [];   // musicaDe: folio → datos del servidor
+const primerNombre = n => String(n).trim().split(/\s+/)[0];
+const clave = (t, a) => (String(t).replace(/[\(\[].*?[\)\]]/g, "") + "|" + a).normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/[^a-z0-9|]/g, "");
+function tapa(img, alt) {
+  if (!img) { const s = document.createElement("span"); s.className = "tapa"; s.textContent = "🎵"; return s; }
+  const i = document.createElement("img"); i.className = "tapa"; i.src = img; i.alt = alt || ""; i.loading = "lazy";
+  i.onerror = () => i.replaceWith(tapa("")); return i;
+}
+function filaCancion(c) {
+  const f = document.createElement("div"); f.className = "cancion-fila";
+  const t = document.createElement("div"), b = document.createElement("b"), a = document.createElement("span");
+  b.textContent = c.t; if (c.e) { const e = document.createElement("span"); e.className = "exp"; e.textContent = "E"; e.title = "Letra explícita"; b.append(e); }
+  a.className = "art"; a.textContent = c.a || "—"; t.append(b, a);
+  f.append(tapa(c.img), t); return f;
+}
+function marco(tipo, id, alto) {
+  const f = document.createElement("iframe");
+  f.src = `https://open.spotify.com/embed/${tipo}/${id}?utm_source=generator&theme=0`;
+  f.height = alto; f.title = "Playlist del grupo en Spotify";
+  f.allow = "autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture";
+  return f;
+}
+async function cargarMusica() {
+  const folio = actual().folio;
+  if (musicaDe[folio]) pintarMusica();
+  try {
+    const r = await api({ accion: "musica", sesion, folio });
+    if (r.sesion === false) return cerrarSesion(r.msg);
+    if (r.msg === "Acción desconocida") { $("ranking").innerHTML = '<li class="nota">La sección de música estará disponible muy pronto.</li>'; return; }
+    if (!r.ok) return;
+    musicaDe[folio] = r; playlistId = r.playlist || "";
+    if (datos && actual().folio === folio) pintarMusica();
+  } catch (_) { if (!musicaDe[folio]) $("ranking").innerHTML = '<li class="nota">Sin conexión. Vuelve a intentarlo.</li>'; }
+}
+function pintarMusica() {
+  const a = actual(), m = musicaDe[a.folio];
+  if (!m) return;
+  const nombre = primerNombre(a.alumno), d = $("dedica");
+  d.textContent = "";
+  const eti = document.createElement("small"); eti.textContent = "💜 La canción de " + nombre; d.append(eti);
+  if (m.dedicatoria) {
+    d.append(filaCancion(m.dedicatoria));
+    if (m.dedicatoria.msg) { const p = document.createElement("p"); p.className = "cita"; p.textContent = "“" + m.dedicatoria.msg + "”"; d.append(p); }
+    const acc = document.createElement("div"); acc.className = "acciones";
+    const cambiar = document.createElement("button"); cambiar.type = "button"; cambiar.textContent = "Cambiar"; cambiar.onclick = irABuscar;
+    const quitarD = document.createElement("button"); quitarD.type = "button"; quitarD.textContent = "Quitar"; quitarD.onclick = () => quitarCancion(m.dedicatoria.id, "Dedicatoria quitada");
+    acc.append(cambiar, quitarD); d.append(acc);
+  } else {
+    const p = document.createElement("p"); p.textContent = `Dedícale una canción a ${nombre}. El DJ recibe todas las dedicatorias con tu mensaje.`;
+    const b = document.createElement("button"); b.type = "button"; b.className = "elegir-ded"; b.textContent = "Elegir la canción"; b.onclick = irABuscar;
+    d.append(p, b);
+  }
+  const quedanP = m.max.pedidos - m.pedidos, quedanV = m.max.votos - m.votos;
+  $("cupoMus").textContent = `Te quedan ${quedanP} ${quedanP === 1 ? "pedido" : "pedidos"} y ${quedanV} ${quedanV === 1 ? "voto" : "votos"}.`;
+  $("rMus").textContent = m.pedidos || m.dedicatoria ? "✓" : "Nuevo";
+  const ol = $("ranking"); ol.textContent = "";
+  if (!m.lista.length) ol.innerHTML = '<li class="nota">Todavía nadie pide canciones. ¡Sé el primero!</li>';
+  m.lista.forEach((c, i) => {
+    const li = document.createElement("li"); li.className = "rk";
+    const pos = document.createElement("span"); pos.className = "pos"; pos.textContent = i + 1;
+    li.append(pos, filaCancion(c));
+    if (c.mio) {
+      const t = document.createElement("div"); t.className = "tuya";
+      t.innerHTML = `<span>Tu pedido</span><b>💜 ${c.v}</b>`;
+      const q = document.createElement("button"); q.type = "button"; q.textContent = "Quitar"; q.onclick = () => quitarCancion(c.id, "Pedido quitado");
+      t.append(q); li.append(t);
+    } else {
+      const v = document.createElement("button"); v.type = "button"; v.className = "voto";
+      v.setAttribute("aria-pressed", c.yo); v.setAttribute("aria-label", (c.yo ? "Quitar mi voto a " : "Votar por ") + c.t + ", " + c.v + " votos");
+      v.innerHTML = `<span class="cor">💜</span><b>${c.v}</b>`;
+      v.onclick = () => votar(c, v);
+      li.append(v);
+    }
+    ol.append(li);
+  });
+  const player = $("musListaPlayer");
+  $("musLista").hidden = !playlistId;
+  if (playlistId && vista === "musica" && !player.firstChild) player.append(marco("playlist", playlistId, 352));
+}
+function pintarRecuerdos() {
+  const mostrar = () => { $("recLista").hidden = !playlistId; if (playlistId && vista === "recuerdos" && !$("recListaPlayer").firstChild) $("recListaPlayer").append(marco("playlist", playlistId, 352)); };
+  mostrar();
+  if (!musicaDe[actual().folio]) cargarMusica().then(mostrar);
+}
+function irABuscar() { $("busca").focus(); $("busca").scrollIntoView({ behavior: "smooth", block: "center" }); }
+
+let relojBusca = null, ctrlBusca = null;
+$("busca").addEventListener("input", () => { clearTimeout(relojBusca); relojBusca = setTimeout(buscar, 350); });
+$("busca").addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); clearTimeout(relojBusca); buscar(); e.target.blur(); } });
+async function buscar() {
+  const q = $("busca").value.trim(), caja = $("resultados");
+  if (ctrlBusca) ctrlBusca.abort();
+  if (q.length < 2) { caja.textContent = ""; return; }
+  ctrlBusca = new AbortController();
+  caja.innerHTML = '<p class="nota">Buscando…</p>';
+  let lista = [], error = false;
+  try {
+    const r = await (await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(q)}&entity=song&limit=10&country=CL`, { signal: ctrlBusca.signal })).json();
+    const vistos = new Set();
+    lista = (r.results || []).map(x => ({ t: x.trackName, a: x.artistName, img: x.artworkUrl100 || "", e: x.trackExplicitness === "explicit", p: x.previewUrl || "" }))
+      .filter(x => x.t && !vistos.has(clave(x.t, x.a)) && vistos.add(clave(x.t, x.a))).slice(0, 7);
+  } catch (e) { if (e.name === "AbortError") return; error = true; }
+  resultados = lista.concat([{ t: q, a: "", img: "", manual: true }]);
+  caja.textContent = "";
+  if (error) caja.innerHTML = '<p class="nota">No se pudo buscar ahora. Puedes agregarla tal como la escribiste.</p>';
+  else if (!lista.length) caja.innerHTML = '<p class="nota">No encontramos esa canción. Puedes agregarla tal como la escribiste.</p>';
+  resultados.forEach((c, i) => {
+    const b = document.createElement("button"); b.type = "button"; b.className = "res-cancion" + (c.manual ? " manual" : "");
+    if (c.manual) { b.append(filaCancion({ t: `Agregar «${c.t}»`, a: "Tal como la escribiste (agrega el artista si puedes)" })); b.querySelector(".tapa").textContent = "✍️"; }
+    else b.append(filaCancion(c));
+    const mas = document.createElement("span"); mas.className = "mas"; mas.textContent = "+"; mas.setAttribute("aria-hidden", "true");
+    b.append(mas); b.onclick = () => elegirCancion(resultados[i]);
+    caja.append(b);
+  });
+}
+function elegirCancion(c) {
+  const a = actual(), m = musicaDe[a.folio], nombre = primerNombre(a.alumno);
+  if (!m) return avisar("Espera un momento, cargando la música…", true);
+  const ya = m.lista.find(x => clave(x.t, x.a) === clave(c.t, c.a));
+  const grande = c.img ? c.img.replace("100x100bb", "300x300bb") : "";
+  abrirHoja(`<div class="musica-hoja">
+    ${grande ? `<img class="portada-grande" src="${esc(grande)}" alt="">` : '<div class="tapa" style="width:7rem;height:7rem;font-size:3rem;margin:0 auto .9rem">🎵</div>'}
+    <h1>${esc(c.t)}</h1><p class="art">${esc(c.a || "Artista sin indicar")}${c.e ? ' <span class="exp">E</span>' : ""}</p>
+    ${c.p ? `<audio controls preload="none" src="${esc(c.p)}"></audio>` : ""}
+    ${c.e ? '<p class="nota" style="margin:-.3rem 0 .9rem;text-align:center">Tiene letra explícita: el DJ decide si la pone.</p>' : ""}
+    <p class="msg mal" id="e5" role="alert" hidden></p>
+    <div id="opciones">
+      <button class="btn" id="pedirla" type="button">${ya ? (ya.mio ? "Ya es tu pedido" : ya.yo ? "Ya tiene tu voto 💜" : "🙋 Ya la pidieron: sumar mi voto") : "🙋 Pedírsela al DJ"}</button>
+      <button class="btn dedicar" id="dedicarla" type="button">💜 Dedicársela a ${esc(nombre)}</button>
+    </div>
+    <div id="dedicaForm" hidden>
+      <label for="dedMsg">Mensaje para ${esc(nombre)} (opcional)</label>
+      <input type="text" id="dedMsg" maxlength="90" placeholder="Ej.: ¡Para que la bailes con todo! Te amamos">
+      <p class="nota" style="margin:.4rem 0 .9rem">${m.dedicatoria ? "Reemplaza la dedicatoria que tenías." : "El DJ verá la canción y tu mensaje."}</p>
+      <button class="btn dedicar" id="guardarDed" type="button">Guardar dedicatoria</button>
+    </div>
+    <button class="btn sec" id="cerrarCancion" type="button">Cancelar</button>
+  </div>`);
+  $("cerrarCancion").onclick = cerrarHoja;
+  const pedir = $("pedirla");
+  if (ya && (ya.mio || ya.yo)) pedir.disabled = true;
+  else if (!ya && m.pedidos >= m.max.pedidos) { pedir.disabled = true; pedir.textContent = `Ya pediste ${m.max.pedidos}: quita una para pedir otra`; }
+  pedir.onclick = () => ya ? (cerrarHoja(), votar(ya, null)) : enviarCancion(c, "pedido", "", pedir);
+  $("dedicarla").onclick = () => { $("opciones").hidden = true; $("dedicaForm").hidden = false; $("dedMsg").focus(); };
+  $("guardarDed").onclick = () => enviarCancion(c, "dedicatoria", $("dedMsg").value.trim(), $("guardarDed"));
+}
+async function enviarCancion(c, tipo, msg, boton) {
+  const a = actual(), texto = boton.textContent;
+  boton.disabled = true; boton.textContent = "Guardando…"; mensaje("e5", "");
+  try {
+    const r = await api({ accion: "musicaPedir", sesion, folio: a.folio, tipo, t: c.t, a: c.a, img: c.img || "", e: !!c.e, msg });
+    if (r.sesion === false) return cerrarSesion(r.msg);
+    if (!r.ok) { mensaje("e5", r.msg === "Acción desconocida" ? "La música estará disponible muy pronto." : r.msg || "No se pudo guardar."); boton.disabled = false; boton.textContent = texto; return; }
+    musicaDe[a.folio] = r; cerrarHoja(); $("busca").value = ""; $("resultados").textContent = "";
+    pintarMusica(); avisar(r.aviso || "Listo");
+    (tipo === "dedicatoria" ? $("dedica") : $("ranking")).scrollIntoView({ behavior: "smooth", block: "start" });
+  } catch (_) { mensaje("e5", SIN_RED); boton.disabled = false; boton.textContent = texto; }
+}
+async function votar(c, boton) {
+  const a = actual(), m = musicaDe[a.folio], si = !c.yo;
+  if (si && m.votos >= m.max.votos) return avisar(`Ya usaste tus ${m.max.votos} votos. Quita uno para votar por otra.`, true);
+  c.yo = si; c.v += si ? 1 : -1; m.votos += si ? 1 : -1; pintarMusica();   // se ve al instante; el servidor confirma
+  if (si && navigator.vibrate) navigator.vibrate(25);
+  try {
+    const r = await api({ accion: "musicaVotar", sesion, folio: a.folio, id: c.id, si });
+    if (r.sesion === false) return cerrarSesion(r.msg);
+    if (r.lista) { musicaDe[a.folio] = r; pintarMusica(); }
+    if (!r.ok || r.aviso) avisar(r.msg || r.aviso, !r.ok);
+  } catch (_) { c.yo = !si; c.v += si ? -1 : 1; m.votos += si ? -1 : 1; pintarMusica(); avisar(SIN_RED, true); }
+}
+async function quitarCancion(id, texto) {
+  const a = actual();
+  try {
+    const r = await api({ accion: "musicaQuitar", sesion, folio: a.folio, id });
+    if (r.sesion === false) return cerrarSesion(r.msg);
+    if (r.ok) { musicaDe[a.folio] = r; pintarMusica(); avisar(texto); } else avisar(r.msg || "No se pudo quitar.", true);
+  } catch (_) { avisar(SIN_RED, true); }
+}
 
 /* ---------- Inicio ---------- */
 async function iniciar() {

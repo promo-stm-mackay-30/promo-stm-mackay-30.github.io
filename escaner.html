@@ -167,6 +167,22 @@
   .fila-alu { display:flex; justify-content:space-between; align-items:center; gap:.6rem; padding:.55rem .1rem; border-bottom:1px solid rgba(255,255,255,.08); font-size:.92rem; }
   .fila-alu small { display:block; color:var(--suave); }
   .fila-alu a { flex:none; color:var(--cian); font-size:.8rem; text-decoration:none; border:1px solid var(--borde); border-radius:.6rem; padding:.3rem .55rem; }
+  .mus-k { display:grid; grid-template-columns:repeat(3,1fr); gap:.5rem; margin-bottom:.7rem; text-align:center; }
+  .mus-k div { background:var(--vidrio); border:1px solid var(--borde); border-radius:.9rem; padding:.45rem 0; }
+  .mus-k b { display:block; font-size:1.35rem; }
+  .mus-k span { font-size:.62rem; text-transform:uppercase; letter-spacing:.1em; color:var(--suave); }
+  .dj { display:flex; align-items:center; gap:.6rem; padding:.6rem .1rem; border-bottom:1px solid rgba(255,255,255,.08); }
+  .dj .n { width:1.5rem; flex:none; text-align:center; font-weight:800; color:var(--suave); font-size:.85rem; }
+  .dj img, .dj .sin { width:2.6rem; height:2.6rem; flex:none; border-radius:.5rem; object-fit:cover; background:rgba(138,77,255,.35); display:grid; place-items:center; }
+  .dj .tx { flex:1; min-width:0; }
+  .dj .tx b, .dj .tx small { display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .dj .tx small { color:var(--suave); }
+  .dj .tx i { display:block; font-size:.82rem; color:#f6d9ff; white-space:normal; overflow-wrap:anywhere; }
+  .dj .vt { flex:none; font-weight:800; font-size:.85rem; }
+  .dj .acc { flex:none; display:flex; flex-direction:column; gap:.25rem; }
+  .dj .acc a, .dj .acc button { font:inherit; font-size:.72rem; font-weight:700; text-align:center; text-decoration:none; color:var(--cian); background:none; border:1px solid var(--borde); border-radius:.5rem; padding:.25rem .45rem; cursor:pointer; }
+  .dj .acc button { color:#ff9aa6; }
+  .exp { font-size:.6rem; font-weight:800; color:#1a1204; background:var(--suave); border-radius:.25rem; padding:0 .3rem; margin-left:.3rem; vertical-align:middle; }
   .pronto { list-style:none; display:grid; gap:.5rem; }
   .pronto li { padding:.7rem .8rem; border:1px dashed var(--borde); border-radius:.9rem; color:var(--suave); font-size:.9rem; }
   .pronto li b { color:var(--texto); }
@@ -326,6 +342,12 @@
           <button type="button" id="copiarReg" style="font:inherit;font-weight:700;color:var(--cian);background:none;border:none;padding:.3rem 0;cursor:pointer;text-decoration:underline">Copiar enlace para la familia</button></p>
       </div>
       <div class="tarjeta">
+        <h2>🎶 Música para el DJ</h2>
+        <div class="mus-k"><div><b id="kPed">–</b><span>Canciones</span></div><div><b id="kVot">–</b><span>Votos</span></div><div><b id="kDed">–</b><span>Dedicatorias</span></div></div>
+        <p class="nota" id="kPlaylist"></p>
+        <button class="btn sec" id="bDj" type="button">Ver pedidos y dedicatorias</button>
+      </div>
+      <div class="tarjeta">
         <h2>Envíos de anuncios</h2>
         <div id="kCamp"><p class="nota">Aún no hay envíos.</p></div>
       </div>
@@ -365,6 +387,19 @@
     </div>
     <p class="res" id="salaRes"></p>
     <div id="salaListas"></div>
+  </div>
+</div>
+
+<div id="dj" class="modal oculto" role="dialog" aria-modal="true" aria-labelledby="djTit">
+  <div class="hoja">
+    <div class="cab"><h3 id="djTit">🎶 Música para el DJ</h3><button type="button" id="djCerrar" aria-label="Cerrar">×</button></div>
+    <p class="resumen-sala" id="djResumen">Cargando…</p>
+    <div class="descargas">
+      <button class="btn" type="button" id="djCopiar">📋 Copiar lista</button>
+      <button class="btn sec" type="button" id="djCsv">📊 Excel (CSV)</button>
+    </div>
+    <p class="res" id="djRes"></p>
+    <div id="djListas"></div>
   </div>
 </div>
 
@@ -803,7 +838,7 @@ function irTab(n) {
   tabActual = n; carnet = null; apagar();                        // la cámara nunca queda encendida al cambiar de pestaña
   if (n === "puerta" || n === "consultar") $("slot-" + n).appendChild($("escaner"));
   pintarEvento(evento);
-  if (n === "mas") cargarResumen();
+  if (n === "mas") { cargarResumen(); cargarMusicaDj(); }
 }
 document.querySelectorAll("#tabs button").forEach(b => b.onclick = () => irTab(b.dataset.tab));
 
@@ -895,6 +930,87 @@ $("mConfirmar").onclick = async () => {
     if (r.ok) { $("mConfirm").classList.add("oculto"); if (!r.pendientes) { $("mAsunto").value = ""; $("mMensaje").value = ""; $("mMensaje").dispatchEvent(new Event("input")); } }
   } catch (_) { mostrarRes("mRes", false, "Sin conexión: revisa la pestaña Más para ver si se envió algo antes de repetir."); }
   b.disabled = false; b.textContent = "Confirmar envío";
+};
+
+/* ===== Más: música para el DJ (pedidos, votos y dedicatorias del Portal de apoderados) ===== */
+let musDj = null;
+const buscarSpotify = c => "https://open.spotify.com/search/" + encodeURIComponent((c.t + " " + c.a).trim());
+async function cargarMusicaDj() {
+  try {
+    const r = await api({ accion: "musicaStaff" });
+    if (r.auth === false) return cerrarSesion();
+    if (!r.ok) { $("kPlaylist").textContent = r.msg === "Acción desconocida" ? "Disponible cuando se publique la nueva versión del servidor." : ""; return; }
+    musDj = r;
+    $("kPed").textContent = r.pedidos.length; $("kVot").textContent = r.pedidos.reduce((s, c) => s + c.v, 0); $("kDed").textContent = r.dedicatorias.length;
+    $("kPlaylist").innerHTML = r.playlist.publica
+      ? `Playlist del grupo pública ✓ (${r.playlist.total} canciones): sale en la portada y en el correo de retiro.`
+      : `⚠️ La playlist del grupo es <b>privada</b>: la portada y el portal no la muestran. Su dueño debe abrirla en Spotify → ⋯ → <b>Hacer pública</b>.`;
+    if (!$("dj").classList.contains("oculto")) pintarDj();
+  } catch (_) {}
+}
+function filaDj(c, n, extra) {
+  const d = document.createElement("div"); d.className = "dj";
+  d.innerHTML = `<span class="n">${n}</span>${c.img ? `<img src="${esc(c.img)}" alt="">` : '<span class="sin">🎵</span>'}
+    <div class="tx"><b>${esc(c.t)}${c.e ? '<span class="exp" title="Letra explícita">E</span>' : ""}</b><small>${esc(c.a || "Artista sin indicar")}</small>${extra || ""}</div>`;
+  const im = d.querySelector("img");
+  if (im) im.onerror = () => { const x = document.createElement("span"); x.className = "sin"; x.textContent = "🎵"; im.replaceWith(x); };
+  return d;
+}
+function pintarDj() {
+  const r = musDj, cont = $("djListas"); cont.textContent = "";
+  $("djResumen").textContent = `${r.pedidos.length} canciones pedidas · ${r.dedicatorias.length} dedicatorias. Las más votadas van primero. El DJ decide; "Ocultar" la saca de la lista de las familias.`;
+  const seccion = (titulo, clase) => { const h = document.createElement("h4"); h.className = clase || ""; h.textContent = titulo; cont.append(h); };
+  const acciones = (c, oculta) => {
+    const acc = document.createElement("div"); acc.className = "acc";
+    const a = document.createElement("a"); a.href = buscarSpotify(c); a.target = "_blank"; a.rel = "noopener"; a.textContent = "Spotify";
+    const b = document.createElement("button"); b.type = "button"; b.textContent = oculta ? "Mostrar" : "Ocultar";
+    b.style.color = oculta ? "var(--ok)" : "";
+    b.onclick = () => ocultarCancion(c, !oculta, b);
+    acc.append(a, b); return acc;
+  };
+  seccion("🔥 Más pedidas", "ok");
+  if (!r.pedidos.length) cont.insertAdjacentHTML("beforeend", '<p class="nota">Todavía no hay pedidos.</p>');
+  r.pedidos.forEach((c, i) => { const f = filaDj(c, i + 1); const v = document.createElement("span"); v.className = "vt"; v.textContent = "💜 " + c.v; f.append(v, acciones(c, false)); cont.append(f); });
+  seccion("💜 Dedicatorias", "falta");
+  if (!r.dedicatorias.length) cont.insertAdjacentHTML("beforeend", '<p class="nota">Todavía no hay dedicatorias.</p>');
+  r.dedicatorias.forEach(c => { const f = filaDj(c, "💜", `<small>Para <b style="display:inline;color:#fff">${esc(c.alumno)}</b> · ${esc(c.curso)}</small>${c.msg ? `<i>“${esc(c.msg)}”</i>` : ""}`); f.append(acciones(c, false)); cont.append(f); });
+  if (r.ocultas.length) {
+    seccion("🙈 Ocultas");
+    r.ocultas.forEach(c => { const f = filaDj(c, "–", c.tipo === "Dedicatoria" ? `<small>Dedicatoria para ${esc(c.alumno)}</small>` : ""); f.append(acciones(c, true)); cont.append(f); });
+  }
+}
+async function ocultarCancion(c, oculta, b) {
+  b.disabled = true;
+  try {
+    const r = await api({ accion: "musicaOcultar", id: c.id, oculta });
+    if (r.auth === false) return cerrarSesion();
+    if (r.ok) { musDj = r; pintarDj(); cargarMusicaDj(); } else { mostrarRes("djRes", false, r.msg || "No se pudo cambiar."); b.disabled = false; }
+  } catch (_) { mostrarRes("djRes", false, "Sin conexión."); b.disabled = false; }
+}
+function textoDj() {
+  const r = musDj, l = ["🎶 PROM PARTY G'30 · PEDIDOS DE LAS FAMILIAS (más votadas primero)", ""];
+  r.pedidos.forEach((c, i) => l.push(`${i + 1}. ${c.t}${c.a ? " — " + c.a : ""} (💜 ${c.v})${c.e ? " [explícita]" : ""}`));
+  l.push("", "💜 DEDICATORIAS", "");
+  r.dedicatorias.forEach(c => l.push(`• Para ${c.alumno} (${c.curso}): ${c.t}${c.a ? " — " + c.a : ""}${c.msg ? ` · “${c.msg}”` : ""}`));
+  return l.join("\n");
+}
+$("bDj").onclick = () => { $("dj").classList.remove("oculto"); $("djRes").textContent = ""; if (musDj) pintarDj(); else $("djResumen").textContent = "Cargando…"; cargarMusicaDj(); };
+const cerrarDj = () => $("dj").classList.add("oculto");
+$("djCerrar").onclick = cerrarDj;
+$("dj").addEventListener("click", e => { if (e.target === $("dj")) cerrarDj(); });
+document.addEventListener("keydown", e => { if (e.key === "Escape") cerrarDj(); });
+$("djCopiar").onclick = async () => {
+  if (!musDj) return;
+  try { await navigator.clipboard.writeText(textoDj()); mostrarRes("djRes", true, "Lista copiada: pégala en WhatsApp o en un correo para el DJ."); }
+  catch (_) { prompt("Copia la lista:", textoDj()); }
+};
+$("djCsv").onclick = () => {
+  if (!musDj) return;
+  const q = v => '"' + String(v == null ? "" : v).replace(/"/g, '""') + '"';
+  const filas = [["Tipo", "Canción", "Artista", "Votos", "Explícita", "Para (alumno)", "Curso", "Mensaje"]]
+    .concat(musDj.pedidos.map(c => ["Pedido", c.t, c.a, c.v, c.e ? "Sí" : "", "", "", ""]))
+    .concat(musDj.dedicatorias.map(c => ["Dedicatoria", c.t, c.a, "", c.e ? "Sí" : "", c.alumno, c.curso, c.msg]));
+  descargar(new Blob(["﻿" + filas.map(f => f.map(q).join(";")).join("\r\n")], { type: "text/csv;charset=utf-8" }), "Musica_DJ_Prom_G30.csv");
 };
 
 /* ===== Más: resumen y envíos pendientes ===== */
@@ -1217,7 +1333,7 @@ function entrarPanel() {
 }
 function cerrarSesion() {
   pin = ""; carnet = null; nomina = new Map(); try { sessionStorage.removeItem("pin_g30"); } catch (_) {}
-  clearInterval(window._c); apagar(); cerrar(); cerrarSala();
+  clearInterval(window._c); apagar(); cerrar(); cerrarSala(); $("dj").classList.add("oculto"); musDj = null;
   $("panel").classList.add("oculto"); $("login").classList.remove("oculto");
   $("pin").value = "";
 }
