@@ -410,11 +410,13 @@ const $ = id => document.getElementById(id);
 const API = window.API_URL;
 let pin = "", modo = "entrada", ocupado = false, tabActual = "puerta", evento = "";   // evento: "" | "fiesta" | "simulacro" (lo define el servidor)
 
-try { pin = sessionStorage.getItem("pin_g30") || ""; } catch (_) {}
+let tk = "";   // pase firmado que entrega el servidor al entrar: se usa en vez del PIN (si el PIN cambia, deja de servir)
+try { pin = sessionStorage.getItem("pin_g30") || ""; tk = sessionStorage.getItem("tk_g30") || ""; } catch (_) {}
 
 async function api(body) {
-  const r = await fetch(API, { method: "POST", body: JSON.stringify(Object.assign({ pin }, body)) });
-  return r.json();
+  const r = await (await fetch(API, { method: "POST", body: JSON.stringify(Object.assign({ pin, tk }, body)) })).json();
+  if (r && r.tk) { tk = r.tk; try { sessionStorage.setItem("tk_g30", tk); } catch (_) {} }
+  return r;
 }
 const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
@@ -1301,6 +1303,7 @@ $("bBio").onclick = async () => {
     let r;
     try { r = await api({ accion: "presentes" }); } catch (_) { pin = ""; return falla("Sin conexión con el servidor."); }
     if (r.ok) { try { sessionStorage.setItem("pin_g30", pin); } catch (_) {} entrarPanel(); }
+    else if (r.bloqueado) { pin = ""; falla(r.msg); }
     else { pin = ""; borrarBio(); pintarBio(); falla("El PIN del staff cambió. Entra con el PIN nuevo y vuelve a activar la huella."); }
   } catch (err) {
     pin = "";
@@ -1332,7 +1335,7 @@ function entrarPanel() {
   irTab("puerta"); contadores(); nominaEn = 0; cargarNomina(); clearInterval(window._c); window._c = setInterval(() => { contadores(); cargarNomina(); }, 8000);
 }
 function cerrarSesion() {
-  pin = ""; carnet = null; nomina = new Map(); try { sessionStorage.removeItem("pin_g30"); } catch (_) {}
+  pin = ""; tk = ""; carnet = null; nomina = new Map(); try { sessionStorage.removeItem("pin_g30"); sessionStorage.removeItem("tk_g30"); } catch (_) {}
   clearInterval(window._c); apagar(); cerrar(); cerrarSala(); $("dj").classList.add("oculto"); musDj = null;
   $("panel").classList.add("oculto"); $("login").classList.remove("oculto");
   $("pin").value = "";
@@ -1342,6 +1345,7 @@ $("entrar").onclick = async () => {
   const e = $("loginError"); e.classList.add("oculto");
   if (!API) { e.textContent = "El sistema todavía no está habilitado (en construcción)."; e.classList.remove("oculto"); return; }
   pin = $("pin").value.trim(); if (!pin) return;
+  tk = "";   // al entrar con PIN se pide un pase nuevo
   const b = $("entrar"); b.disabled = true; b.textContent = "Verificando…";
   try {
     const r = await api({ accion: "presentes" });
@@ -1350,7 +1354,7 @@ $("entrar").onclick = async () => {
       const reg = bioGuardado(); if (reg && reg.cifrado === false && reg.pin !== pin) { reg.pin = pin; try { localStorage.setItem(BIO_K, JSON.stringify(reg)); } catch (_) {} }
       entrarPanel(); ofrecerBio();
     }
-    else { e.textContent = "PIN incorrecto."; e.classList.remove("oculto"); pin = ""; }
+    else { e.textContent = r.bloqueado ? r.msg : "PIN incorrecto."; e.classList.remove("oculto"); pin = ""; }
   } catch (_) { e.textContent = "Sin conexión con el servidor."; e.classList.remove("oculto"); }
   b.disabled = false; b.textContent = "Entrar";
 };
