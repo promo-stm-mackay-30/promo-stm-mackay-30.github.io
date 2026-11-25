@@ -15,7 +15,51 @@
   .modos button { font:inherit; font-weight:800; font-size:1rem; color:var(--texto); cursor:pointer; padding:.9rem; border-radius:1rem; border:2px solid var(--borde); background:var(--vidrio); transition:.15s; }
   .modos button.activo.e { background:rgba(46,229,157,.18); border-color:var(--ok); }
   .modos button.activo.s { background:rgba(245,166,35,.18); border-color:var(--oro); }
-  #lector { width:100%; border-radius:1.2rem; overflow:hidden; background:#000; min-height:14rem; border:1px solid var(--borde); }
+  /* Escáner: botón de gatillo + visor */
+  .gatillo { display:grid; place-items:center; align-content:center; gap:.5rem; width:min(78%,17rem); aspect-ratio:1; margin:.8rem auto; border-radius:50%; cursor:pointer; font:inherit; color:#1a1204;
+    border:.55rem solid rgba(255,211,107,.18); background:radial-gradient(circle at 35% 28%,#fff0c4,var(--oro-2) 35%,var(--oro) 72%,#b9740c) padding-box;
+    box-shadow:0 0 0 1px rgba(255,211,107,.55), 0 1.2rem 3rem rgba(245,166,35,.35); transition:transform .12s; animation:latido 2.4s ease-in-out infinite; }
+  .gatillo:active { transform:scale(.95); }
+  .gatillo svg { width:5rem; height:5rem; }
+  .gatillo b { font-size:1.6rem; letter-spacing:.12em; font-weight:800; }
+  .gatillo small { font-size:.72rem; font-weight:700; opacity:.7; }
+  @keyframes latido { 50% { box-shadow:0 0 0 .8rem rgba(255,211,107,.1), 0 1.2rem 3.5rem rgba(245,166,35,.5); } }
+  .visor { position:relative; border-radius:1.3rem; overflow:hidden; background:#000; min-height:17rem; border:1px solid rgba(255,211,107,.5); box-shadow:0 0 2.5rem rgba(25,211,230,.18); }
+  #lector { width:100%; }
+  .laser { position:absolute; left:8%; right:8%; height:2px; background:linear-gradient(90deg,transparent,var(--cian),transparent); box-shadow:0 0 .9rem var(--cian); animation:barrido 1.8s ease-in-out infinite alternate; pointer-events:none; z-index:2; }
+  @keyframes barrido { from { top:18%; } to { top:82%; } }
+  .controles { display:grid; grid-template-columns:1fr 1fr 1fr; gap:.5rem; margin-top:.6rem; }
+  .controles button { font:inherit; font-weight:700; font-size:.8rem; color:var(--texto); cursor:pointer; padding:.7rem .2rem; min-height:3.8rem; border-radius:1rem; border:1px solid var(--borde); background:var(--vidrio); }
+  .controles button span { display:block; font-size:1.3rem; line-height:1.2; }
+  .controles button.on { background:rgba(255,211,107,.22); border-color:var(--oro-2); color:var(--oro-2); }
+  .controles button:disabled { opacity:.35; cursor:default; }
+  .estado-esc { text-align:center; color:var(--suave); font-size:.85rem; margin:.6rem 0 0; min-height:1.2rem; }
+
+  /* Credencial al consultar una pulsera */
+  .resultado.pase { overflow:auto; }
+  .resultado.pase .caja { padding:3px; border:0; background:linear-gradient(150deg,#ffe9ae,var(--oro) 30%,#7a5310 50%,var(--cian) 78%,#ffe9ae); box-shadow:0 0 4rem rgba(245,166,35,.3); }
+  .cred { border-radius:1.45rem; padding:1.2rem 1rem 1.1rem; background:radial-gradient(120% 55% at 50% 0%,#202c66,transparent 70%),#0a0f28; }
+  .cred .marca { font-size:.68rem; letter-spacing:.28em; text-transform:uppercase; color:var(--oro-2); font-weight:700; }
+  .cred .rot { display:block; font-size:.64rem; letter-spacing:.3em; text-transform:uppercase; color:var(--suave); }
+  .cred .adorno { display:flex; align-items:center; gap:.7rem; justify-content:center; color:var(--oro); margin:.5rem 0; font-size:.8rem; }
+  .cred .adorno::before, .cred .adorno::after { content:""; height:1px; width:4.5rem; background:linear-gradient(90deg,transparent,var(--oro)); }
+  .cred .adorno::after { transform:scaleX(-1); }
+  .cred .nombre { font-size:clamp(1.9rem,9vw,2.7rem); font-weight:800; line-height:1.08; margin:.25rem 0 .9rem; overflow-wrap:break-word;
+    background:linear-gradient(180deg,#fff,#ffe3a1); -webkit-background-clip:text; background-clip:text; color:transparent; }
+  .cred .grado { display:grid; grid-template-columns:auto 1fr; gap:.7rem; align-items:stretch; margin-bottom:.7rem; }
+  .cred .curso { display:grid; place-items:center; align-content:center; min-width:6.2rem; padding:.6rem .7rem; border-radius:1.1rem; color:#1a1204; background:linear-gradient(160deg,#fff0c4,var(--oro-2) 40%,var(--oro)); }
+  .cred .curso b { font-size:2.5rem; line-height:1; font-weight:800; }
+  .cred .curso span { font-size:.56rem; letter-spacing:.25em; text-transform:uppercase; font-weight:800; opacity:.65; }
+  .cred .colegio, .cred .apod { border-radius:1.1rem; border:1px solid var(--borde); background:rgba(255,255,255,.06); padding:.7rem .8rem; }
+  .cred .colegio { display:grid; align-content:center; text-align:left; }
+  .cred .colegio b { font-size:1.12rem; line-height:1.25; margin-top:.2rem; }
+  .cred .apod b { display:block; font-size:1.25rem; margin-top:.2rem; }
+  .cred .pieta { display:flex; justify-content:space-between; align-items:center; gap:.6rem; margin:.8rem 0 .9rem; font-size:.85rem; color:var(--suave); }
+  .cred .pieta b { color:var(--texto); }
+  .chip { padding:.3rem .7rem; border-radius:99px; font-weight:800; font-size:.7rem; letter-spacing:.08em; text-transform:uppercase; border:1px solid var(--borde); }
+  .chip.dentro { border-color:var(--ok); color:var(--ok); background:rgba(46,229,157,.12); }
+  .chip.retirado { border-color:var(--oro); color:var(--oro-2); background:rgba(245,166,35,.12); }
+  .resultado .btn + .btn { margin-top:.6rem; }
   .contadores { display:grid; grid-template-columns:repeat(3,1fr); gap:.6rem; margin-bottom:1rem; text-align:center; }
   .contadores div { background:var(--vidrio); border:1px solid var(--borde); border-radius:.9rem; padding:.6rem 0; }
   .contadores b { display:block; font-size:1.6rem; }
@@ -35,8 +79,8 @@
   .persona.no { border-color:var(--mal); color:#ffd0d6; text-align:center; font-weight:700; }
 
   /* Pestañas del panel */
-  .tabs { display:grid; grid-template-columns:repeat(3,1fr); gap:.4rem; margin-bottom:1rem; position:sticky; top:0; z-index:5; padding:.4rem 0 .5rem; background:linear-gradient(var(--fondo) 75%, transparent); }
-  .tabs button { font:inherit; font-weight:700; font-size:.85rem; color:var(--suave); cursor:pointer; padding:.7rem .2rem; border-radius:.9rem; border:1px solid var(--borde); background:var(--vidrio); transition:.15s; }
+  .tabs { display:grid; grid-template-columns:repeat(4,1fr); gap:.4rem; margin-bottom:1rem; position:sticky; top:0; z-index:5; padding:.4rem 0 .5rem; background:linear-gradient(var(--fondo) 75%, transparent); }
+  .tabs button { font:inherit; font-weight:700; font-size:.76rem; white-space:nowrap; color:var(--suave); cursor:pointer; padding:.7rem .2rem; border-radius:.9rem; border:1px solid var(--borde); background:var(--vidrio); transition:.15s; }
   .tabs button.on { color:#1a1204; background:linear-gradient(110deg,var(--oro),var(--oro-2)); border-color:transparent; }
   textarea, select { width:100%; font:inherit; color:var(--texto); background:rgba(0,0,0,.3); border:1px solid var(--borde); border-radius:.8rem; padding:.8rem .9rem; outline:none; }
   textarea { resize:vertical; min-height:8rem; line-height:1.45; }
@@ -102,6 +146,7 @@
   <section id="panel" class="oculto">
     <nav class="tabs" id="tabs" aria-label="Secciones del panel">
       <button type="button" data-tab="puerta" class="on">🚪 Puerta</button>
+      <button type="button" data-tab="consultar">🔎 Pulsera</button>
       <button type="button" data-tab="correos">✉️ Correos</button>
       <button type="button" data-tab="mas">⚙️ Más</button>
     </nav>
@@ -117,8 +162,29 @@
         <button type="button" id="mE" class="activo e">⬇ ENTRADA</button>
         <button type="button" id="mS" class="s">⬆ SALIDA</button>
       </div>
-      <div id="lector"></div>
-      <p class="sub" style="margin-top:.8rem;text-align:center">Apunta la cámara al QR de la pulsera.</p>
+      <div id="slot-puerta">
+        <div id="escaner">
+          <button type="button" class="gatillo" id="gatillo">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><path d="M3 8V5a2 2 0 0 1 2-2h3M16 3h3a2 2 0 0 1 2 2v3M21 16v3a2 2 0 0 1-2 2h-3M8 21H5a2 2 0 0 1-2-2v-3"/><path d="M7 8v8M10 8v8M13 8v8M17 8v8" stroke-width="1.4"/><path d="M3 12h18"/></svg>
+            <b>ESCANEAR</b><small id="gatilloSub">Pulsa para leer la pulsera</small>
+          </button>
+          <div id="camara" class="oculto">
+            <div class="visor"><div id="lector"></div><i class="laser" aria-hidden="true"></i></div>
+            <div class="controles">
+              <button type="button" id="bLuz" disabled><span>🔦</span>Linterna</button>
+              <button type="button" id="bCambiar" disabled><span>🔄</span>Cambiar cámara</button>
+              <button type="button" id="bDetener"><span>✕</span>Detener</button>
+            </div>
+          </div>
+          <p class="estado-esc" id="estadoEsc" role="status"></p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== Consultar pulsera (no registra entrada ni salida) ===== -->
+    <section id="tab-consultar" class="oculto">
+      <p class="sub" style="text-align:center">Lee una pulsera para ver de quién es. <b>No registra entrada ni salida.</b></p>
+      <div id="slot-consultar"></div>
     </section>
 
     <!-- ===== Correos ===== -->
@@ -243,7 +309,7 @@
 <script>
 const $ = id => document.getElementById(id);
 const API = window.API_URL;
-let pin = "", modo = "entrada", lector = null, ocupado = false, ultimo = { t: "", at: 0 };
+let pin = "", modo = "entrada", ocupado = false, tabActual = "puerta";
 
 try { pin = sessionStorage.getItem("pin_g30") || ""; } catch (_) {}
 
@@ -268,6 +334,8 @@ function mostrar(tipo, html) {
   $("caja").innerHTML = html;
 }
 function cerrar() { $("resultado").className = "resultado oculto"; ocupado = false; }
+const botonesFin = '<button class="btn" id="sig" type="button">Escanear siguiente</button><button class="btn sec" id="ok" type="button">Cerrar</button>';
+function activarFin() { $("ok").onclick = cerrar; $("sig").onclick = () => { cerrar(); encender(); }; }
 
 async function contadores() {
   try {
@@ -286,9 +354,11 @@ function extraerToken(txt) {
 
 async function alLeer(leido) {
   const token = extraerToken(leido);
-  const ahora = Date.now();
-  if (ocupado || (token === ultimo.t && ahora - ultimo.at < 4000)) return;
-  ocupado = true; ultimo = { t: token, at: ahora };
+  await apagar();                         // como un escáner de mano: lee y apaga cámara y luz
+  if (ocupado) return;
+  ocupado = true;
+  if (navigator.vibrate) navigator.vibrate(40);
+  if (tabActual === "consultar") return consultar(token);
   mostrar("conf", '<div class="ico">⏳</div><h2>Verificando…</h2>');
   try {
     const r = await api({ accion: "escanear", token, modo });
@@ -309,12 +379,47 @@ async function alLeer(leido) {
     mostrar(r.ok ? "ok" : "mal",
       `<div class="ico">${r.ok ? "✅" : "⛔"}</div><h2>${esc(r.msg)}</h2>`
       + (r.alumno ? `<p class="alu">${esc(r.alumno)}</p><p class="sub">${esc(r.curso)} · Cupo ${esc(r.folio)}</p>` : "")
-      + `<button class="btn" id="ok" type="button">Continuar</button>`);
-    $("ok").onclick = cerrar; contadores();
+      + botonesFin);
+    activarFin(); contadores();
   } catch (_) {
     pitar(false);
-    mostrar("mal", `<div class="ico">📡</div><h2>Sin conexión</h2><p class="sub">No se registró nada. Intenta de nuevo.</p><button class="btn" id="ok" type="button">Continuar</button>`);
-    $("ok").onclick = cerrar;
+    mostrar("mal", `<div class="ico">📡</div><h2>Sin conexión</h2><p class="sub">No se registró nada. Intenta de nuevo.</p>` + botonesFin);
+    activarFin();
+  }
+}
+
+/* Consulta: muestra la credencial de la pulsera, sin registrar movimientos de puerta */
+async function consultar(token) {
+  mostrar("conf", '<div class="ico">⏳</div><h2>Buscando pulsera…</h2>');
+  try {
+    const r = await api({ accion: "consultar", token });
+    if (r.auth === false) return cerrarSesion();
+    if (!r.ok) {
+      pitar(false);
+      const msg = r.msg === "Acción desconocida" ? "Falta publicar la nueva versión del servidor" : r.msg;
+      mostrar("mal", `<div class="ico">⛔</div><h2>${esc(msg)}</h2>` + botonesFin);
+      return activarFin();
+    }
+    pitar(true);
+    const estado = r.presencia === "Dentro" ? ["dentro", "Dentro"] : r.presencia === "Retirado" ? ["retirado", "Retirado"] : ["", "Sin ingresar"];
+    mostrar("pase", `<div class="cred">
+        <div class="marca">Prom Party G'30</div>
+        <div class="adorno">★</div>
+        <span class="rot">Alumno</span>
+        <div class="nombre">${esc(r.alumno)}</div>
+        <div class="grado">
+          <div class="curso"><b>${esc(r.curso)}</b><span>Curso</span></div>
+          <div class="colegio"><span class="rot">Colegio</span><b>${esc(r.colegio)}</b></div>
+        </div>
+        <div class="apod"><span class="rot">Apoderado</span><b>${esc(r.apoderado)}</b></div>
+        <div class="pieta"><span>Pulsera N.º <b>${esc(r.folio)}</b></span><span class="chip ${estado[0]}">${estado[1]}</span></div>
+        ${botonesFin}
+      </div>`);
+    activarFin();
+  } catch (_) {
+    pitar(false);
+    mostrar("mal", `<div class="ico">📡</div><h2>Sin conexión</h2><p class="sub">Intenta de nuevo.</p>` + botonesFin);
+    activarFin();
   }
 }
 
@@ -326,32 +431,98 @@ async function retirar(token, quien) {
     mostrar(r.ok ? "ok" : "mal",
       `<div class="ico">${r.ok ? "✅" : "⛔"}</div><h2>${esc(r.msg)}</h2>`
       + (r.ok ? `<p class="alu">${esc(r.alumno)}</p><p class="sub">Retirado por ${esc(r.retiradoPor)}</p>` : "")
-      + `<button class="btn" id="ok" type="button">Continuar</button>`);
-    $("ok").onclick = cerrar; contadores();
+      + botonesFin);
+    activarFin(); contadores();
   } catch (_) {
-    mostrar("mal", `<div class="ico">📡</div><h2>Sin conexión</h2><p class="sub">No se registró la salida. Vuelve a escanear.</p><button class="btn" id="ok" type="button">Continuar</button>`);
-    $("ok").onclick = cerrar;
+    mostrar("mal", `<div class="ico">📡</div><h2>Sin conexión</h2><p class="sub">No se registró la salida. Vuelve a escanear.</p>` + botonesFin);
+    activarFin();
   }
 }
 
-async function iniciarLector() {
-  if (lector) return;
-  lector = new Html5Qrcode("lector");
-  try {
-    await lector.start({ facingMode: "environment" }, { fps: 10, qrbox: (w, h) => { const l = Math.min(w, h) * .75; return { width: l, height: l }; } },
-      txt => alLeer(txt.trim()), () => {});
-  } catch (_) {
-    $("lector").innerHTML = '<p class="msg mal" style="margin:1rem">No se pudo abrir la cámara. Da permiso de cámara al navegador.</p>';
-  }
+/* ===== Cámara: solo se enciende al pulsar ESCANEAR. Linterna (si el teléfono lo permite) y cambio de cámara ===== */
+const guardado = (k, v) => { try { if (v === undefined) return localStorage.getItem(k); localStorage.setItem(k, v); } catch (_) { return null; } };
+let lector = null, camEstado = "off", cancelarInicio = false, camId = guardado("camara_g30") || "", quiereLuz = guardado("luz_g30") !== "0", luzOn = false, tiempoCam = null;
+const estadoEsc = t => { $("estadoEsc").textContent = t || ""; };
+
+function vistaCamara(on) {
+  $("gatillo").classList.toggle("oculto", on); $("camara").classList.toggle("oculto", !on);
+  if (!on) { luzOn = false; $("bLuz").classList.remove("on"); $("bLuz").disabled = true; $("bCambiar").disabled = true; }
 }
-async function detenerLector() { if (lector) { const l = lector; lector = null; try { await l.stop(); l.clear(); } catch (_) {} } }
+const tieneLuz = () => { try { return !!lector.getRunningTrackCapabilities().torch; } catch (_) { return false; } };
+async function ponerLuz(on) {
+  if (!lector || camEstado !== "on") return false;
+  try { await lector.applyVideoConstraints({ advanced: [{ torch: on }] }); luzOn = on; $("bLuz").classList.toggle("on", on); return true; }
+  catch (_) { return false; }
+}
+async function camaras() {
+  try { return (await navigator.mediaDevices.enumerateDevices()).filter(d => d.kind === "videoinput"); } catch (_) { return []; }
+}
+const idActual = () => { try { return lector.getRunningTrackSettings().deviceId || ""; } catch (_) { return ""; } };
+
+async function encender() {
+  if (camEstado !== "off") return;
+  camEstado = "iniciando"; cancelarInicio = false; vistaCamara(true); estadoEsc("Encendiendo cámara…");
+  let leido = false;
+  const alAcertar = txt => { if (leido) return; leido = true; alLeer(txt.trim()); };
+  const cfg = { fps: 15, qrbox: (w, h) => { const l = Math.floor(Math.min(w, h) * .72); return { width: l, height: l }; } };
+  try {
+    lector = new Html5Qrcode("lector");
+    try { await lector.start(camId ? camId : { facingMode: "environment" }, cfg, alAcertar, () => {}); }
+    catch (e) {                                   // la cámara guardada ya no existe: volver a la trasera
+      if (!camId) throw e;
+      camId = ""; lector = new Html5Qrcode("lector");
+      await lector.start({ facingMode: "environment" }, cfg, alAcertar, () => {});
+    }
+  } catch (_) {
+    lector = null; camEstado = "off"; vistaCamara(false);
+    estadoEsc("No se pudo abrir la cámara. Da permiso de cámara al navegador y vuelve a pulsar.");
+    return;
+  }
+  camEstado = "on";
+  if (cancelarInicio) return apagar();
+  clearTimeout(tiempoCam);
+  tiempoCam = setTimeout(async () => { await apagar(); estadoEsc("Cámara apagada para ahorrar batería. Pulsa ESCANEAR."); }, 60000);
+  const mio = lector;
+  const lista = await camaras();
+  await new Promise(r => setTimeout(r, 250));     // algunos Android ignoran la luz si se pide al instante
+  if (lector !== mio) return;
+  $("bCambiar").disabled = lista.length < 2;
+  const n = lista.findIndex(c => c.deviceId === idActual());
+  let aviso = "Apunta al QR de la pulsera" + (lista.length > 1 && n >= 0 ? ` · cámara ${n + 1} de ${lista.length}` : "");
+  if (tieneLuz()) { $("bLuz").disabled = false; if (quiereLuz) await ponerLuz(true); }
+  else aviso += " · esta cámara no permite encender la linterna desde la web";
+  if (lector === mio) estadoEsc(aviso);
+}
+async function apagar() {
+  clearTimeout(tiempoCam);
+  if (camEstado === "iniciando") { cancelarInicio = true; return; }
+  const l = lector; lector = null;
+  if (l) { camEstado = "apagando"; try { await l.stop(); l.clear(); } catch (_) {} }
+  camEstado = "off"; vistaCamara(false); estadoEsc("");
+}
+$("gatillo").onclick = encender;
+$("bDetener").onclick = apagar;
+$("bLuz").onclick = async () => {
+  const on = !luzOn;
+  if (await ponerLuz(on)) { quiereLuz = on; guardado("luz_g30", on ? "1" : "0"); }
+  else estadoEsc("No se pudo cambiar la linterna en esta cámara.");
+};
+$("bCambiar").onclick = async () => {
+  const lista = await camaras(); if (lista.length < 2 || camEstado !== "on") return;
+  const n = lista.findIndex(c => c.deviceId === idActual());
+  camId = lista[(n + 1) % lista.length].deviceId; guardado("camara_g30", camId);   // se recuerda en este teléfono
+  await apagar(); await encender();
+};
+document.addEventListener("visibilitychange", () => { if (document.hidden) apagar(); });
 
 /* ===== Pestañas: para agregar una sección nueva, suma un botón en #tabs, un <section id="tab-NOMBRE"> y el nombre aquí ===== */
-const TABS = ["puerta", "correos", "mas"];
+const TABS = ["puerta", "consultar", "correos", "mas"];
 function irTab(n) {
   TABS.forEach(t => $("tab-" + t).classList.toggle("oculto", t !== n));
   document.querySelectorAll("#tabs button").forEach(b => b.classList.toggle("on", b.dataset.tab === n));
-  if (n === "puerta") iniciarLector(); else detenerLector();   // la cámara solo está encendida en la pestaña Puerta
+  tabActual = n; apagar();                        // la cámara nunca queda encendida al cambiar de pestaña
+  if (n === "puerta" || n === "consultar") $("slot-" + n).appendChild($("escaner"));
+  $("gatilloSub").textContent = n === "consultar" ? "Ver de quién es" : "Pulsa para leer la pulsera";
   if (n === "mas") cargarResumen();
 }
 document.querySelectorAll("#tabs button").forEach(b => b.onclick = () => irTab(b.dataset.tab));
@@ -655,7 +826,7 @@ function entrarPanel() {
 }
 function cerrarSesion() {
   pin = ""; try { sessionStorage.removeItem("pin_g30"); } catch (_) {}
-  clearInterval(window._c); detenerLector(); cerrar(); cerrarSala();
+  clearInterval(window._c); apagar(); cerrar(); cerrarSala();
   $("panel").classList.add("oculto"); $("login").classList.remove("oculto");
   $("pin").value = "";
 }
