@@ -212,7 +212,7 @@
               <button type="button" id="bCambiar" disabled><span>🔄</span>Cambiar cámara</button>
               <button type="button" id="bLuz" disabled><span>🔦</span>Linterna / Escáner</button>
             </div>
-            <button type="button" class="foto-carnet oculto" id="bFoto">📷 ¿No lo detecta? Toma una foto del carnet</button>
+            <button type="button" class="foto-carnet" id="bFoto">📷 ¿No lo detecta? Toma una foto</button>
             <input type="file" id="fotoCarnet" accept="image/*" capture="environment" hidden>
             <button type="button" class="btn sec volver-cam" id="bVolver">← Volver</button>
           </div>
@@ -499,22 +499,26 @@ async function leerFoto(archivo) {
   const f = new File([await new Promise(r => c.toBlob(r, "image/jpeg", .92))], "carnet.jpg", { type: "image/jpeg" });
   return new Html5Qrcode("lectorFoto", { verbose: false, formatsToSupport: [Html5QrcodeSupportedFormats.QR_CODE], experimentalFeatures: { useBarCodeDetectorIfSupported: true } }).scanFile(f, false);
 }
-$("bFoto").onclick = () => { fotoDe = carnet; eligiendoFoto = true; $("fotoCarnet").value = ""; $("fotoCarnet").click(); };
+$("bFoto").onclick = () => { fotoDe = carnet || { pulsera: true }; eligiendoFoto = true; $("fotoCarnet").value = ""; $("fotoCarnet").click(); };
 async function fotoCancelada() {
   if (!eligiendoFoto) return;
-  eligiendoFoto = false; const c = fotoDe; carnet = null; await apagar(); if (c) mostrarPersonas(c);   // fotoDe se conserva: si la foto llega tarde, igual se lee
+  eligiendoFoto = false; const c = fotoDe; carnet = null; await apagar(); if (c && c.r) mostrarPersonas(c);   // fotoDe se conserva: si la foto llega tarde, igual se lee
 }
 $("fotoCarnet").addEventListener("cancel", fotoCancelada);
 $("fotoCarnet").addEventListener("change", async e => {
   const archivo = e.target.files && e.target.files[0], c = fotoDe;
   eligiendoFoto = false; fotoDe = null; carnet = null;
   await apagar();
-  if (!archivo || !c) { if (c) mostrarPersonas(c); return; }
+  if (!archivo || !c) { if (c && c.r) mostrarPersonas(c); return; }
   ocupado = true;
-  mostrar("conf", '<div class="ico">⏳</div><h2>Leyendo el carnet…</h2>');
+  mostrar("conf", `<div class="ico">⏳</div><h2>Leyendo ${c.r ? "el carnet" : "la pulsera"}…</h2>`);
   let txt = "";
   try { txt = await leerFoto(archivo); } catch (_) {}
-  verificarCarnet(c, txt);
+  if (c.r) return verificarCarnet(c, txt);
+  if (txt) { ocupado = false; return alLeer(txt); }          // pulsera: sigue el camino normal (entrada, salida o consulta)
+  pitar(false);
+  mostrar("mal", `<div class="ico">📷</div><h2>No se encontró un QR en la foto</h2><p class="sub">Acércate un poco, que el QR se vea nítido y sin reflejo, y vuelve a intentar.</p>` + botonesFin);
+  activarFin();
 });
 
 /* RUT: "12.345.678-5" si el dígito verificador es correcto, si no "" */
@@ -651,8 +655,7 @@ async function encender() {
   let leido = false;
   const alAcertar = txt => { if (leido) return; leido = true; alLeer(txt.trim()); };
   /* El QR del carnet es chico y denso: se pide más resolución, se lee casi todo el cuadro y se usa el lector nativo del teléfono si existe */
-  const fino = !!carnet;
-  $("bFoto").classList.toggle("oculto", !fino);
+  const fino = true;   // pulseras y carnet tienen QR chicos: siempre alta resolución, lector nativo y zoom
   const nuevoLector = () => new Html5Qrcode("lector", { verbose: false, formatsToSupport: [Html5QrcodeSupportedFormats.QR_CODE], experimentalFeatures: { useBarCodeDetectorIfSupported: true } });
   const cfg = (id, alta) => {
     const c = { fps: fino ? 12 : 15, qrbox: (w, h) => { const l = Math.floor(Math.min(w, h) * (fino ? .92 : .72)); return { width: l, height: l }; } };
@@ -690,7 +693,7 @@ async function encender() {
       if (cap.zoom && cap.zoom.max > 1) adv.zoom = Math.min(cap.zoom.max, 2);
       if (Array.isArray(cap.focusMode) && cap.focusMode.indexOf("continuous") >= 0) adv.focusMode = "continuous";
       if (Object.keys(adv).length) await lector.applyVideoConstraints({ advanced: [adv] });
-      if (adv.zoom) aviso += " · zoom " + adv.zoom + "x: aleja el carnet unos 20 cm";
+      if (adv.zoom) aviso += " · zoom " + adv.zoom + "x: aleja el código unos 20 cm";
     } catch (_) {}
   }
   if (tieneLuz()) { $("bLuz").disabled = false; aviso += " · mantén pulsada la linterna para alumbrar"; }
