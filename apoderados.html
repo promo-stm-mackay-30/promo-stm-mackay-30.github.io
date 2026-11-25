@@ -30,7 +30,7 @@
   button, input { font: inherit; }
   :focus-visible { outline: 3px solid var(--cian); outline-offset: 3px; }
   h1 { font-size: 1.75rem; }
-  input[type=text], input[type=tel] { font-size: 1.05rem; min-height: 3.1rem; }
+  input[type=text], input[type=tel], input[type=email] { font-size: 1.05rem; min-height: 3.1rem; }
   .btn { min-height: 3.2rem; }
   .btn.sec { margin-top: .9rem; }
   .btn.peligro { --edge: #6d1a26; color: #ffd9de; background: rgba(255,90,110,.16); border-color: rgba(255,90,110,.55); animation: none; }
@@ -145,23 +145,21 @@
     <a class="volver" href="./">← Volver al inicio</a>
     <h1>Portal de apoderados</h1>
     <p class="sub">Revisa quién puede retirar a tu hijo/a, sube su foto y, después de la fiesta, encuentra sus fotos.</p>
-    <form id="f1" class="tarjeta" novalidate autocomplete="off">
-      <label for="codigo">Código de acceso de las familias</label>
-      <input type="text" id="codigo" maxlength="10" placeholder="6 LETRAS + 4 NÚMEROS" autocapitalize="characters" autocorrect="off" autocomplete="off" spellcheck="false" style="text-transform:uppercase;letter-spacing:.1em">
-      <label for="telefono">Teléfono del apoderado</label>
-      <input type="tel" id="telefono" placeholder="+56 9 1234 5678" inputmode="numeric">
+    <form id="f1" class="tarjeta" novalidate>
+      <label for="correo">Tu correo (el que usaste al registrar)</label>
+      <input type="email" id="correo" name="email" autocomplete="email" inputmode="email" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="nombre@gmail.com">
       <input class="honey" type="text" id="web" tabindex="-1" autocomplete="off" aria-hidden="true">
       <p class="msg mal" id="e1" role="alert" hidden></p>
       <button class="btn" id="b1" type="submit" style="margin-top:1.1rem">Enviarme el código</button>
     </form>
-    <div class="candado"><span>🔒</span><span>Para proteger el retiro de los alumnos, te enviaremos un código de 6 números al <b>correo que registraste</b>.</span></div>
+    <div class="candado"><span>✉️</span><span>Sin claves que recordar: te enviamos un <b>código de 6 números</b> a tu correo y con eso entras.</span></div>
   </section>
 
   <!-- ===== Entrada, paso 2 ===== -->
   <section id="verifica" hidden>
-    <button class="enlace" id="cambiarTel" type="button" style="padding-left:0">← Cambiar teléfono</button>
+    <button class="enlace" id="cambiarCorreo" type="button" style="padding-left:0">← Cambiar correo</button>
     <h1>Revisa tu correo</h1>
-    <p class="sub">Enviamos un código a <b id="paraDonde"></b>. Vence en 10 minutos. Si no lo ves, mira en <b>spam</b> o promociones.</p>
+    <p class="sub">Enviamos un código a <b id="paraDonde" style="overflow-wrap:anywhere"></b>. Vence en 10 minutos. Si no lo ves, mira en <b>spam</b> o promociones.</p>
     <form id="f2" class="tarjeta" novalidate>
       <label for="otp">Código de 6 números</label>
       <input type="text" id="otp" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="••••••">
@@ -267,7 +265,7 @@
 const $ = id => document.getElementById(id);
 const API = window.API_URL;
 const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-const SESION = "portal_g30", PENDIENTE = "portal_g30_paso2";
+const SESION = "portal_g30", PENDIENTE = "portal_g30_paso2", CORREO = "portal_g30_correo";
 const guardado = {   // el navegador puede negar el almacenamiento (modo privado): nunca debe romper la página
   leer(a, k) { try { return window[a].getItem(k); } catch (_) { return null; } },
   poner(a, k, v) { try { v == null ? window[a].removeItem(k) : window[a].setItem(k, v); } catch (_) {} }
@@ -311,15 +309,6 @@ function telFormato(v) {
   return PREFIJO + d.slice(0, 4) + (d.length > 4 ? " " + d.slice(4) : "");
 }
 const telOk = v => String(v || "").replace(/\D/g, "").length === 11;
-function codigoFormato(v) {
-  const s = String(v || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toUpperCase();
-  let out = "";
-  for (const ch of s) {
-    if (out.length < 6) { if (/[A-Z]/.test(ch)) out += ch; }
-    else if (out.length < 10 && /[0-9]/.test(ch)) out += ch;
-  }
-  return out;
-}
 function rutValido(r) {
   const t = String(r || "").toUpperCase().replace(/[^0-9K]/g, "");
   if (t.length < 2) return "";
@@ -341,19 +330,21 @@ function telefonoInput(inp) {
 }
 
 /* ---------- Entrada ---------- */
-telefonoInput($("telefono"));
-$("codigo").addEventListener("input", e => { const f = codigoFormato(e.target.value); if (f !== e.target.value) e.target.value = f; });
+const correoFormato = v => String(v || "").replace(/\s+/g, "").toLowerCase();
+$("correo").value = guardado.leer("localStorage", CORREO) || "";   // la próxima vez ya viene escrito
 
 async function pedirCodigo() {
-  const r = await api({ accion: "portalCodigo", codigo: entrada.codigo, telefono: entrada.telefono, web: $("web").value });
+  const r = await api({ accion: "portalCodigo", email: entrada.email, web: $("web").value });
   if (r.ok) {
-    entrada.correos = r.correos; entrada.hora = Date.now();
+    entrada.hora = Date.now();
+    guardado.poner("localStorage", CORREO, entrada.email);
     guardado.poner("sessionStorage", PENDIENTE, JSON.stringify(entrada));   // si vas a la app de correo y la página se recarga, vuelves a este paso
-  }
+  } else if (r.campo === "codigo") r.msg = "El portal se está actualizando. Vuelve a intentarlo más tarde.";   // servidor de la versión anterior
+  else if (r.msg === "Acción desconocida") r.msg = "El portal estará disponible muy pronto. Vuelve a intentarlo más tarde.";
   return r;
 }
 function pasoDos() {
-  $("paraDonde").textContent = entrada.correos.join(" y ");
+  $("paraDonde").textContent = entrada.email;
   $("otp").value = ""; mensaje("e2", ""); pantalla("verifica"); $("otp").focus();
   esperaReenvio();
 }
@@ -369,18 +360,19 @@ function esperaReenvio() {
 }
 $("f1").addEventListener("submit", async ev => {
   ev.preventDefault(); mensaje("e1", "");
-  const codigo = codigoFormato($("codigo").value), telefono = $("telefono").value;
-  if (!/^[A-Z]{6}[0-9]{4}$/.test(codigo)) return mensaje("e1", "El código de acceso tiene 6 letras seguidas de 4 números.");
-  if (!telOk(telefono)) return mensaje("e1", "Escribe el teléfono completo: 8 números después de +56 9.");
-  entrada = { codigo, telefono };
+  const email = correoFormato($("correo").value);
+  $("correo").value = email;
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return mensaje("e1", "Escribe un correo válido (ej.: nombre@gmail.com).");
+  entrada = { email };
   const b = $("b1"); b.disabled = true; b.textContent = "Enviando…";
   try {
     const r = await pedirCodigo();
     if (r.ok) pasoDos();
     else {
-      mensaje("e1", r.msg === "Acción desconocida" ? "El portal estará disponible muy pronto. Vuelve a intentarlo más tarde." : r.msg || "No se pudo enviar el código.");
-      if (r.pendiente) {
-        const a = document.createElement("a"); a.href = "registro.html"; a.textContent = " Registrarlo ahora →"; a.className = "mail";
+      mensaje("e1", r.msg || "No se pudo enviar el código.");
+      if (r.noFigura) {
+        const a = document.createElement("a"); a.href = "registro.html"; a.textContent = "¿Aún no registras al alumno? Regístralo aquí →"; a.className = "mail";
+        a.style.display = "block"; a.style.marginTop = ".5rem";
         $("e1").append(a);
       }
     }
@@ -397,7 +389,7 @@ $("reenviar").onclick = async () => {
   if (!entrada.hora) entrada.hora = 0;
   esperaReenvio();
 };
-$("cambiarTel").onclick = () => { guardado.poner("sessionStorage", PENDIENTE, null); pantalla("entrada"); };
+$("cambiarCorreo").onclick = () => { guardado.poner("sessionStorage", PENDIENTE, null); pantalla("entrada"); };
 let entrando = false;
 async function entrar() {
   const clave = $("otp").value.replace(/\D/g, "");
@@ -406,7 +398,7 @@ async function entrar() {
   entrando = true;
   const b = $("b2"); b.disabled = true; b.textContent = "Entrando…"; mensaje("e2", "");
   try {
-    const r = await api({ accion: "portalEntrar", telefono: entrada.telefono, clave });
+    const r = await api({ accion: "portalEntrar", email: entrada.email, clave });
     if (r.ok) {
       sesion = r.sesion; guardado.poner("localStorage", SESION, sesion); guardado.poner("sessionStorage", PENDIENTE, null);
       abrir(r);
@@ -653,7 +645,7 @@ async function iniciar() {
   }
   try {
     const p = JSON.parse(guardado.leer("sessionStorage", PENDIENTE) || "null");
-    if (p && p.correos && Date.now() - p.hora < 600000) { entrada = p; return pasoDos(); }
+    if (p && p.email && Date.now() - p.hora < 600000) { entrada = p; return pasoDos(); }
   } catch (_) {}
   pantalla("entrada");
 }
