@@ -60,6 +60,11 @@
   .titulo-cam.sim { border-color:var(--viol); color:#d9c4ff; background:rgba(138,77,255,.22); }
   .pin-fiesta { text-align:center; font-size:2rem !important; letter-spacing:.5em; margin:.6rem 0; }
 
+  /* Entrada con huella o Face ID */
+  .bio { display:flex; align-items:center; justify-content:center; gap:.7rem; font-size:1.1rem; margin-bottom:.4rem; }
+  .bio svg { width:1.9rem; height:1.9rem; flex:none; }
+  .o-pin { text-align:center; font-size:.72rem; letter-spacing:.16em; text-transform:uppercase; color:var(--suave); margin:.7rem 0 .2rem; }
+
   /* Verificación con el carnet */
   .carnet-btn { display:flex; align-items:center; justify-content:center; gap:.6rem; margin:.2rem 0 .5rem; font-size:1.1rem; }
   .carnet-btn span { font-size:1.6rem; line-height:1; }
@@ -172,6 +177,8 @@
   <section id="login" class="tarjeta">
     <h2>Ingreso</h2>
     <p class="msg mal oculto" id="loginError"></p>
+    <button class="btn bio oculto" id="bBio" type="button"></button>
+    <p class="o-pin oculto" id="oPin">o entra con el PIN</p>
     <label for="pin">PIN del staff</label>
     <input type="password" id="pin" autocomplete="off" inputmode="text">
     <div style="height:1rem"></div>
@@ -316,12 +323,17 @@
         <div id="kCamp"><p class="nota">Aún no hay envíos.</p></div>
       </div>
       <div class="tarjeta">
+        <h2>Entrada con huella o Face ID</h2>
+        <p class="nota" id="bioEstado">Revisando este teléfono…</p>
+        <button class="btn sec oculto" id="bBioAct" type="button"></button>
+        <p class="res" id="bioRes"></p>
+      </div>
+      <div class="tarjeta">
         <h2>Próximamente</h2>
         <ul class="pronto">
           <li><b>💳 Plataforma de pago</b><br>Pendiente.</li>
           <li><b>🔁 Salida temporal y reingreso</b><br>Que un alumno pueda salir y volver a entrar.</li>
           <li><b>👨‍👩‍👧 Panel para apoderados</b><br>Ver si su hijo/a está dentro, con horas de entrada y salida.</li>
-          <li><b>🔐 Acceso del staff con huella o Face ID</b></li>
           <li><b>🎓 Baúl de los recuerdos</b><br>Panel del estudiante a lo largo de los 4 años.</li>
         </ul>
       </div>
@@ -1032,6 +1044,109 @@ $("dPdf").onclick = () => accionDescarga($("dPdf"), "PDF", generarPdf, "pdf");
 $("dCsv").onclick = () => accionDescarga($("dCsv"), "Excel", async () => generarCsv(), "csv");
 $("dComp").onclick = () => accionDescarga($("dComp"), "Imagen", generarImagen, "png", true);
 
+/* ===== Entrada con huella o Face ID =====
+   Usa una llave de acceso del propio teléfono (la misma tecnología que "passkeys").
+   La primera vez se entra con el PIN y se activa; después la huella o el rostro desbloquean ese PIN,
+   que queda cifrado en el teléfono cuando el navegador lo permite. El servidor sigue validando el mismo PIN. */
+const BIO_K = "bio_g30";
+const ICO_HUELLA = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M12 11v3.5c0 2.2-.6 4.2-1.7 5.8M8.6 9.3A4 4 0 0 1 16 11v2.5c0 1.8-.3 3.4-.9 4.9M5.5 15.5c.3-1.2.5-2.6.5-4a6 6 0 0 1 9.2-5.1M18 10.2c.1.4.1.9.1 1.3v1.5M3.8 9.4A8.5 8.5 0 0 1 19.6 7.2M8.3 19c.9-1.6 1.3-3.4 1.3-5.3"/></svg>';
+const b64 = buf => btoa(String.fromCharCode.apply(null, new Uint8Array(buf)));
+const deB64 = t => Uint8Array.from(atob(t), c => c.charCodeAt(0));
+const aleatorio = n => crypto.getRandomValues(new Uint8Array(n));
+const bioGuardado = () => { try { return JSON.parse(localStorage.getItem(BIO_K) || "null"); } catch (_) { return null; } };
+async function bioDisponible() {
+  try { return !!(window.PublicKeyCredential && window.isSecureContext && await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable()); } catch (_) { return false; }
+}
+const claveAes = bytes => crypto.subtle.importKey("raw", bytes, "AES-GCM", false, ["encrypt", "decrypt"]);
+async function pedirHuella(id, sal) {
+  const a = await navigator.credentials.get({ publicKey: { challenge: aleatorio(32), allowCredentials: [{ type: "public-key", id }], userVerification: "required", timeout: 60000,
+    extensions: sal ? { prf: { eval: { first: sal } } } : {} } });
+  const r = a.getClientExtensionResults ? a.getClientExtensionResults() : {};
+  return r.prf && r.prf.results && r.prf.results.first ? new Uint8Array(r.prf.results.first) : null;
+}
+async function activarBio() {
+  const sal = aleatorio(32);
+  const cred = await navigator.credentials.create({ publicKey: {
+    challenge: aleatorio(32), rp: { name: "Prom Party G'30 · Staff" },
+    user: { id: aleatorio(16), name: "staff-prom-g30", displayName: "Staff Prom Party G'30" },
+    pubKeyCredParams: [{ type: "public-key", alg: -7 }, { type: "public-key", alg: -257 }],
+    authenticatorSelection: { authenticatorAttachment: "platform", userVerification: "required", residentKey: "discouraged" },
+    timeout: 60000, extensions: { prf: { eval: { first: sal } } } } });
+  const id = new Uint8Array(cred.rawId), r = cred.getClientExtensionResults ? cred.getClientExtensionResults() : {};
+  let secreto = r.prf && r.prf.results && r.prf.results.first ? new Uint8Array(r.prf.results.first) : null;
+  if (!secreto && r.prf && r.prf.enabled) secreto = await pedirHuella(id, sal);   // en Android la clave llega en una segunda lectura
+  const reg = { id: b64(id), cifrado: !!secreto };
+  if (secreto) {
+    const iv = aleatorio(12);
+    reg.sal = b64(sal); reg.iv = b64(iv);
+    reg.pin = b64(await crypto.subtle.encrypt({ name: "AES-GCM", iv }, await claveAes(secreto), new TextEncoder().encode(pin)));
+  } else reg.pin = pin;   // el teléfono no permite cifrar con la huella: la huella solo controla la entrada
+  localStorage.setItem(BIO_K, JSON.stringify(reg));
+  try { localStorage.removeItem("bio_no"); } catch (_) {}
+  return reg.cifrado;
+}
+async function pinConHuella() {
+  const reg = bioGuardado();
+  const secreto = await pedirHuella(deB64(reg.id), reg.cifrado ? deB64(reg.sal) : null);
+  if (!reg.cifrado) return reg.pin;
+  if (!secreto) throw new Error("sin-clave");
+  return new TextDecoder().decode(await crypto.subtle.decrypt({ name: "AES-GCM", iv: deB64(reg.iv) }, await claveAes(secreto), deB64(reg.pin)));
+}
+function borrarBio() { try { localStorage.removeItem(BIO_K); } catch (_) {} }
+async function pintarBio() {
+  const disp = await bioDisponible(), reg = bioGuardado();
+  $("bBio").innerHTML = ICO_HUELLA + "<span>Entrar con huella o Face ID</span>";
+  $("bBio").classList.toggle("oculto", !(disp && reg)); $("oPin").classList.toggle("oculto", !(disp && reg));
+  $("entrar").classList.toggle("sec", !!(disp && reg));   // con huella activa, el PIN queda como opción secundaria
+  const est = $("bioEstado"), act = $("bBioAct");
+  if (!disp) { est.textContent = "Este teléfono o navegador no permite entrar con huella ni Face ID desde la web."; act.classList.add("oculto"); return; }
+  act.classList.remove("oculto");
+  if (reg) {
+    est.textContent = "Activada en este teléfono. " + (reg.cifrado ? "El PIN queda cifrado y solo se abre con tu huella o rostro." : "Este teléfono no permite cifrar con la huella: el PIN queda guardado aquí y la huella controla la entrada.");
+    act.textContent = "Desactivar en este teléfono";
+  } else { est.textContent = "Desactivada. Actívala para entrar al panel sin escribir el PIN en este teléfono."; act.textContent = "Activar en este teléfono"; }
+}
+$("bBioAct").onclick = async () => {
+  const res = $("bioRes"); res.className = "res"; res.textContent = "";
+  if (bioGuardado()) { borrarBio(); res.className = "res ok"; res.textContent = "✅ Desactivada. Aquí se volverá a pedir el PIN."; return pintarBio(); }
+  try { const cif = await activarBio(); res.className = "res ok"; res.textContent = "✅ Activada" + (cif ? " (PIN cifrado)." : "."); }
+  catch (e) { res.className = "res mal"; res.textContent = e && e.name === "NotAllowedError" ? "⛔ Se canceló la lectura." : "⛔ No se pudo activar en este teléfono."; }
+  pintarBio();
+};
+$("bBio").onclick = async () => {
+  const e = $("loginError"), b = $("bBio"); e.classList.add("oculto"); b.disabled = true;
+  const falla = t => { e.textContent = t; e.classList.remove("oculto"); };
+  try {
+    pin = await pinConHuella();
+    let r;
+    try { r = await api({ accion: "presentes" }); } catch (_) { pin = ""; return falla("Sin conexión con el servidor."); }
+    if (r.ok) { try { sessionStorage.setItem("pin_g30", pin); } catch (_) {} entrarPanel(); }
+    else { pin = ""; borrarBio(); pintarBio(); falla("El PIN del staff cambió. Entra con el PIN nuevo y vuelve a activar la huella."); }
+  } catch (err) {
+    pin = "";
+    if (err && err.name === "NotAllowedError") falla("Se canceló la lectura. Intenta de nuevo o entra con el PIN.");
+    else { borrarBio(); pintarBio(); falla("La huella ya no sirve en este teléfono. Entra con el PIN y vuelve a activarla."); }
+  } finally { b.disabled = false; }
+};
+async function ofrecerBio() {
+  let no = false; try { no = localStorage.getItem("bio_no") === "1"; } catch (_) {}
+  if (bioGuardado() || no || !(await bioDisponible()) || ocupado) return;
+  ocupado = true;
+  mostrar("conf", `<div class="ico" style="color:var(--oro-2)">${ICO_HUELLA.replace("<svg", '<svg width="64" height="64"')}</div><h2>¿Entrar con huella o Face ID?</h2>
+    <p class="sub">La próxima vez podrás entrar al panel en este teléfono sin escribir el PIN.</p>
+    <button class="btn" id="bioSi" type="button">Activar</button><button class="btn sec" id="bioNo" type="button">Ahora no</button>`);
+  $("bioNo").onclick = () => { try { localStorage.setItem("bio_no", "1"); } catch (_) {} cerrar(); };
+  $("bioSi").onclick = async () => {
+    try {
+      const cif = await activarBio(); pintarBio();
+      mostrar("ok", `<div class="ico">✅</div><h2>Listo</h2><p class="sub">La próxima vez toca <b>Entrar con huella o Face ID</b>.${cif ? "" : "<br><small>Este teléfono no permite cifrar con la huella: el PIN queda guardado aquí.</small>"}</p><button class="btn" id="ok" type="button">Continuar</button>`);
+    } catch (e) {
+      mostrar("mal", `<div class="ico">⛔</div><h2>No se activó</h2><p class="sub">${e && e.name === "NotAllowedError" ? "Se canceló la lectura." : "Este teléfono no lo permitió."} Puedes intentarlo después en la pestaña Más.</p><button class="btn" id="ok" type="button">Continuar</button>`);
+    }
+    $("ok").onclick = cerrar;
+  };
+}
+
 function entrarPanel() {
   $("login").classList.add("oculto"); $("panel").classList.remove("oculto");
   irTab("puerta"); contadores(); clearInterval(window._c); window._c = setInterval(contadores, 8000);
@@ -1050,7 +1165,11 @@ $("entrar").onclick = async () => {
   const b = $("entrar"); b.disabled = true; b.textContent = "Verificando…";
   try {
     const r = await api({ accion: "presentes" });
-    if (r.ok) { try { sessionStorage.setItem("pin_g30", pin); } catch (_) {} entrarPanel(); }
+    if (r.ok) {
+      try { sessionStorage.setItem("pin_g30", pin); } catch (_) {}
+      const reg = bioGuardado(); if (reg && reg.cifrado === false && reg.pin !== pin) { reg.pin = pin; try { localStorage.setItem(BIO_K, JSON.stringify(reg)); } catch (_) {} }
+      entrarPanel(); ofrecerBio();
+    }
     else { e.textContent = "PIN incorrecto."; e.classList.remove("oculto"); pin = ""; }
   } catch (_) { e.textContent = "Sin conexión con el servidor."; e.classList.remove("oculto"); }
   b.disabled = false; b.textContent = "Entrar";
@@ -1060,6 +1179,7 @@ $("salir").onclick = cerrarSesion;
 $("mE").onclick = () => { modo = "entrada"; $("mE").className = "activo e"; $("mS").className = "s"; };
 $("mS").onclick = () => { modo = "salida"; $("mS").className = "activo s"; $("mE").className = "e"; };
 
+pintarBio();
 if (pin && API) entrarPanel();
 </script>
 </body>
