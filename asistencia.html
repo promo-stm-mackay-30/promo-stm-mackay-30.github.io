@@ -1,0 +1,283 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Asistencia en vivo · Prom Party G'30</title>
+<meta name="description" content="Asistencia en tiempo real de la Prom Party G'30. Acceso solo para familias con el código de acceso.">
+<meta name="theme-color" content="#070a1c">
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" href="flyer.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="estilo.css">
+<style>
+  :root { --mackay:#3d8bff; --margaret:#ff4d6d; }
+  .contenedor { width:min(100%,46rem); }
+  .vivo-chip { display:inline-flex; align-items:center; gap:.5rem; font-size:.72rem; font-weight:800; letter-spacing:.16em; text-transform:uppercase; padding:.45rem .9rem; border-radius:99px; color:#fff; background:linear-gradient(110deg,#ff3d7f,var(--viol)); margin-bottom:.6rem; }
+  .vivo-chip.sim { background:rgba(138,77,255,.25); border:1px dashed rgba(200,170,255,.8); color:#e4d6ff; }
+  .vivo-chip i { width:.55rem; height:.55rem; border-radius:50%; background:#fff; animation:punto 1.4s ease-out infinite; }
+  @keyframes punto { 0% { box-shadow:0 0 0 0 rgba(255,255,255,.7); } 70%,100% { box-shadow:0 0 0 .5rem rgba(255,255,255,0); } }
+  .aviso-sim { border:1px dashed rgba(200,170,255,.8); background:rgba(138,77,255,.14); color:#e4d6ff; border-radius:1rem; padding:.7rem .9rem; font-size:.88rem; margin-bottom:1rem; text-align:center; }
+
+  /* acceso */
+  .codigo { text-transform:uppercase; letter-spacing:.2em; text-align:center; font-size:1.2rem !important; }
+
+  /* números */
+  .cifras { display:grid; grid-template-columns:repeat(3,1fr); gap:.6rem; margin-bottom:1rem; }
+  .cifras div { text-align:center; background:var(--vidrio); border:1px solid var(--borde); border-radius:1rem; padding:.7rem .3rem .55rem; }
+  .cifras b { display:block; font-size:2rem; font-weight:800; line-height:1.1; background:linear-gradient(180deg,#fff,var(--oro-2)); -webkit-background-clip:text; background-clip:text; color:transparent; }
+  .cifras span { font-size:.62rem; letter-spacing:.14em; text-transform:uppercase; color:var(--suave); }
+
+  /* gráfico de figuras */
+  .leyenda { display:flex; justify-content:center; gap:1.2rem; font-size:.8rem; color:var(--suave); margin:-.2rem 0 .8rem; flex-wrap:wrap; }
+  .leyenda span { display:inline-flex; align-items:center; gap:.35rem; }
+  .leyenda svg { width:.9rem; height:1.3rem; }
+  .campo { display:grid; grid-template-columns:1fr 1fr; gap:.7rem; }
+  .grupo { border-radius:1rem; padding:.7rem .6rem .8rem; border:1px solid var(--borde); background:rgba(0,0,0,.25); min-height:8rem; }
+  .grupo.m { box-shadow:inset 0 0 2.5rem rgba(61,139,255,.12); }
+  .grupo.s { box-shadow:inset 0 0 2.5rem rgba(255,77,109,.12); }
+  .grupo h3 { font-size:.72rem; letter-spacing:.12em; text-transform:uppercase; display:flex; justify-content:space-between; align-items:baseline; margin-bottom:.6rem; }
+  .grupo.m h3 { color:#8fb9ff; } .grupo.s h3 { color:#ff9aac; }
+  .grupo h3 b { font-size:1.3rem; letter-spacing:0; color:#fff; }
+  .figuras { display:flex; flex-wrap:wrap; gap:.15rem .1rem; align-content:flex-start; }
+  .fig { width:1.15rem; height:1.75rem; padding:0; border:0; background:none; cursor:pointer; animation:entra .5s cubic-bezier(.2,.9,.3,1.3) both; }
+  .fig svg { width:100%; height:100%; display:block; filter:drop-shadow(0 0 .25rem currentColor); }
+  .fig.m { color:var(--mackay); } .fig.s { color:var(--margaret); }
+  .fig:active, .fig:focus-visible { transform:scale(1.35); outline:none; }
+  @keyframes entra { from { opacity:0; transform:translateY(.4rem) scale(.6); } }
+  .vacio-graf { color:var(--suave); font-size:.82rem; padding:.4rem 0; }
+  .toast { position:fixed; left:50%; bottom:max(1.2rem,env(safe-area-inset-bottom)); transform:translateX(-50%); z-index:30; background:#0c1230; border:1px solid var(--oro-2); color:#fff; padding:.6rem 1rem; border-radius:99px; font-size:.9rem; font-weight:700; box-shadow:0 .6rem 1.6rem rgba(0,0,0,.5); max-width:92vw; text-align:center; }
+
+  /* listas */
+  .busca { position:relative; margin-bottom:.6rem; }
+  .busca input { padding-left:2.4rem; }
+  .busca::before { content:"🔎"; position:absolute; left:.85rem; top:50%; transform:translateY(-50%); font-size:.95rem; opacity:.7; pointer-events:none; }
+  .chips { display:flex; flex-wrap:wrap; gap:.4rem; margin-bottom:.4rem; }
+  .chips button { font:inherit; font-size:.78rem; font-weight:700; color:var(--suave); cursor:pointer; padding:.42rem .8rem; border-radius:99px; border:1px solid var(--borde); background:var(--vidrio); }
+  .chips button.on { color:#1a1204; background:linear-gradient(110deg,var(--oro),var(--oro-2)); border-color:transparent; }
+  .chips button.on.m { color:#fff; background:var(--mackay); } .chips button.on.s { color:#fff; background:var(--margaret); }
+  .cuenta { font-size:.78rem; color:var(--suave); margin:.4rem 0 .3rem; }
+  .fila-a { display:flex; align-items:center; gap:.7rem; padding:.6rem .2rem; border-bottom:1px solid rgba(255,255,255,.07); }
+  .fila-a svg { width:1rem; height:1.5rem; flex:none; }
+  .fila-a.m svg { color:var(--mackay); } .fila-a.s svg { color:var(--margaret); }
+  .fila-a div { flex:1; min-width:0; }
+  .fila-a b { display:block; font-size:.98rem; overflow-wrap:anywhere; }
+  .fila-a small { color:var(--suave); font-size:.78rem; }
+  .fila-a .hora { flex:none; font-variant-numeric:tabular-nums; font-weight:700; font-size:.9rem; color:var(--oro-2); text-align:right; }
+  .fila-a .hora span { display:block; font-size:.6rem; letter-spacing:.1em; text-transform:uppercase; color:var(--suave); font-weight:600; }
+  .nada { color:var(--suave); font-size:.88rem; padding:.8rem 0; text-align:center; }
+  .pie-vivo { text-align:center; color:var(--suave); font-size:.75rem; margin:.4rem 0 1rem; }
+  @media (max-width:26rem) { .cifras b { font-size:1.6rem; } }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="hombre" viewBox="0 0 20 32"><circle cx="10" cy="4.6" r="4.2" fill="currentColor"/><path fill="currentColor" d="M5.2 10.4h9.6a2.6 2.6 0 0 1 2.6 2.6v7.6h-2.7v11h-3.4v-9H8.7v9H5.3v-11H2.6V13a2.6 2.6 0 0 1 2.6-2.6z"/></symbol>
+  <symbol id="mujer" viewBox="0 0 20 32"><circle cx="10" cy="4.6" r="4.2" fill="currentColor"/><path fill="currentColor" d="M7.4 10.4h5.2a2.4 2.4 0 0 1 2.3 1.8l3.4 11.6h-4.1v7.8h-3V23.8H8.8v7.8h-3v-7.8H1.7l3.4-11.6a2.4 2.4 0 0 1 2.3-1.8z"/></symbol>
+</svg>
+<div class="aurora" aria-hidden="true"><i></i><i></i><i></i></div>
+<main class="contenedor">
+  <a class="volver" href="./">← Inicio</a>
+
+  <!-- Acceso con el código de las familias -->
+  <section id="acceso">
+    <h1>Asistencia en vivo</h1>
+    <p class="sub">Para las familias de la Prom Party G'30. Escribe el <b>código de acceso</b> que usaste para registrarte (lo compartió la organización por WhatsApp).</p>
+    <form class="tarjeta" id="fAcceso" autocomplete="off">
+      <label for="codigo">Código de acceso</label>
+      <input type="text" id="codigo" class="codigo" maxlength="20" autocapitalize="characters" spellcheck="false" placeholder="ABCDEF1234">
+      <div class="msg mal oculto" id="errAcceso" role="alert"></div>
+      <div style="height:.8rem"></div>
+      <button class="btn" id="entrar" type="submit">Ver asistencia</button>
+    </form>
+  </section>
+
+  <!-- Vista en vivo -->
+  <section id="vista" class="oculto">
+    <span class="vivo-chip" id="chip"><i></i><span id="chipTxt">En vivo</span></span>
+    <h1 id="tituloVivo">Asistencia en vivo</h1>
+    <div class="aviso-sim oculto" id="avisoSim">🧪 <b>Simulacro:</b> prueba del sistema. Estos movimientos no son reales.</div>
+    <div id="sinEvento" class="tarjeta oculto"><p class="sub" style="margin:0">La fiesta aún no comienza o ya terminó. Esta página se actualiza sola.</p></div>
+
+    <div id="datos">
+      <div class="cifras">
+        <div><b id="nDentro">0</b><span>En la fiesta</span></div>
+        <div><b id="nFuera">0</b><span>Se fueron</span></div>
+        <div><b id="nFaltan">0</b><span>Por llegar</span></div>
+      </div>
+
+      <section class="tarjeta">
+        <h2>En la fiesta ahora</h2>
+        <div class="leyenda">
+          <span><svg style="color:var(--mackay)"><use href="#hombre"/></svg>The Mackay School</span>
+          <span><svg style="color:var(--margaret)"><use href="#mujer"/></svg>St Margaret's</span>
+        </div>
+        <div class="campo">
+          <div class="grupo m"><h3>Mackay <b id="gM">0</b></h3><div class="figuras" id="figM"></div></div>
+          <div class="grupo s"><h3>St Margaret's <b id="gS">0</b></h3><div class="figuras" id="figS"></div></div>
+        </div>
+        <p class="nota" style="margin:.7rem 0 0;text-align:center">Toca una figura para ver el nombre.</p>
+      </section>
+
+      <section class="tarjeta" id="lista-D">
+        <h2>Dentro de la fiesta</h2>
+        <div class="busca"><input type="text" data-q placeholder="Buscar por nombre" aria-label="Buscar alumno dentro de la fiesta" autocomplete="off" spellcheck="false"></div>
+        <div class="chips" data-col></div>
+        <div class="chips" data-cur></div>
+        <p class="cuenta" data-cuenta></p>
+        <div data-filas></div>
+      </section>
+
+      <section class="tarjeta" id="lista-R">
+        <h2>Se fueron de la fiesta</h2>
+        <div class="busca"><input type="text" data-q placeholder="Buscar por nombre" aria-label="Buscar alumno que se fue" autocomplete="off" spellcheck="false"></div>
+        <div class="chips" data-col></div>
+        <div class="chips" data-cur></div>
+        <p class="cuenta" data-cuenta></p>
+        <div data-filas></div>
+      </section>
+    </div>
+    <p class="pie-vivo" id="pie">Actualizando…</p>
+  </section>
+</main>
+<div class="toast oculto" id="toast" role="status"></div>
+
+<script src="config.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+const API = window.API_URL, CADA = 20000;
+const RE_TILDES = new RegExp("[\\u0300-\\u036f]", "g");
+const norm = s => String(s || "").normalize("NFD").replace(RE_TILDES, "").toLowerCase();
+const COLEGIO = { M: "The Mackay School", S: "St Margaret's" };
+let codigo = "", datos = null, reloj = null;
+const filtros = { D: { q: "", col: "", cur: "" }, R: { q: "", col: "", cur: "" } };
+const guardar = (k, v) => { try { v == null ? sessionStorage.removeItem(k) : sessionStorage.setItem(k, v); } catch (_) {} };
+try { codigo = sessionStorage.getItem("codigo_vivo") || ""; } catch (_) {}
+
+async function api(body) {
+  const r = await fetch(API, { method: "POST", body: JSON.stringify(body) });   // sin cabecera JSON: evita preflight CORS
+  return r.json();
+}
+
+/* ---------- acceso ---------- */
+$("codigo").addEventListener("input", e => { const v = e.target.value.toUpperCase().replace(/\s+/g, ""); if (v !== e.target.value) e.target.value = v; });
+$("fAcceso").addEventListener("submit", async e => {
+  e.preventDefault();
+  const c = $("codigo").value.trim(); if (!c) return;
+  const b = $("entrar"); b.disabled = true; b.textContent = "Verificando…"; $("errAcceso").classList.add("oculto");
+  try {
+    const r = await api({ accion: "asistencia", codigo: c });
+    if (!r.ok) throw new Error(r.msg === "Acción desconocida" ? "La asistencia en vivo aún no está habilitada." : r.msg);
+    codigo = c; guardar("codigo_vivo", c); mostrarVista(r);
+  } catch (err) {
+    const m = $("errAcceso"); m.textContent = err.message === "Failed to fetch" ? "Sin conexión. Inténtalo de nuevo." : err.message; m.classList.remove("oculto");
+  } finally { b.disabled = false; b.textContent = "Ver asistencia"; }
+});
+
+function mostrarVista(r) {
+  $("acceso").classList.add("oculto"); $("vista").classList.remove("oculto");
+  pintar(r);
+  clearInterval(reloj); reloj = setInterval(actualizar, CADA);
+}
+async function actualizar() {
+  if (document.hidden || !codigo) return;
+  try {
+    const r = await api({ accion: "asistencia", codigo });
+    if (r.auth === false) { codigo = ""; guardar("codigo_vivo", null); clearInterval(reloj); $("vista").classList.add("oculto"); $("acceso").classList.remove("oculto"); return; }
+    if (r.ok) pintar(r);
+  } catch (_) { $("pie").textContent = "Sin conexión · reintentando…"; }
+}
+document.addEventListener("visibilitychange", () => { if (!document.hidden) actualizar(); });
+
+/* ---------- pintar ---------- */
+function pintar(r) {
+  const sim = r.modo === "simulacro";
+  $("chip").classList.toggle("sim", sim);
+  $("chipTxt").textContent = sim ? "Simulacro · en vivo" : "En vivo";
+  $("tituloVivo").textContent = sim ? "Registro del simulacro" : "Asistencia en vivo";
+  $("avisoSim").classList.toggle("oculto", !sim);
+  $("sinEvento").classList.toggle("oculto", !!r.modo);
+  $("datos").classList.toggle("oculto", !r.modo);
+  $("pie").textContent = r.modo ? `Actualizado ${r.hora} · se actualiza solo cada ${CADA / 1000} s` : "";
+  if (!r.modo) { datos = null; return; }
+  datos = r;
+  const dentro = r.alumnos.filter(a => a.e === "D"), fuera = r.alumnos.filter(a => a.e === "R");
+  const totalReg = (r.registrados.M || 0) + (r.registrados.S || 0);
+  $("nDentro").textContent = dentro.length; $("nFuera").textContent = fuera.length;
+  $("nFaltan").textContent = Math.max(0, totalReg - dentro.length - fuera.length);
+  grafico(dentro);
+  ["D", "R"].forEach(lista);
+}
+
+const orden = (a, b) => a.a.localeCompare(b.a, "es", { sensitivity: "base" });
+function figura(a, cls) {
+  const ns = "http://www.w3.org/2000/svg", svg = document.createElementNS(ns, "svg"), use = document.createElementNS(ns, "use");
+  use.setAttribute("href", a.c === "S" ? "#mujer" : "#hombre"); svg.append(use);
+  if (cls) svg.setAttribute("class", cls);
+  return svg;
+}
+function grafico(dentro) {
+  ["M", "S"].forEach(col => {
+    const caja = $("fig" + col), grupo = dentro.filter(a => a.c === col).sort(orden);
+    $("g" + col).textContent = grupo.length;
+    caja.textContent = "";
+    if (!grupo.length) { const p = document.createElement("p"); p.className = "vacio-graf"; p.textContent = "Nadie todavía"; caja.append(p); return; }
+    grupo.forEach((a, i) => {
+      const b = document.createElement("button");
+      b.type = "button"; b.className = "fig " + col.toLowerCase(); b.title = a.a; b.setAttribute("aria-label", a.a + ", " + a.k);
+      b.style.animationDelay = Math.min(i * 12, 600) + "ms";
+      b.append(figura(a)); b.onclick = () => toast(a.a + " · " + a.k + (a.he ? " · entró " + a.he : ""));
+      caja.append(b);
+    });
+  });
+}
+let tToast = null;
+function toast(t) { const e = $("toast"); e.textContent = t; e.classList.remove("oculto"); clearTimeout(tToast); tToast = setTimeout(() => e.classList.add("oculto"), 2600); }
+
+/* ---------- listas con búsqueda y filtros ---------- */
+function chips(cont, opciones, valor, alElegir) {
+  cont.textContent = "";
+  opciones.forEach(([v, t, cls]) => {
+    const b = document.createElement("button");
+    b.type = "button"; b.textContent = t; b.className = (valor === v ? "on " : "") + (cls || "");
+    b.setAttribute("aria-pressed", valor === v);
+    b.onclick = () => alElegir(v);
+    cont.append(b);
+  });
+}
+function lista(tipo) {
+  const sec = $("lista-" + tipo), f = filtros[tipo];
+  const todos = datos.alumnos.filter(a => a.e === tipo);
+  const cursos = [...new Set(datos.alumnos.map(a => a.k).filter(Boolean))].sort();
+  chips(sec.querySelector("[data-col]"), [["", "Todos"], ["M", "Mackay", "m"], ["S", "St Margaret's", "s"]], f.col, v => { f.col = v; lista(tipo); });
+  chips(sec.querySelector("[data-cur]"), [["", "Todos los cursos"]].concat(cursos.map(c => [c, c])), f.cur, v => { f.cur = v; lista(tipo); });
+  const q = norm(f.q).trim();
+  const vis = todos.filter(a => (!f.col || a.c === f.col) && (!f.cur || a.k === f.cur) && (!q || norm(a.a).includes(q))).sort(orden);
+  sec.querySelector("[data-cuenta]").textContent = vis.length === todos.length ? `${todos.length} alumnos` : `${vis.length} de ${todos.length} alumnos`;
+  const filas = sec.querySelector("[data-filas]"); filas.textContent = "";
+  if (!vis.length) {
+    const p = document.createElement("p"); p.className = "nada";
+    p.textContent = todos.length ? "Nadie coincide con la búsqueda o el filtro." : tipo === "D" ? "Todavía no entra nadie." : "Todavía no se ha ido nadie.";
+    filas.append(p); return;
+  }
+  vis.forEach(a => {
+    const fila = document.createElement("div"); fila.className = "fila-a " + a.c.toLowerCase();
+    const d = document.createElement("div"), n = document.createElement("b"), s = document.createElement("small");
+    n.textContent = a.a; s.textContent = (a.c === "S" ? "St Margaret's" : "Mackay") + " · " + a.k; d.append(n, s);
+    const h = document.createElement("div"); h.className = "hora";
+    const et = document.createElement("span"); et.textContent = tipo === "D" ? "entró" : "salió";
+    h.append(et, document.createTextNode((tipo === "D" ? a.he : a.hs) || "—"));
+    fila.append(figura(a), d, h); filas.append(fila);
+  });
+}
+["D", "R"].forEach(tipo => {
+  $("lista-" + tipo).querySelector("[data-q]").addEventListener("input", e => { filtros[tipo].q = e.target.value; if (datos) lista(tipo); });
+});
+
+if (!API) { $("errAcceso").textContent = "El sistema todavía no está habilitado."; $("errAcceso").classList.remove("oculto"); }
+else if (codigo) { $("codigo").value = codigo; $("fAcceso").requestSubmit(); }
+</script>
+</body>
+</html>
