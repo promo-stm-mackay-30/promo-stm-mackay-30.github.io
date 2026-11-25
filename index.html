@@ -347,6 +347,60 @@
     .cdd-txt span { font-size: .74rem; }
   }
 
+  /* ---------- Historia de la playlist (estilo Instagram) ---------- */
+  .aro { flex: none; padding: 2px; border-radius: .85rem; line-height: 0; background: conic-gradient(from 200deg, #f9ce34, #ee2a7b, #6228d7, #1ed760, #f9ce34); }
+  .aro img { border: 2px solid #0b1030; }
+  .cancion.nodisp .aro { background: rgba(255,255,255,.2); }
+  .historia { position: fixed; inset: 0; z-index: 12; background: #000; display: flex; align-items: center; justify-content: center; touch-action: none; user-select: none; -webkit-user-select: none; }
+  .historia[hidden] { display: none; }
+  .h-marco { position: relative; overflow: hidden; height: 100dvh; width: min(100vw, calc(100dvh * 9 / 16)); background: #0b0f26; color: #fff; }
+  @media (min-width: 861px) and (min-aspect-ratio: 1/1) { .h-marco { height: 94dvh; width: calc(94dvh * 9 / 16); border-radius: 1.4rem; box-shadow: 0 0 5rem rgba(138,77,255,.35); } }
+  .h-fondo, .h-fondo .capa { position: absolute; inset: 0; }
+  .h-fondo .capa { background: center / cover no-repeat; filter: blur(38px) saturate(1.5) brightness(.6); transform: scale(1.35); opacity: 0; transition: opacity .8s ease; }
+  .h-fondo .capa.on { opacity: 1; }
+  .h-fondo::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,.45), rgba(0,0,0,0) 22%, rgba(0,0,0,0) 55%, rgba(0,0,0,.7)); }
+  .h-barras { position: absolute; z-index: 3; top: max(.6rem, env(safe-area-inset-top)); left: .6rem; right: .6rem; display: flex; gap: 3px; }
+  .h-barras i { flex: 1; height: 3px; border-radius: 3px; background: rgba(255,255,255,.35); overflow: hidden; }
+  .h-barras i b { display: block; height: 100%; width: 0; background: #fff; }
+  .h-cab { position: absolute; z-index: 3; top: calc(max(.6rem, env(safe-area-inset-top)) + .75rem); left: .8rem; right: .5rem; display: flex; align-items: center; gap: .6rem; }
+  .h-cab img { width: 2.2rem; height: 2.2rem; border-radius: 50%; object-fit: cover; border: 2px solid rgba(255,255,255,.85); }
+  .h-cab div { flex: 1; min-width: 0; line-height: 1.2; }
+  .h-cab b { display: block; font-size: .9rem; }
+  .h-cab small { display: block; font-size: .72rem; opacity: .8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .h-cab button { flex: none; width: 2.5rem; height: 2.5rem; border: none; background: none; color: #fff; font-size: 1.25rem; cursor: pointer; border-radius: 50%; }
+  .h-cab button:focus-visible, .h-pie a:focus-visible, .h-pie button:focus-visible { outline: 3px solid var(--cian); outline-offset: 2px; }
+  .h-tocar { position: absolute; z-index: 2; inset: 0; cursor: pointer; }
+  .h-escena { position: absolute; z-index: 1; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 5.5rem 1.6rem 7rem; text-align: center; pointer-events: none; }
+  .h-eti { font-size: .7rem; font-weight: 800; letter-spacing: .22em; text-transform: uppercase; color: #ffd36b; margin-bottom: 1rem; text-shadow: 0 2px 10px rgba(0,0,0,.6); }
+  .h-tapa { width: min(72vw, 40dvh, 19rem); aspect-ratio: 1; border-radius: 1.1rem; object-fit: cover; box-shadow: 0 1.6rem 3.4rem rgba(0,0,0,.65), 0 0 0 1px rgba(255,255,255,.12); animation: hEntra .7s cubic-bezier(.2,.9,.3,1.15) both, hZoom 9s ease-out .7s both; }
+  @keyframes hEntra { from { opacity: 0; transform: translateY(2.2rem) scale(.82) rotate(-4deg); } }
+  @keyframes hZoom { to { transform: scale(1.06); } }
+  .h-titulo { font-size: clamp(1.4rem, 3.4dvh, 2rem); font-weight: 800; line-height: 1.15; margin-top: 1.4rem; text-shadow: 0 3px 14px rgba(0,0,0,.55); overflow-wrap: anywhere; animation: hSube .6s .15s both; }
+  .h-artista { font-size: 1rem; opacity: .85; margin-top: .35rem; animation: hSube .6s .25s both; }
+  @keyframes hSube { from { opacity: 0; transform: translateY(1rem); } }
+  .h-eq { display: flex; align-items: flex-end; justify-content: center; gap: 4px; height: 1.6rem; margin-top: 1.1rem; }
+  .h-eq i { width: 5px; height: 100%; border-radius: 3px; background: #1ed760; transform-origin: bottom; animation: hEq .9s ease-in-out infinite alternate; }
+  .h-eq i:nth-child(2) { animation-duration: .7s; animation-delay: -.3s; } .h-eq i:nth-child(3) { animation-duration: 1.1s; animation-delay: -.6s; }
+  .h-eq i:nth-child(4) { animation-duration: .8s; animation-delay: -.2s; } .h-eq i:nth-child(5) { animation-duration: 1s; animation-delay: -.5s; }
+  @keyframes hEq { from { transform: scaleY(.18); } to { transform: scaleY(1); } }
+  .historia.quieto .h-eq i { animation-play-state: paused; }
+  .historia.quieto .h-tapa { animation-play-state: paused; }
+  .h-vinilo { position: relative; width: min(64vw, 36dvh, 17rem); aspect-ratio: 1; border-radius: 50%; background: repeating-radial-gradient(circle, #111 0 2px, #1c1c1c 2px 4px); box-shadow: 0 1.6rem 3.4rem rgba(0,0,0,.7); animation: hGira 6s linear infinite, hEntra .8s both; display: grid; place-items: center; }
+  .h-vinilo img { width: 44%; aspect-ratio: 1; border-radius: 50%; object-fit: cover; border: 3px solid #000; }
+  @keyframes hGira { to { transform: rotate(360deg); } }
+  .historia.quieto .h-vinilo { animation-play-state: paused; }
+  .h-grande { font-family: 'Playfair Display', serif; font-style: italic; font-size: clamp(2.4rem, 7dvh, 3.6rem); line-height: 1; margin-top: 1.4rem; background: linear-gradient(120deg, #ffd36b, #f5a623 45%, #19d3e6); -webkit-background-clip: text; background-clip: text; color: transparent; animation: hSube .7s .2s both; }
+  .h-texto { font-size: 1rem; opacity: .9; margin-top: .6rem; line-height: 1.45; animation: hSube .7s .3s both; }
+  .h-pie { position: absolute; z-index: 3; left: 1rem; right: 1rem; bottom: max(1.2rem, env(safe-area-inset-bottom)); display: grid; gap: .6rem; }
+  .h-pie a, .h-pie button { display: flex; align-items: center; justify-content: center; gap: .5rem; font: inherit; font-weight: 800; font-size: .95rem; text-decoration: none; border-radius: 99px; padding: .85rem 1rem; cursor: pointer; border: none; }
+  .h-pie .verde { background: #1ed760; color: #06210f; }
+  .h-pie .vidrio { background: rgba(255,255,255,.16); color: #fff; border: 1px solid rgba(255,255,255,.35); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+  .h-pie .oro { background: linear-gradient(110deg, #f5a623, #ffd36b); color: #1a1204; }
+  .h-pie small { text-align: center; font-size: .7rem; opacity: .7; }
+  .h-pausa { position: absolute; z-index: 3; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 4.5rem; height: 4.5rem; border-radius: 50%; background: rgba(0,0,0,.45); display: grid; place-items: center; font-size: 1.6rem; pointer-events: none; opacity: 0; transition: opacity .2s; }
+  .historia.quieto .h-pausa { opacity: 1; }
+  @media (prefers-reduced-motion: reduce) { .h-tapa, .h-vinilo, .h-titulo, .h-artista, .h-grande, .h-texto { animation: none !important; } }
+
   /* ---------- Aviso "en construcción" ---------- */
   .aviso {
     position: fixed; inset: 0; z-index: 10; display: grid; place-items: center; padding: 1.5rem;
@@ -454,7 +508,7 @@
     <a class="vivo" id="link-vivo" href="asistencia.html" hidden><span class="punto"></span><span><span id="vivo-txt">Ver asistencia en tiempo real</span><small id="vivo-sub"></small></span></a>
 
     <button class="cancion nodisp" id="cancion" type="button" disabled aria-haspopup="dialog">
-      <img id="cdd-img" src="flyer.jpg" alt="">
+      <span class="aro"><img id="cdd-img" src="flyer.jpg" alt=""></span>
       <span class="cdd-txt"><small>🎵 Canción del día</small><b id="cdd-t">Buscando la canción de hoy…</b><span id="cdd-a"></span></span>
       <span class="cdd-play" id="cdd-play" aria-hidden="true">♪</span>
     </button>
@@ -496,6 +550,23 @@
       <a class="mus-portal" href="apoderados.html">🙋 Pide o dedica una canción en el Portal de apoderados →</a>
     </div>
     <p class="mus-nota">Sin sesión de Spotify se escuchan 30 segundos de cada canción. Cada día hay una canción nueva hasta la fiesta.</p>
+  </div>
+</div>
+
+<div class="historia" id="historia" role="dialog" aria-modal="true" aria-label="Historia de la playlist del grupo" hidden>
+  <div class="h-marco" id="h-marco">
+    <div class="h-fondo" id="h-fondo"></div>
+    <div class="h-barras" id="h-barras" aria-hidden="true"></div>
+    <div class="h-cab">
+      <img id="h-avatar" src="flyer.jpg" alt="">
+      <div><b>Prom Party G'30</b><small id="h-sub">La banda sonora</small></div>
+      <button type="button" id="h-sonido" aria-label="Silenciar">🔊</button>
+      <button type="button" id="h-cerrar" aria-label="Cerrar">✕</button>
+    </div>
+    <div class="h-tocar" id="h-tocar" aria-hidden="true"></div>
+    <div class="h-escena" id="h-escena" aria-live="polite"></div>
+    <div class="h-pausa" aria-hidden="true">❚❚</div>
+    <div class="h-pie" id="h-pie"></div>
   </div>
 </div>
 
@@ -672,7 +743,140 @@ function cerrarMusica() {
   document.getElementById("mus-track").textContent = ""; document.getElementById("mus-lista").textContent = "";   // al cerrar se detiene la música
   if (antesMusica) antesMusica.focus();
 }
-document.getElementById("cancion").addEventListener("click", abrirMusica);
+document.getElementById("cancion").addEventListener("click", () => cdd && cdd.historia && cdd.historia.length ? abrirHistoria() : abrirMusica());
+
+/* ---------- Historia: 10 canciones de la playlist, como una historia de Instagram ----------
+   Portada de cada canción, su nombre y 30 s de música. Toca a la derecha para avanzar, a la izquierda para volver,
+   mantén apretado para pausar y desliza hacia abajo para cerrar. */
+const hist = { el: document.getElementById("historia"), escena: document.getElementById("h-escena"), pie: document.getElementById("h-pie"),
+  barras: document.getElementById("h-barras"), fondo: document.getElementById("h-fondo"), audio: new Audio(),
+  i: 0, lam: [], t: 0, dur: 0, pausa: false, reloj: 0, antes: 0, foco: null };
+hist.audio.preload = "auto";
+const DUR_INTRO = 4500, DUR_CANCION = 8000;
+const sp = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+function laminas() {
+  const l = [{ tipo: "intro", dur: DUR_INTRO }];
+  cdd.historia.forEach((c, k) => l.push({ tipo: "cancion", c, k, dur: DUR_CANCION }));
+  l.push({ tipo: "fin", dur: 0 });
+  return l;
+}
+function abrirHistoria() {
+  hist.lam = laminas(); hist.foco = document.activeElement;
+  hist.barras.innerHTML = hist.lam.map(() => "<i><b></b></i>").join("");
+  document.getElementById("h-avatar").src = cdd.playlist.portada || "flyer.jpg";
+  document.getElementById("h-sub").textContent = `La banda sonora · ${cdd.playlist.total} canciones`;
+  hist.el.hidden = false; document.body.style.overflow = "hidden";
+  document.getElementById("h-cerrar").focus({ preventScroll: true });
+  ir(0);
+  cancelAnimationFrame(hist.reloj); hist.antes = performance.now(); hist.reloj = requestAnimationFrame(avanzar);
+}
+function cerrarHistoria() {
+  if (hist.el.hidden) return;
+  cancelAnimationFrame(hist.reloj);
+  hist.audio.pause(); hist.audio.removeAttribute("src"); hist.audio.load();
+  hist.el.hidden = true; hist.el.classList.remove("quieto"); hist.pausa = false; document.body.style.overflow = "";
+  hist.fondo.textContent = "";
+  if (hist.foco) hist.foco.focus({ preventScroll: true });
+}
+function sonar(c) {
+  if (!c || !c.p) { hist.audio.pause(); return; }
+  if (hist.audio.dataset.id !== c.id) { hist.audio.src = c.p; hist.audio.dataset.id = c.id; }
+  if (!hist.pausa) hist.audio.play().catch(() => {});
+}
+function fondo(url) {
+  const d = document.createElement("div"); d.className = "capa"; d.style.backgroundImage = `url("${String(url).replace(/"/g, "")}")`;
+  hist.fondo.append(d); requestAnimationFrame(() => requestAnimationFrame(() => d.classList.add("on")));
+  while (hist.fondo.children.length > 2) hist.fondo.firstChild.remove();
+}
+function ir(n) {
+  n = Math.max(0, Math.min(n, hist.lam.length - 1));
+  hist.i = n; hist.t = 0;
+  const L = hist.lam[n], total = cdd.historia.length;
+  [...hist.barras.children].forEach((b, k) => b.firstChild.style.width = k < n ? "100%" : "0%");
+  if (L.tipo === "intro") {
+    fondo(cdd.playlist.portada || cdd.historia[0].img);
+    hist.escena.innerHTML = `<p class="h-eti">La banda sonora de la</p>
+      <div class="h-vinilo"><img src="${sp(cdd.playlist.portada || cdd.historia[0].img)}" alt=""></div>
+      <p class="h-grande">G'30</p>
+      <p class="h-texto">${sp(cdd.playlist.total)} canciones elegidas por el grupo.<br>Hoy suenan estas ${total} 🎶</p>`;
+    hist.pie.innerHTML = `<small>Toca para avanzar ›</small>`;
+    sonar(cdd.historia[0]);
+  } else if (L.tipo === "cancion") {
+    const c = L.c;
+    fondo(c.img);
+    hist.escena.innerHTML = `<p class="h-eti">${L.k === 0 ? "★ Canción del día" : "#" + (L.k + 1) + " de " + total}</p>
+      <img class="h-tapa" src="${sp(c.img)}" alt="Portada de ${sp(c.t)}">
+      <p class="h-titulo">${sp(c.t)}</p><p class="h-artista">${sp(c.a)}</p>
+      <div class="h-eq" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>`;
+    hist.pie.innerHTML = `<a class="vidrio" href="https://open.spotify.com/track/${encodeURIComponent(c.id)}" target="_blank" rel="noopener">▶ Escuchar completa en Spotify</a>`;
+    sonar(c);
+    const sig = hist.lam[n + 1];
+    if (sig && sig.c) new Image().src = sig.c.img;   // la portada siguiente ya queda cargada
+  } else {
+    fondo(cdd.playlist.portada || cdd.historia[0].img);
+    hist.escena.innerHTML = `<p class="h-eti">Prom Party G'30 · 16 de diciembre</p>
+      <div class="h-vinilo"><img src="${sp(cdd.playlist.portada || cdd.historia[0].img)}" alt=""></div>
+      <p class="h-grande" style="font-size:clamp(1.9rem,5.5dvh,2.8rem)">¿Falta tu canción?</p>
+      <p class="h-texto">Pídela o dedícasela a tu hijo/a en el Portal de apoderados. Mañana suenan otras 10.</p>`;
+    hist.pie.innerHTML = `<a class="oro" href="apoderados.html">🙋 Pide tu canción</a>
+      <button class="verde" type="button" id="h-completa">🎧 Escuchar la playlist completa</button>
+      <button class="vidrio" type="button" id="h-otra">↺ Ver de nuevo</button>`;
+    document.getElementById("h-completa").onclick = () => { cerrarHistoria(); abrirMusica(); };
+    document.getElementById("h-otra").onclick = () => ir(1);
+    [...hist.barras.children].forEach(b => b.firstChild.style.width = "100%");
+  }
+  hist.pie.querySelectorAll("a[target]").forEach(a => a.addEventListener("click", () => pausar(true)));
+}
+function avanzar(ahora) {
+  const dt = Math.min(250, ahora - hist.antes);   // un teléfono lento no frena la historia hist.antes = ahora;
+  const L = hist.lam[hist.i];
+  if (!hist.pausa && L && L.dur) {
+    hist.t += dt;
+    hist.barras.children[hist.i].firstChild.style.width = Math.min(100, hist.t / L.dur * 100) + "%";
+    if (hist.t >= L.dur) ir(hist.i + 1);
+  }
+  hist.reloj = requestAnimationFrame(avanzar);
+}
+function pausar(si) {
+  hist.pausa = si; hist.el.classList.toggle("quieto", si);
+  if (si) hist.audio.pause();
+  else { const L = hist.lam[hist.i]; if (L && L.tipo !== "fin") hist.audio.play().catch(() => {}); }
+}
+/* Gestos: toque (izquierda / derecha), mantener (pausa), deslizar hacia abajo (cerrar) */
+(() => {
+  const capa = document.getElementById("h-tocar");
+  let x0 = 0, y0 = 0, mantener = 0, mantenido = false, abajo = false;
+  capa.addEventListener("pointerdown", e => {
+    x0 = e.clientX; y0 = e.clientY; mantenido = false; abajo = true;
+    clearTimeout(mantener); mantener = setTimeout(() => { mantenido = true; pausar(true); }, 230);
+  });
+  const soltar = e => {
+    if (!abajo) return; abajo = false; clearTimeout(mantener);
+    const dy = e.clientY - y0, dx = e.clientX - x0;
+    if (dy > 90 && Math.abs(dy) > Math.abs(dx)) return cerrarHistoria();
+    if (mantenido) return pausar(false);
+    if (Math.abs(dx) > 60) return ir(hist.i + (dx < 0 ? 1 : -1));
+    const r = capa.getBoundingClientRect();
+    ir(hist.i + (e.clientX - r.left < r.width / 3 ? -1 : 1));
+  };
+  capa.addEventListener("pointerup", soltar);
+  capa.addEventListener("pointercancel", () => { abajo = false; clearTimeout(mantener); if (mantenido) pausar(false); });
+})();
+document.getElementById("h-cerrar").addEventListener("click", cerrarHistoria);
+document.getElementById("h-sonido").addEventListener("click", e => {
+  hist.audio.muted = !hist.audio.muted;
+  e.currentTarget.textContent = hist.audio.muted ? "🔇" : "🔊";
+  e.currentTarget.setAttribute("aria-label", hist.audio.muted ? "Activar sonido" : "Silenciar");
+});
+document.addEventListener("keydown", e => {
+  if (hist.el.hidden) return;
+  if (e.key === "Escape") cerrarHistoria();
+  else if (e.key === "ArrowRight") ir(hist.i + 1);
+  else if (e.key === "ArrowLeft") ir(hist.i - 1);
+  else if (e.key === " " && e.target === document.body) { e.preventDefault(); pausar(!hist.pausa); }
+});
+document.addEventListener("visibilitychange", () => { if (document.hidden && !hist.el.hidden) pausar(true); });
 document.getElementById("mus-cerrar").addEventListener("click", cerrarMusica);
 musica.addEventListener("click", e => { if (e.target === musica) cerrarMusica(); });
 document.addEventListener("keydown", e => { if (e.key === "Escape") cerrarMusica(); });
