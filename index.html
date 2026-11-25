@@ -705,18 +705,35 @@ function pintarCancion(r) {
   img.src = r.hoy.img || r.playlist.portada || "flyer.jpg"; img.onerror = () => { img.onerror = null; img.src = "flyer.jpg"; };
   b.setAttribute("aria-label", "Canción del día: " + r.hoy.t + " de " + r.hoy.a + ". Escuchar");
 }
+/* La playlist se lee de musica.json (lo actualiza un lector automático desde Spotify).
+   Orden del día: el mismo para todos ese día; solo canciones sin letra explícita; la primera es la canción del día. */
+const N_HISTORIA = 10;
+function numero(texto) {   // número fijo a partir de un texto (para mezclar igual en todos los teléfonos)
+  let h1 = 0xdeadbeef, h2 = 0x41c6ce57;
+  for (let i = 0; i < texto.length; i++) { const c = texto.charCodeAt(i); h1 = Math.imul(h1 ^ c, 2654435761); h2 = Math.imul(h2 ^ c, 1597334677); }
+  h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+  h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+  return 4294967296 * (2097151 & h2) + (h1 >>> 0);
+}
+function ordenDelDia(lista, fecha) {
+  const o = lista.slice();
+  for (let k = o.length - 1; k > 0; k--) { const r = numero("g30-" + fecha + "-" + k) % (k + 1); [o[k], o[r]] = [o[r], o[k]]; }
+  return o;
+}
+function delDia(m) {
+  let aptas = m.canciones.filter(c => !c.e);
+  if (!aptas.length) aptas = m.canciones;
+  const hoy = hoyChile(), ayer = new Intl.DateTimeFormat("en-CA", { timeZone: "America/Santiago" }).format(new Date(Date.now() - 864e5));
+  const orden = ordenDelDia(aptas, hoy);
+  if (orden.length > 1 && orden[0].id === ordenDelDia(aptas, ayer)[0].id) orden.push(orden.shift());   // no repetir la de ayer
+  const historia = orden.slice(0, N_HISTORIA).map(c => ({ id: c.id, t: c.t, a: c.a, p: c.p, img: c.img || m.portada }));
+  return { ok: true, disponible: true, fecha: hoy, hoy: historia[0], historia, playlist: { id: m.id, nombre: m.nombre, portada: m.portada, total: m.canciones.length } };
+}
 async function cargarCancion() {
-  let guardada = null;
-  try { guardada = JSON.parse(localStorage.getItem("cdd_g30") || "null"); } catch (_) {}
-  const yaVista = !!(guardada && guardada.fecha === hoyChile());
-  if (yaVista) pintarCancion(guardada);   // se ve al instante; igual se confirma con el servidor
-  if (!window.API_URL) return pintarCancion(null);
   try {
-    const r = await (await fetch(window.API_URL, { method: "POST", body: JSON.stringify({ accion: "cancion" }) })).json();
-    const ok = !!(r && r.ok);
-    pintarCancion(ok ? r : null);
-    try { ok && r.disponible ? localStorage.setItem("cdd_g30", JSON.stringify(r)) : localStorage.removeItem("cdd_g30"); } catch (_) {}
-  } catch (_) { if (!yaVista) pintarCancion(null); }
+    const m = await (await fetch("musica.json?d=" + hoyChile() + "-" + new Date().getHours(), { cache: "no-cache" })).json();
+    pintarCancion(m && m.ok && m.canciones && m.canciones.length ? delDia(m) : null);
+  } catch (_) { pintarCancion(null); }
 }
 function reproductor(tipo, id, alto) {
   const f = document.createElement("iframe");

@@ -711,7 +711,8 @@ $("borrarFoto").onclick = () => {
 };
 
 /* ---------- Música: pedir, votar y dedicar ---------- */
-let musicaDe = {}, playlistId = "", resultados = [], musicaCargada = false;   // musicaDe: folio → datos del servidor
+let musicaDe = {}, playlistId = "", resultados = [], musicaCargada = false, playlistJson = "";
+fetch("musica.json", { cache: "no-cache" }).then(r => r.json()).then(m => { if (m && m.ok && m.id) { playlistJson = String(m.id).replace(/[^A-Za-z0-9]/g, ""); if (datos && (vista === "musica" || vista === "recuerdos")) pintarLista(vista === "musica" ? "musListaPlayer" : "recListaPlayer", vista === "musica" ? "musLista" : "recLista", vista); } }).catch(() => {});   // musicaDe: folio → datos del servidor
 const primerNombre = n => String(n).trim().split(/\s+/)[0];
 const clave = (t, a) => (String(t).replace(/[\(\[].*?[\)\]]/g, "") + "|" + a).normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/[^a-z0-9|]/g, "");
 function tapa(img, alt) {
@@ -735,9 +736,9 @@ function noDisponible() {
 function pintarLista(caja, tarjeta, enVista) {
   if (!musicaCargada) { $(tarjeta).hidden = true; return; }
   $(tarjeta).hidden = false;
-  const c = $(caja);
-  if (!playlistId) { if (!c.querySelector(".lista-nodisp")) c.replaceChildren(noDisponible()); }
-  else if (vista === enVista && !c.querySelector("iframe")) c.replaceChildren(marco("playlist", playlistId, 352));
+  const c = $(caja), id = playlistId || playlistJson;
+  if (!id) { if (!c.querySelector(".lista-nodisp")) c.replaceChildren(noDisponible()); }
+  else if (vista === enVista && !c.querySelector("iframe")) c.replaceChildren(marco("playlist", id, 352));
 }
 function marco(tipo, id, alto) {
   const f = document.createElement("iframe");
