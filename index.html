@@ -312,6 +312,11 @@
   .cancion:active { transform: translateY(.2rem); }
   .cancion:focus-visible { outline: 3px solid var(--cian); outline-offset: 3px; }
   .cancion[hidden] { display: none; }
+  .cancion.nodisp { cursor: default; background: rgba(255,255,255,.05); border-color: rgba(255,255,255,.18); box-shadow: 0 .3rem 0 rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.1); }
+  .cancion.nodisp:hover, .cancion.nodisp:active { transform: none; filter: none; }
+  .cancion.nodisp img { filter: grayscale(.8) brightness(.7); }
+  .cancion.nodisp .cdd-txt small { color: var(--suave); }
+  .cancion.nodisp .cdd-play { background: rgba(255,255,255,.12); color: #fff; box-shadow: none; padding-left: 0; font-size: .85rem; }
   .cancion img { width: 3.2rem; height: 3.2rem; flex: none; border-radius: .7rem; object-fit: cover; background: #10173a; box-shadow: 0 .3rem .8rem rgba(0,0,0,.4); }
   .cdd-txt { flex: 1; min-width: 0; }
   .cdd-txt small { display: block; font-size: .66rem; font-weight: 800; letter-spacing: .16em; text-transform: uppercase; color: #5ff09a; }
@@ -448,10 +453,10 @@
     <p class="mensaje-post" id="mensaje-post" hidden></p>
     <a class="vivo" id="link-vivo" href="asistencia.html" hidden><span class="punto"></span><span><span id="vivo-txt">Ver asistencia en tiempo real</span><small id="vivo-sub"></small></span></a>
 
-    <button class="cancion" id="cancion" type="button" hidden aria-haspopup="dialog">
-      <img id="cdd-img" alt="">
-      <span class="cdd-txt"><small>🎵 Canción del día</small><b id="cdd-t"></b><span id="cdd-a"></span></span>
-      <span class="cdd-play" aria-hidden="true">▶</span>
+    <button class="cancion nodisp" id="cancion" type="button" disabled aria-haspopup="dialog">
+      <img id="cdd-img" src="flyer.jpg" alt="">
+      <span class="cdd-txt"><small>🎵 Canción del día</small><b id="cdd-t">Buscando la canción de hoy…</b><span id="cdd-a"></span></span>
+      <span class="cdd-play" id="cdd-play" aria-hidden="true">♪</span>
     </button>
 
     <div class="botones">
@@ -612,27 +617,35 @@ document.addEventListener("visibilitychange", () => { if (!document.hidden) cons
 const hoyChile = () => new Intl.DateTimeFormat("en-CA", { timeZone: "America/Santiago" }).format(new Date());
 let cdd = null;
 function pintarCancion(r) {
-  cdd = r;
-  const b = document.getElementById("cancion");
-  if (!r || !r.disponible) { b.hidden = true; return; }
+  cdd = r && r.disponible ? r : null;
+  const b = document.getElementById("cancion"), img = document.getElementById("cdd-img"), play = document.getElementById("cdd-play");
+  b.hidden = false;
+  if (!cdd) {   // la playlist del grupo todavía es privada (o el servidor no responde): se muestra como no disponible
+    b.classList.add("nodisp"); b.disabled = true;
+    document.getElementById("cdd-t").textContent = "No disponible por ahora";
+    document.getElementById("cdd-a").textContent = "Pronto podrás escuchar la playlist del grupo";
+    img.onerror = null; img.src = "flyer.jpg"; play.textContent = "🔒";
+    b.setAttribute("aria-label", "Canción del día: no disponible por ahora");
+    return;
+  }
+  b.classList.remove("nodisp"); b.disabled = false; play.textContent = "▶";
   document.getElementById("cdd-t").textContent = r.hoy.t;
   document.getElementById("cdd-a").textContent = r.hoy.a;
-  const img = document.getElementById("cdd-img");
   img.src = r.hoy.img || r.playlist.portada || "flyer.jpg"; img.onerror = () => { img.onerror = null; img.src = "flyer.jpg"; };
   b.setAttribute("aria-label", "Canción del día: " + r.hoy.t + " de " + r.hoy.a + ". Escuchar");
-  b.hidden = false;
 }
 async function cargarCancion() {
   let guardada = null;
   try { guardada = JSON.parse(localStorage.getItem("cdd_g30") || "null"); } catch (_) {}
-  if (guardada && guardada.fecha === hoyChile()) pintarCancion(guardada);   // se ve al instante; igual se confirma con el servidor
-  if (!window.API_URL) return;
+  const yaVista = !!(guardada && guardada.fecha === hoyChile());
+  if (yaVista) pintarCancion(guardada);   // se ve al instante; igual se confirma con el servidor
+  if (!window.API_URL) return pintarCancion(null);
   try {
     const r = await (await fetch(window.API_URL, { method: "POST", body: JSON.stringify({ accion: "cancion" }) })).json();
-    if (!r || !r.ok) return;
-    pintarCancion(r);
-    try { r.disponible ? localStorage.setItem("cdd_g30", JSON.stringify(r)) : localStorage.removeItem("cdd_g30"); } catch (_) {}
-  } catch (_) {}
+    const ok = !!(r && r.ok);
+    pintarCancion(ok ? r : null);
+    try { ok && r.disponible ? localStorage.setItem("cdd_g30", JSON.stringify(r)) : localStorage.removeItem("cdd_g30"); } catch (_) {}
+  } catch (_) { if (!yaVista) pintarCancion(null); }
 }
 function reproductor(tipo, id, alto) {
   const f = document.createElement("iframe");

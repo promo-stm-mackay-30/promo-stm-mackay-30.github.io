@@ -163,6 +163,10 @@
   .musica-hoja .btn + .btn { margin-top: .7rem; }
   .btn.dedicar { --edge: #5a1f86; color: #fff; background: linear-gradient(110deg, #ff3d7f, var(--viol)); animation: none; }
   .spotify-marco iframe { display: block; width: 100%; border: 0; border-radius: 12px; }
+  .lista-nodisp { display: flex; align-items: center; gap: .9rem; padding: 1rem; border-radius: 12px; background: rgba(0,0,0,.28); border: 1px dashed rgba(255,255,255,.2); }
+  .lista-nodisp > span { font-size: 1.8rem; flex: none; }
+  .lista-nodisp b { display: block; }
+  .lista-nodisp small { display: block; color: var(--suave); font-size: .84rem; line-height: 1.4; margin-top: .15rem; }
 
   /* ---------- Barra inferior y hoja de confirmación ---------- */
   .barra { position: fixed; z-index: 5; left: 50%; transform: translateX(-50%); bottom: max(.6rem, env(safe-area-inset-bottom)); width: min(calc(100% - 1.2rem), 29rem); display: grid; grid-template-columns: repeat(5, 1fr); gap: .2rem; padding: .35rem; border-radius: 1.4rem; background: rgba(14,19,48,.94); border: 1px solid var(--borde); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); box-shadow: 0 1rem 2.4rem rgba(0,0,0,.55); }
@@ -366,7 +370,7 @@ function pantalla(p) {
   window.scrollTo(0, 0);
 }
 function cerrarSesion(texto) {
-  sesion = ""; datos = null; nuevaFoto = ""; musicaDe = {}; playlistId = "";
+  sesion = ""; datos = null; nuevaFoto = ""; musicaDe = {}; playlistId = ""; musicaCargada = false;
   Object.keys(fotos).forEach(k => delete fotos[k]);
   guardado.poner("localStorage", SESION, null);
   cerrarHoja(); pantalla("entrada"); mensaje("e1", texto || "");
@@ -707,7 +711,7 @@ $("borrarFoto").onclick = () => {
 };
 
 /* ---------- Música: pedir, votar y dedicar ---------- */
-let musicaDe = {}, playlistId = "", resultados = [];   // musicaDe: folio → datos del servidor
+let musicaDe = {}, playlistId = "", resultados = [], musicaCargada = false;   // musicaDe: folio → datos del servidor
 const primerNombre = n => String(n).trim().split(/\s+/)[0];
 const clave = (t, a) => (String(t).replace(/[\(\[].*?[\)\]]/g, "") + "|" + a).normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/[^a-z0-9|]/g, "");
 function tapa(img, alt) {
@@ -722,6 +726,19 @@ function filaCancion(c) {
   a.className = "art"; a.textContent = c.a || "—"; t.append(b, a);
   f.append(tapa(c.img), t); return f;
 }
+function noDisponible() {
+  const d = document.createElement("div"); d.className = "lista-nodisp";
+  d.innerHTML = '<span>🔒</span><div><b>No disponible por ahora</b><small>La playlist del grupo todavía no está abierta. Cuando lo esté, podrás escucharla aquí.</small></div>';
+  return d;
+}
+/* Reproductor de la playlist en Música o Recuerdos: si la lista todavía es privada, se muestra "No disponible" */
+function pintarLista(caja, tarjeta, enVista) {
+  if (!musicaCargada) { $(tarjeta).hidden = true; return; }
+  $(tarjeta).hidden = false;
+  const c = $(caja);
+  if (!playlistId) { if (!c.querySelector(".lista-nodisp")) c.replaceChildren(noDisponible()); }
+  else if (vista === enVista && !c.querySelector("iframe")) c.replaceChildren(marco("playlist", playlistId, 352));
+}
 function marco(tipo, id, alto) {
   const f = document.createElement("iframe");
   f.src = `https://open.spotify.com/embed/${tipo}/${id}?utm_source=generator&theme=0`;
@@ -735,9 +752,9 @@ async function cargarMusica() {
   try {
     const r = await api({ accion: "musica", sesion, folio });
     if (r.sesion === false) return cerrarSesion(r.msg);
-    if (r.msg === "Acción desconocida") { $("ranking").innerHTML = '<li class="nota">La sección de música estará disponible muy pronto.</li>'; return; }
+    if (r.msg === "Acción desconocida") { musicaCargada = true; $("ranking").innerHTML = '<li class="nota">La sección de música estará disponible muy pronto.</li>'; pintarLista("musListaPlayer", "musLista", "musica"); return; }
     if (!r.ok) return;
-    musicaDe[folio] = r; playlistId = r.playlist || "";
+    musicaDe[folio] = r; playlistId = r.playlist || ""; musicaCargada = true;
     if (datos && actual().folio === folio) pintarMusica();
   } catch (_) { if (!musicaDe[folio]) $("ranking").innerHTML = '<li class="nota">Sin conexión. Vuelve a intentarlo.</li>'; }
 }
@@ -782,12 +799,10 @@ function pintarMusica() {
     }
     ol.append(li);
   });
-  const player = $("musListaPlayer");
-  $("musLista").hidden = !playlistId;
-  if (playlistId && vista === "musica" && !player.firstChild) player.append(marco("playlist", playlistId, 352));
+  pintarLista("musListaPlayer", "musLista", "musica");
 }
 function pintarRecuerdos() {
-  const mostrar = () => { $("recLista").hidden = !playlistId; if (playlistId && vista === "recuerdos" && !$("recListaPlayer").firstChild) $("recListaPlayer").append(marco("playlist", playlistId, 352)); };
+  const mostrar = () => pintarLista("recListaPlayer", "recLista", "recuerdos");
   mostrar();
   if (!musicaDe[actual().folio]) cargarMusica().then(mostrar);
 }
