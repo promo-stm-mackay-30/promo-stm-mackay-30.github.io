@@ -22,7 +22,7 @@
   .aviso-sim { border:1px dashed rgba(200,170,255,.8); background:rgba(138,77,255,.14); color:#e4d6ff; border-radius:1rem; padding:.7rem .9rem; font-size:.88rem; margin-bottom:1rem; text-align:center; }
 
   /* acceso */
-  .codigo { text-transform:uppercase; letter-spacing:.2em; text-align:center; font-size:1.2rem !important; }
+  .codigo { letter-spacing:.14em; text-align:center; font-size:1.2rem !important; }
 
   /* números */
   .cifras { display:grid; grid-template-columns:repeat(3,1fr); gap:.6rem; margin-bottom:1rem; }
@@ -35,6 +35,7 @@
   .leyenda span { display:inline-flex; align-items:center; gap:.35rem; }
   .leyenda svg { width:.9rem; height:1.3rem; }
   .grafo { position:relative; margin:0 -.6rem; border-radius:1rem; overflow:hidden; background:radial-gradient(70% 55% at 50% 50%,rgba(138,77,255,.16),transparent 75%),rgba(0,0,0,.32); }
+  .pausa { position:absolute; top:.5rem; right:.5rem; z-index:2; font:inherit; font-size:.72rem; font-weight:700; color:var(--suave); cursor:pointer; padding:.35rem .7rem; border-radius:99px; border:1px solid var(--borde); background:rgba(7,10,28,.75); }
   .grafo canvas { display:block; width:100%; touch-action:manipulation; cursor:pointer; }
   .movs { display:grid; gap:.35rem; margin-top:.7rem; }
   .movs div { display:flex; align-items:center; gap:.5rem; font-size:.85rem; padding:.45rem .7rem; border-radius:.7rem; background:rgba(255,255,255,.05); border:1px solid var(--borde); animation:llega .5s cubic-bezier(.2,.9,.3,1.3) both; }
@@ -42,7 +43,37 @@
   .movs div.R i { background:var(--oro); box-shadow:0 0 .6rem var(--oro); }
   .movs div span { margin-left:auto; color:var(--suave); font-variant-numeric:tabular-nums; flex:none; }
   @keyframes llega { from { opacity:0; transform:translateY(-.5rem); } }
-  .toast { position:fixed; left:50%; bottom:max(1.2rem,env(safe-area-inset-bottom)); transform:translateX(-50%); z-index:30; background:#0c1230; border:1px solid var(--oro-2); color:#fff; padding:.6rem 1rem; border-radius:99px; font-size:.9rem; font-weight:700; box-shadow:0 .6rem 1.6rem rgba(0,0,0,.5); max-width:92vw; text-align:center; }
+
+  /* ficha del alumno (la misma credencial del escáner) */
+  .ficha-fondo { position:fixed; inset:0; z-index:40; overflow:auto; display:grid; place-items:center; padding:1.2rem; background:rgba(4,6,18,.88); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); }
+  .ficha-caja { width:min(100%,26rem); text-align:center; padding:3px; border-radius:1.6rem; background:linear-gradient(150deg,#ffe9ae,var(--oro) 30%,#7a5310 50%,var(--cian) 78%,#ffe9ae); box-shadow:0 0 4rem rgba(245,166,35,.3); animation:sube .35s cubic-bezier(.2,.9,.3,1.3) both; }
+  @keyframes sube { from { opacity:0; transform:translateY(1.2rem) scale(.94); } }
+  .cred { border-radius:1.45rem; padding:1.2rem 1rem 1.1rem; background:radial-gradient(120% 55% at 50% 0%,#202c66,transparent 70%),#0a0f28; }
+  .cred .marca { font-size:.68rem; letter-spacing:.28em; text-transform:uppercase; color:var(--oro-2); font-weight:700; }
+  .cred .rot { display:block; font-size:.64rem; letter-spacing:.3em; text-transform:uppercase; color:var(--suave); }
+  .cred .adorno { display:flex; align-items:center; gap:.7rem; justify-content:center; color:var(--oro); margin:.5rem 0; font-size:.8rem; }
+  .cred .adorno::before, .cred .adorno::after { content:""; height:1px; width:4.5rem; background:linear-gradient(90deg,transparent,var(--oro)); }
+  .cred .adorno::after { transform:scaleX(-1); }
+  .cred .silueta { width:2.4rem; height:3.8rem; margin:0 auto .5rem; display:block; filter:drop-shadow(0 0 .6rem currentColor); }
+  .cred .nombre { font-size:clamp(1.9rem,9vw,2.6rem); font-weight:800; line-height:1.08; margin:.25rem 0 .9rem; overflow-wrap:break-word; background:linear-gradient(180deg,#fff,#ffe3a1); -webkit-background-clip:text; background-clip:text; color:transparent; }
+  .cred .grado { display:grid; grid-template-columns:auto 1fr; gap:.7rem; align-items:stretch; margin-bottom:.7rem; }
+  .cred .curso { display:grid; place-items:center; align-content:center; min-width:6.2rem; padding:.6rem .7rem; border-radius:1.1rem; color:#1a1204; background:linear-gradient(160deg,#fff0c4,var(--oro-2) 40%,var(--oro)); }
+  .cred .curso b { font-size:2.5rem; line-height:1; font-weight:800; }
+  .cred .curso span { font-size:.56rem; letter-spacing:.25em; text-transform:uppercase; font-weight:800; opacity:.65; }
+  .cred .caja-d { border-radius:1.1rem; border:1px solid var(--borde); background:rgba(255,255,255,.06); padding:.7rem .8rem; }
+  .cred .colegio { display:grid; align-content:center; text-align:left; border-left:4px solid var(--mackay); }
+  .cred .colegio.s { border-left-color:var(--margaret); }
+  .cred .colegio b { font-size:1.1rem; line-height:1.25; margin-top:.2rem; }
+  .cred .apod { margin-bottom:.7rem; }
+  .cred .apod b { display:block; font-size:1.2rem; margin-top:.2rem; }
+  .cred .horas { display:grid; grid-auto-flow:column; grid-auto-columns:1fr; gap:.7rem; }
+  .cred .horas b { display:block; font-size:1.6rem; color:var(--oro-2); font-variant-numeric:tabular-nums; margin-top:.1rem; }
+  .cred .pieta { display:flex; justify-content:space-between; align-items:center; gap:.6rem; margin:.8rem 0 .9rem; font-size:.85rem; color:var(--suave); }
+  .cred .pieta b { color:var(--texto); }
+  .estado { margin-left:auto; padding:.3rem .7rem; border-radius:99px; font-weight:800; font-size:.7rem; letter-spacing:.08em; text-transform:uppercase; border:1px solid var(--ok); color:var(--ok); background:rgba(46,229,157,.12); }
+  .estado.R { border-color:var(--oro); color:var(--oro-2); background:rgba(245,166,35,.12); }
+  .fila-a { cursor:pointer; }
+  .leyenda b { color:var(--texto); font-size:.95rem; }
 
   /* listas */
   .busca { position:relative; margin-bottom:.6rem; }
@@ -78,10 +109,10 @@
   <!-- Acceso con el código de las familias -->
   <section id="acceso">
     <h1>Asistencia en vivo</h1>
-    <p class="sub">Para las familias de la Prom Party G'30. Escribe el <b>código de acceso</b> que usaste para registrarte (lo compartió la organización por WhatsApp).</p>
+    <p class="sub">Para las familias de la Prom Party G'30. Escribe el <b>código de acceso</b> que usaste para registrarte (lo compartió la organización por WhatsApp). El staff puede entrar con su PIN.</p>
     <form class="tarjeta" id="fAcceso" autocomplete="off">
       <label for="codigo">Código de acceso</label>
-      <input type="text" id="codigo" class="codigo" maxlength="20" autocapitalize="characters" spellcheck="false" placeholder="ABCDEF1234">
+      <input type="text" id="codigo" class="codigo" maxlength="40" autocapitalize="none" autocorrect="off" spellcheck="false">
       <div class="msg mal oculto" id="errAcceso" role="alert"></div>
       <div style="height:.8rem"></div>
       <button class="btn" id="entrar" type="submit">Ver asistencia</button>
@@ -105,11 +136,11 @@
       <section class="tarjeta">
         <h2>En la fiesta ahora</h2>
         <div class="leyenda">
-          <span><svg style="color:var(--mackay)"><use href="#hombre"/></svg>The Mackay School</span>
-          <span><svg style="color:var(--margaret)"><use href="#mujer"/></svg>St Margaret's</span>
+          <span><svg style="color:var(--mackay)"><use href="#hombre"/></svg>The Mackay School <b id="gM">0</b></span>
+          <span><svg style="color:var(--margaret)"><use href="#mujer"/></svg>St Margaret's <b id="gS">0</b></span>
         </div>
-        <div class="grafo" id="grafo"><canvas id="lienzo" role="img" aria-label="Grafo de alumnos dentro de la fiesta"></canvas></div>
-        <p class="nota" style="margin:.6rem 0 0;text-align:center">Toca una figura para ver el nombre.</p>
+        <div class="grafo" id="grafo"><canvas id="lienzo" role="img" aria-label="Grafo de alumnos dentro de la fiesta"></canvas><button type="button" class="pausa" id="bPausa">⏸ Pausar</button></div>
+        <p class="nota" style="margin:.6rem 0 0;text-align:center">Toca una figura o un nombre para ver la ficha.</p>
         <div class="movs" id="movs" aria-live="polite"></div>
       </section>
 
@@ -134,7 +165,7 @@
     <p class="pie-vivo" id="pie">Actualizando…</p>
   </section>
 </main>
-<div class="toast oculto" id="toast" role="status"></div>
+<div class="ficha-fondo oculto" id="ficha" role="dialog" aria-modal="true" aria-label="Ficha del alumno"></div>
 
 <script src="config.js"></script>
 <script>
@@ -156,7 +187,6 @@ async function api(body) {
 }
 
 /* ---------- acceso ---------- */
-$("codigo").addEventListener("input", e => { const v = e.target.value.toUpperCase().replace(/\s+/g, ""); if (v !== e.target.value) e.target.value = v; });
 $("fAcceso").addEventListener("submit", async e => {
   e.preventDefault();
   const c = $("codigo").value.trim(); if (!c) return;
@@ -225,50 +255,28 @@ const CUERPO = {
   S: "M7.4 10.4h5.2a2.4 2.4 0 0 1 2.3 1.8l3.4 11.6h-4.1v7.8h-3V23.8H8.8v7.8h-3v-7.8H1.7l3.4-11.6a2.4 2.4 0 0 1 2.3-1.8z"
 };
 const COLOR = { M: "#3d8bff", S: "#ff4d6d" };
-const QUIETO = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-const G = { w: 0, h: 0, R: 0, dpr: 1, alto: 20, hubs: {}, centro: {}, nodos: new Map(), ondas: [], total: { M: 0, S: 0 }, dentro: [], sprites: {}, antes: 0, raf: 0, primera: true };
+const SUAVE = window.matchMedia("(prefers-reduced-motion: reduce)").matches;   // equipo con "reducir movimiento": caminan más lento y sin saltos
+let pausa = false;
+try { pausa = localStorage.getItem("grafo_pausa") === "1"; } catch (_) {}
+const G = { w: 0, h: 0, dpr: 1, alto: 22, nodos: new Map(), ondas: [], total: { M: 0, S: 0 }, sprites: {}, antes: 0, raf: 0, primera: true, elegido: null };
 const lienzo = $("lienzo"), ctx = lienzo.getContext("2d");
+const azar = (a, b) => a + Math.random() * (b - a);
 
 function medir() {
   const ancho = $("grafo").clientWidth;
   if (!ancho) return false;
-  const vertical = ancho < 520;
-  G.w = ancho; G.h = Math.round(vertical ? Math.min(ancho * 1.65, 620) : Math.min(ancho * .6, 460));
-  G.R = vertical ? Math.min(G.w / 2 - 16, G.h / 4 - 20) : Math.min(G.w / 4 - 22, G.h / 2 - 22);
-  G.hubs = vertical ? { M: { x: G.w / 2, y: G.h * .25 }, S: { x: G.w / 2, y: G.h * .75 } } : { M: { x: G.w * .25, y: G.h / 2 }, S: { x: G.w * .75, y: G.h / 2 } };
-  G.centro = { x: G.w / 2, y: G.h / 2 };
+  const w0 = G.w, h0 = G.h;
+  G.w = ancho; G.h = Math.round(ancho < 520 ? Math.min(ancho * 1.5, 600) : Math.min(ancho * .6, 480));
   G.dpr = Math.min(window.devicePixelRatio || 1, 2);
   lienzo.width = Math.round(G.w * G.dpr); lienzo.height = Math.round(G.h * G.dpr); lienzo.style.height = G.h + "px";
-  G.sprites = {};
+  if (w0) G.nodos.forEach(n => { n.x *= G.w / w0; n.y *= G.h / h0; });
+  G.sprites = {}; tamano();
   return true;
 }
-/* reparte n figuras en anillos; si no caben, se achican */
-function anillos(n, alto) {
-  const lista = []; let total = 0, r = 27 + alto * .6;
-  while (total < n && r <= G.R) {
-    const caben = Math.max(1, Math.floor(2 * Math.PI * r / (alto * .82)));
-    lista.push({ r, caben }); total += caben; r += alto + 3;
-  }
-  if (total < n) return null;
-  let resto = n;      // se reparten parejo entre los anillos, según el largo de cada uno
-  lista.forEach((f, i) => { f.k = i === lista.length - 1 ? resto : Math.min(resto, f.caben, Math.round(n * f.caben / total)); resto -= f.k; });
-  return lista;
-}
-function ubicar() {
-  const max = Math.max(G.total.M, G.total.S, 1);
-  let alto = 28; while (alto > 8 && !anillos(max, alto)) alto--;
-  if (alto !== G.alto) G.sprites = {};
-  G.alto = alto;
-  ["M", "S"].forEach(col => {
-    const grupo = G.dentro.filter(a => a.c === col), filas = anillos(grupo.length, alto) || [{ r: G.R, k: grupo.length }];
-    let i = 0;
-    filas.forEach((fila, nivel) => {
-      for (let j = 0; j < fila.k; j++, i++) {
-        const nodo = G.nodos.get(grupo[i].id);
-        nodo.r = fila.r; nodo.base = j / fila.k * Math.PI * 2 + nivel * .6; nodo.vel = (nivel % 2 ? -1 : 1) * (.16 - Math.min(nivel, 5) * .018);
-      }
-    });
-  });
+/* mientras más alumnos, figuras más chicas para que todos quepan en la pista */
+function tamano() {
+  const n = Math.max(1, G.total.M + G.total.S), alto = Math.max(15, Math.min(32, Math.floor(Math.sqrt(G.w * G.h / (n * 5.5)))));
+  if (alto !== G.alto) { G.alto = alto; G.sprites = {}; }
 }
 function sprite(col) {
   if (G.sprites[col]) return G.sprites[col];
@@ -282,104 +290,127 @@ function sprite(col) {
   return (G.sprites[col] = { img: c, w: ancho + m * 2, h: alto + m * 2 });
 }
 const conId = lista => { const veces = {}; return lista.map(a => { const k = a.a + "|" + a.c + "|" + a.k; veces[k] = (veces[k] || 0) + 1; return Object.assign({ id: k + "|" + veces[k] }, a); }); };
+const ponerEnPista = () => { let x, y; do { x = azar(G.alto, G.w - G.alto); y = azar(G.alto, G.h - G.alto); } while (Math.hypot(x - G.w / 2, y - G.h / 2) < 46); return { x, y }; };
 
 function grafico(dentro) {
-  G.dentro = conId(dentro.slice().sort(orden));
-  G.total = { M: G.dentro.filter(a => a.c === "M").length, S: G.dentro.filter(a => a.c === "S").length };
+  const lista = conId(dentro.slice().sort(orden));
+  G.total = { M: lista.filter(a => a.c === "M").length, S: lista.filter(a => a.c === "S").length };
+  $("gM").textContent = G.total.M; $("gS").textContent = G.total.S;
   if (!G.w && !medir()) return;
+  tamano();
   const ahora = performance.now(), vistos = new Set();
-  G.dentro.forEach((a, i) => {
+  lista.forEach((a, i) => {
     vistos.add(a.id);
     let n = G.nodos.get(a.id);
-    if (!n || n.sale) {          // alumno que acaba de entrar: aparece en la puerta (centro) y vuela a su colegio
-      const nuevo = !G.primera;
-      n = { x: G.centro.x, y: G.centro.y, alfa: 0, espera: nuevo ? 0 : ahora + Math.min(i * 25, 1500), brilla: nuevo ? ahora + 6000 : 0 };
+    if (!n || n.sale) {          // quien acaba de entrar sale desde el centro hacia la pista
+      const nuevo = !G.primera, ang = azar(0, Math.PI * 2);
+      n = Object.assign(nuevo ? { x: G.w / 2 + Math.cos(ang) * 30, y: G.h / 2 + Math.sin(ang) * 30 } : ponerEnPista(), {
+        vx: nuevo ? Math.cos(ang) * 70 : 0, vy: nuevo ? Math.sin(ang) * 70 : 0, rumbo: ang, vel: azar(14, 30), fase: azar(0, 6.28),
+        alfa: 0, espera: nuevo ? 0 : ahora + Math.min(i * 20, 1200), brilla: nuevo ? ahora + 6000 : 0 });
       G.nodos.set(a.id, n);
-      if (nuevo) G.ondas.push({ x: G.centro.x, y: G.centro.y, t: ahora, color: "#2ee59d" });
+      if (nuevo) G.ondas.push({ x: G.w / 2, y: G.h / 2, t: ahora, color: "#2ee59d" });
     }
     n.a = a; n.sale = false;
   });
   G.nodos.forEach((n, id) => {
     if (vistos.has(id) || n.sale) return;
-    n.sale = true; n.brilla = ahora + 3000; n.vence = ahora + 3000;
+    const dx = n.x - G.w / 2, dy = n.y - G.h / 2, d = Math.hypot(dx, dy) || 1;
+    n.sale = true; n.vx = dx / d * 55; n.vy = dy / d * 55; n.brilla = ahora + 3000; n.vence = ahora + 3000;
     G.ondas.push({ x: n.x, y: n.y, t: ahora, color: "#f5a623" });
   });
   G.primera = false;
-  ubicar();
   if (!G.raf) G.raf = requestAnimationFrame(cuadro);
 }
-function reiniciarGrafo() { G.nodos.clear(); G.ondas = []; G.dentro = []; G.total = { M: 0, S: 0 }; G.primera = true; previos = null; $("movs").textContent = ""; }
+function reiniciarGrafo() { G.nodos.clear(); G.ondas = []; G.total = { M: 0, S: 0 }; G.primera = true; previos = null; $("movs").textContent = ""; $("gM").textContent = $("gS").textContent = "0"; }
 
-function circulo(x, y, r, relleno, borde, sombra) {
-  ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2);
-  if (sombra) { ctx.shadowColor = sombra; ctx.shadowBlur = 22; }
-  ctx.fillStyle = relleno; ctx.fill(); ctx.shadowBlur = 0;
-  ctx.lineWidth = 2; ctx.strokeStyle = borde; ctx.stroke();
-}
 function texto(t, x, y, px, color, peso) { ctx.font = `${peso || 800} ${px}px Inter, Arial, sans-serif`; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillStyle = color; ctx.fillText(t, x, y); }
+
+/* cada figura camina a su ritmo, cambia de rumbo, esquiva a las demás y así los dos colegios se mezclan */
+function mover(lista, dt, ms) {
+  const m = G.alto * .7, cx = G.w / 2, cy = G.h / 2, aparte = G.alto * .95, central = 30 + G.alto * .55;
+  lista.forEach(n => {
+    if (n.sale || n === G.elegido) return;
+    n.rumbo += (Math.random() - .5) * 3.2 * dt;
+    if ((n.x < m && Math.cos(n.rumbo) < 0) || (n.x > G.w - m && Math.cos(n.rumbo) > 0)) n.rumbo = Math.PI - n.rumbo;
+    if ((n.y < m && Math.sin(n.rumbo) < 0) || (n.y > G.h - m && Math.sin(n.rumbo) > 0)) n.rumbo = -n.rumbo;
+    n.vx += (Math.cos(n.rumbo) * n.vel - n.vx) * 1.6 * dt;
+    n.vy += (Math.sin(n.rumbo) * n.vel - n.vy) * 1.6 * dt;
+    const dx = n.x - cx, dy = n.y - cy, d = Math.hypot(dx, dy) || 1;
+    if (d < central) { n.vx += dx / d * (central - d) * 9 * dt; n.vy += dy / d * (central - d) * 9 * dt; }
+  });
+  for (let i = 0; i < lista.length; i++) {
+    const a = lista[i];
+    for (let j = i + 1; j < lista.length; j++) {
+      const b = lista[j], dx = b.x - a.x, dy = b.y - a.y, d2 = dx * dx + dy * dy;
+      if (d2 >= aparte * aparte || !d2) continue;
+      const d = Math.sqrt(d2), f = (aparte - d) / aparte * 140 * dt;
+      a.vx -= dx / d * f; a.vy -= dy / d * f; b.vx += dx / d * f; b.vy += dy / d * f;
+    }
+  }
+  lista.forEach(n => {
+    if (n === G.elegido) return;
+    const v = Math.hypot(n.vx, n.vy);
+    if (v > 80) { n.vx *= 80 / v; n.vy *= 80 / v; }
+    n.x += n.vx * dt; n.y += n.vy * dt;
+    if (!n.sale) { n.x = Math.max(m * .6, Math.min(G.w - m * .6, n.x)); n.y = Math.max(m, Math.min(G.h - m, n.y)); }
+  });
+}
 
 function cuadro(ms) {
   G.raf = requestAnimationFrame(cuadro);
-  const dt = Math.min((ms - (G.antes || ms)) / 1000, .05); G.antes = ms;
-  const t = QUIETO ? 0 : ms / 1000, c = G.centro;
+  const dt = Math.min(Math.max(0, ms - (G.antes || ms)) / 1000, .05); G.antes = ms;
+  const t = pausa || SUAVE ? 0 : ms / 1000, cx = G.w / 2, cy = G.h / 2;
   ctx.setTransform(G.dpr, 0, 0, G.dpr, 0, 0); ctx.clearRect(0, 0, G.w, G.h);
 
-  // enlaces entre la fiesta y cada colegio (puntos de luz que viajan)
-  ["M", "S"].forEach(col => {
-    const h = G.hubs[col];
-    ctx.beginPath(); ctx.moveTo(c.x, c.y); ctx.lineTo(h.x, h.y); ctx.strokeStyle = COLOR[col]; ctx.globalAlpha = .45; ctx.lineWidth = 2; ctx.stroke(); ctx.globalAlpha = 1;
-    for (let k = 0; k < 3; k++) { const f = (t * .35 + k / 3) % 1; ctx.beginPath(); ctx.arc(c.x + (h.x - c.x) * f, c.y + (h.y - c.y) * f, 2.2, 0, Math.PI * 2); ctx.fillStyle = "#fff"; ctx.globalAlpha = .8 * Math.sin(f * Math.PI); ctx.fill(); ctx.globalAlpha = 1; }
-  });
-  // órbitas
-  const orbitas = { M: new Set(), S: new Set() };
-  G.nodos.forEach(n => { if (!n.sale) orbitas[n.a.c].add(n.r); });
-  ["M", "S"].forEach(col => orbitas[col].forEach(r => { ctx.beginPath(); ctx.arc(G.hubs[col].x, G.hubs[col].y, r, 0, Math.PI * 2); ctx.strokeStyle = "rgba(255,255,255,.07)"; ctx.lineWidth = 1; ctx.stroke(); }));
-
-  // figuras y sus enlaces
-  const figuras = [];
+  const lista = [];
   G.nodos.forEach((n, id) => {
     if (n.espera > ms) return;
-    const h = G.hubs[n.a.c];
-    let tx, ty;
-    if (n.sale) {                 // se va: se aleja de su colegio y se desvanece
-      const dx = n.x - h.x, dy = n.y - h.y, d = Math.hypot(dx, dy) || 1;
-      tx = n.x + dx / d * 60; ty = n.y + dy / d * 60;
-      n.alfa = Math.max(0, n.alfa - dt * .45);
-      if (n.alfa <= 0 || ms > n.vence) { G.nodos.delete(id); return; }
-    } else {
-      const ang = n.base + t * n.vel, flota = QUIETO ? 0 : Math.sin(t * 2 + n.base * 5) * 1.6;
-      tx = h.x + Math.cos(ang) * (n.r + flota); ty = h.y + Math.sin(ang) * (n.r + flota);
-      n.alfa = Math.min(1, n.alfa + dt * 2.5);
-    }
-    const paso = QUIETO ? 1 : Math.min(1, dt * (n.sale ? 1.2 : 4));
-    n.x += (tx - n.x) * paso; n.y += (ty - n.y) * paso;
-    ctx.beginPath(); ctx.moveTo(h.x, h.y); ctx.lineTo(n.x, n.y); ctx.strokeStyle = COLOR[n.a.c]; ctx.globalAlpha = .13 * n.alfa; ctx.lineWidth = 1; ctx.stroke(); ctx.globalAlpha = 1;
-    figuras.push(n);
+    if (n.sale) { n.alfa = Math.max(0, n.alfa - dt * .45); if (n.alfa <= 0 || ms > n.vence) { G.nodos.delete(id); return; } }
+    else n.alfa = Math.min(1, n.alfa + dt * 2.5);
+    lista.push(n);
   });
-  figuras.forEach(n => {
-    const sp = sprite(n.a.c), grande = n.brilla > ms ? 1.5 + Math.sin(ms / 140) * .15 : 1;
-    ctx.globalAlpha = n.alfa;
-    ctx.drawImage(sp.img, n.x - sp.w * grande / 2, n.y - sp.h * grande / 2, sp.w * grande, sp.h * grande);
-    ctx.globalAlpha = 1;
+  if (!pausa) mover(lista, dt * (SUAVE ? .6 : 1), ms);
+
+  // ondas de la pista alrededor del centro
+  for (let k = 0; k < 3; k++) { const f = (t * .22 + k / 3) % 1; ctx.beginPath(); ctx.arc(cx, cy, 26 + f * Math.max(G.w, G.h) * .45, 0, Math.PI * 2); ctx.strokeStyle = "#8a4dff"; ctx.globalAlpha = .22 * (1 - f); ctx.lineWidth = 1.5; ctx.stroke(); }
+  ctx.globalAlpha = 1;
+
+  // enlaces del grafo entre quienes están cerca (violeta cuando se juntan los dos colegios)
+  const cerca = G.alto * 2.3;
+  ctx.lineWidth = 1;
+  for (let i = 0; i < lista.length; i++) {
+    const a = lista[i];
+    for (let j = i + 1; j < lista.length; j++) {
+      const b = lista[j], dx = b.x - a.x, dy = b.y - a.y;
+      if (Math.abs(dx) > cerca || Math.abs(dy) > cerca) continue;
+      const d = Math.hypot(dx, dy);
+      if (d > cerca) continue;
+      ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y);
+      ctx.strokeStyle = a.a.c === b.a.c ? COLOR[a.a.c] : "#c9a2ff"; ctx.globalAlpha = (1 - d / cerca) * .55 * Math.min(a.alfa, b.alfa); ctx.stroke();
+    }
+  }
+  ctx.globalAlpha = 1;
+
+  // figuras bailando
+  lista.forEach(n => {
+    const sp = sprite(n.a.c), grande = n === G.elegido ? 1.8 : n.brilla > ms ? 1.5 + Math.sin(ms / 140) * .15 : 1;
+    const quieta = pausa || SUAVE, giro = quieta ? 0 : Math.sin(t * 3.2 + n.fase) * .16, salto = quieta ? 0 : Math.abs(Math.sin(t * 4 + n.fase)) * -2.2;
+    ctx.save(); ctx.globalAlpha = n.alfa; ctx.translate(n.x, n.y + salto); ctx.rotate(giro);
+    ctx.drawImage(sp.img, -sp.w * grande / 2, -sp.h * grande / 2, sp.w * grande, sp.h * grande);
+    ctx.restore();
   });
 
-  // colegios y centro
-  ["M", "S"].forEach(col => {
-    const h = G.hubs[col];
-    circulo(h.x, h.y, 25, "#0b1130", COLOR[col], COLOR[col]);
-    texto(String(G.total[col]), h.x, h.y - 3, 18, "#fff");
-    texto(col === "M" ? "MACKAY" : "ST MARG.", h.x, h.y + 12, 7, col === "M" ? "#8fb9ff" : "#ff9aac");
-  });
-  const late = QUIETO ? 0 : Math.sin(t * 2.4) * 1.5;
-  circulo(c.x, c.y, 24 + late, "#f5a623", "#ffe9ae", "#f5a623");
-  texto("PROM", c.x, c.y - 6, 9, "#1a1204"); texto("G'30", c.x, c.y + 6, 12, "#1a1204");
+  // centro de la fiesta
+  const late = pausa || SUAVE ? 0 : Math.sin(t * 2.4) * 1.5;
+  ctx.beginPath(); ctx.arc(cx, cy, 26 + late, 0, Math.PI * 2); ctx.shadowColor = "#f5a623"; ctx.shadowBlur = 24; ctx.fillStyle = "#f5a623"; ctx.fill(); ctx.shadowBlur = 0; ctx.lineWidth = 2; ctx.strokeStyle = "#ffe9ae"; ctx.stroke();
+  texto("PROM", cx, cy - 7, 10, "#1a1204"); texto("G'30", cx, cy + 6, 13, "#1a1204");
 
   // ondas de entrada y salida
   G.ondas = G.ondas.filter(o => ms - o.t < 1400);
   G.ondas.forEach(o => { const f = Math.max(0, ms - o.t) / 1400; ctx.beginPath(); ctx.arc(o.x, o.y, 10 + f * 60, 0, Math.PI * 2); ctx.strokeStyle = o.color; ctx.globalAlpha = 1 - f; ctx.lineWidth = 3; ctx.stroke(); ctx.globalAlpha = 1; });
 
   // nombre de quien acaba de entrar o salir
-  figuras.filter(n => n.brilla > ms).slice(-4).forEach(n => {
+  lista.filter(n => n.brilla > ms).slice(-4).forEach(n => {
     const t2 = (n.sale ? "Salió " : "Entró ") + n.a.a;
     ctx.font = "700 11px Inter, Arial, sans-serif";
     const w = ctx.measureText(t2).width + 14, x = Math.max(w / 2 + 3, Math.min(G.w - w / 2 - 3, n.x)), y = Math.max(12, n.y - G.alto - 8);
@@ -387,20 +418,50 @@ function cuadro(ms) {
     ctx.beginPath(); if (ctx.roundRect) ctx.roundRect(x - w / 2, y - 10, w, 20, 10); else ctx.rect(x - w / 2, y - 10, w, 20); ctx.fill(); ctx.stroke();
     texto(t2, x, y + .5, 11, "#fff", 700); ctx.globalAlpha = 1;
   });
-  if (!G.total.M && !G.total.S) texto("Nadie dentro todavía", c.x, c.y + 44, 12, "#b9c3de", 600);
+  if (!G.total.M && !G.total.S) texto("Nadie dentro todavía", cx, cy + 48, 12, "#b9c3de", 600);
 }
-lienzo.addEventListener("pointerdown", e => {
+const pintarPausa = () => { $("bPausa").textContent = pausa ? "▶ Mover" : "⏸ Pausar"; };
+$("bPausa").onclick = () => { pausa = !pausa; try { localStorage.setItem("grafo_pausa", pausa ? "1" : "0"); } catch (_) {} pintarPausa(); };
+pintarPausa();
+lienzo.addEventListener("click", e => {
   const r = lienzo.getBoundingClientRect(), x = (e.clientX - r.left) * G.w / r.width, y = (e.clientY - r.top) * G.h / r.height;
-  let mejor = null, d = Math.max(18, G.alto);
+  let mejor = null, d = Math.max(26, G.alto);
   G.nodos.forEach(n => { const k = Math.hypot(n.x - x, n.y - y); if (!n.sale && k < d) { d = k; mejor = n; } });
-  if (mejor) { mejor.brilla = performance.now() + 2500; toast(mejor.a.a + " · " + mejor.a.k + (mejor.a.he ? " · entró " + mejor.a.he : "")); }
+  if (mejor) { G.elegido = mejor; abrirFicha(mejor.a); }
 });
+
+/* ===== Ficha del alumno (como al escanear la pulsera; apoderado y pulsera solo para el staff) ===== */
+const esc = x => String(x == null ? "" : x).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+function abrirFicha(a) {
+  const f = $("ficha"), dentro = a.e === "D";
+  f.innerHTML = `<div class="ficha-caja"><div class="cred">
+    <div class="marca">Prom Party G'30</div>
+    <div class="adorno">★</div>
+    <svg class="silueta" style="color:${COLOR[a.c]}"><use href="${a.c === "S" ? "#mujer" : "#hombre"}"/></svg>
+    <span class="rot">Alumno</span>
+    <div class="nombre">${esc(a.a)}</div>
+    <div class="grado">
+      <div class="curso"><b>${esc(a.k)}</b><span>Curso</span></div>
+      <div class="caja-d colegio ${a.c === "S" ? "s" : ""}"><span class="rot">Colegio</span><b>${COLEGIO[a.c]}</b></div>
+    </div>
+    ${a.ap ? `<div class="caja-d apod"><span class="rot">Apoderado</span><b>${esc(a.ap)}</b></div>` : ""}
+    <div class="horas"><div class="caja-d"><span class="rot">Entró</span><b>${esc(a.he || "—")}</b></div>${dentro ? "" : `<div class="caja-d"><span class="rot">Salió</span><b>${esc(a.hs || "—")}</b></div>`}</div>
+    <div class="pieta">${a.f ? `<span>Pulsera N.º <b>${esc(a.f)}</b></span>` : ""}<span class="estado ${a.e}">${dentro ? "En la fiesta" : "Se fue"}</span></div>
+    <button class="btn" type="button" id="fCerrar">Cerrar</button>
+  </div></div>`;
+  f.classList.remove("oculto");
+  $("fCerrar").onclick = cerrarFicha; $("fCerrar").focus({ preventScroll: true });
+}
+function cerrarFicha() { $("ficha").classList.add("oculto"); G.elegido = null; }
+$("ficha").addEventListener("click", e => { if (e.target === $("ficha")) cerrarFicha(); });
+document.addEventListener("keydown", e => { if (e.key === "Escape") cerrarFicha(); });
+
 let anchoPrevio = 0;
 function reajustar() {
   const a = $("grafo").clientWidth;
   if (!a || a === anchoPrevio) return;
   anchoPrevio = a;
-  if (medir() && datos) { ubicar(); if (!G.raf) G.raf = requestAnimationFrame(cuadro); }
+  if (medir() && datos && !G.raf) G.raf = requestAnimationFrame(cuadro);
 }
 if (window.ResizeObserver) new ResizeObserver(() => requestAnimationFrame(reajustar)).observe($("grafo")); else window.addEventListener("resize", reajustar);
 
@@ -422,9 +483,6 @@ function movimientos(alumnos) {
   }
   previos = ahora;
 }
-
-let tToast = null;
-function toast(t) { const e = $("toast"); e.textContent = t; e.classList.remove("oculto"); clearTimeout(tToast); tToast = setTimeout(() => e.classList.add("oculto"), 2600); }
 
 /* ---------- listas con búsqueda y filtros ---------- */
 function chips(cont, opciones, valor, alElegir) {
@@ -459,7 +517,10 @@ function lista(tipo) {
     const h = document.createElement("div"); h.className = "hora";
     const et = document.createElement("span"); et.textContent = tipo === "D" ? "entró" : "salió";
     h.append(et, document.createTextNode((tipo === "D" ? a.he : a.hs) || "—"));
-    fila.append(figura(a), d, h); filas.append(fila);
+    fila.append(figura(a), d, h);
+    fila.tabIndex = 0; fila.setAttribute("role", "button");
+    fila.onclick = () => abrirFicha(a); fila.onkeydown = e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); abrirFicha(a); } };
+    filas.append(fila);
   });
 }
 ["D", "R"].forEach(tipo => {
