@@ -63,6 +63,7 @@
   /* Verificación con el carnet */
   .carnet-btn { display:flex; align-items:center; justify-content:center; gap:.6rem; margin:.2rem 0 .5rem; font-size:1.1rem; }
   .carnet-btn span { font-size:1.6rem; line-height:1; }
+  .foto-carnet { display:block; width:100%; font:inherit; font-weight:700; font-size:.9rem; color:var(--oro-2); cursor:pointer; padding:.7rem; border-radius:1rem; border:1px dashed rgba(255,211,107,.6); background:rgba(255,211,107,.08); }
   .o-manual { font-size:.75rem; letter-spacing:.14em; text-transform:uppercase; color:var(--suave); margin:.5rem 0 .4rem; }
   .persona.match { border:2px solid var(--ok); background:rgba(46,229,157,.14); }
   .coincide { border:2px solid var(--ok); border-radius:1rem; padding:.9rem; margin:.4rem 0 1rem; background:rgba(46,229,157,.1); }
@@ -211,6 +212,8 @@
               <button type="button" id="bCambiar" disabled><span>🔄</span>Cambiar cámara</button>
               <button type="button" id="bLuz" disabled><span>🔦</span>Linterna / Escáner</button>
             </div>
+            <button type="button" class="foto-carnet oculto" id="bFoto">📷 ¿No lo detecta? Toma una foto del carnet</button>
+            <input type="file" id="fotoCarnet" accept="image/*" capture="environment" hidden>
             <button type="button" class="btn sec volver-cam" id="bVolver">← Volver</button>
           </div>
           <p class="estado-esc" id="estadoEsc" role="status"></p>
@@ -328,6 +331,7 @@
   </section>
 </main>
 
+<div id="lectorFoto" hidden></div>
 <div id="resultado" class="resultado oculto"><div class="caja" id="caja"></div></div>
 
 <div id="sala" class="modal oculto" role="dialog" aria-modal="true" aria-labelledby="salaTit">
@@ -486,6 +490,33 @@ function leerCarnet(c) {
   encender();
 }
 
+/* Respaldo: foto con la cámara normal del teléfono (enfoca mejor) y se lee el QR de la imagen */
+let fotoDe = null, eligiendoFoto = false;
+async function leerFoto(archivo) {
+  const img = await createImageBitmap(archivo), max = 2200, k = Math.min(1, max / Math.max(img.width, img.height));
+  const c = document.createElement("canvas"); c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
+  c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+  const f = new File([await new Promise(r => c.toBlob(r, "image/jpeg", .92))], "carnet.jpg", { type: "image/jpeg" });
+  return new Html5Qrcode("lectorFoto", { verbose: false, formatsToSupport: [Html5QrcodeSupportedFormats.QR_CODE], experimentalFeatures: { useBarCodeDetectorIfSupported: true } }).scanFile(f, false);
+}
+$("bFoto").onclick = () => { fotoDe = carnet; eligiendoFoto = true; $("fotoCarnet").value = ""; $("fotoCarnet").click(); };
+async function fotoCancelada() {
+  if (!eligiendoFoto) return;
+  eligiendoFoto = false; const c = fotoDe; carnet = null; await apagar(); if (c) mostrarPersonas(c);   // fotoDe se conserva: si la foto llega tarde, igual se lee
+}
+$("fotoCarnet").addEventListener("cancel", fotoCancelada);
+$("fotoCarnet").addEventListener("change", async e => {
+  const archivo = e.target.files && e.target.files[0], c = fotoDe;
+  eligiendoFoto = false; fotoDe = null; carnet = null;
+  await apagar();
+  if (!archivo || !c) { if (c) mostrarPersonas(c); return; }
+  ocupado = true;
+  mostrar("conf", '<div class="ico">⏳</div><h2>Leyendo el carnet…</h2>');
+  let txt = "";
+  try { txt = await leerFoto(archivo); } catch (_) {}
+  verificarCarnet(c, txt);
+});
+
 /* RUT: "12.345.678-5" si el dígito verificador es correcto, si no "" */
 function normRut(x) {
   const t = String(x == null ? "" : x).toUpperCase().replace(/[^0-9K]/g, "");
@@ -619,15 +650,25 @@ async function encender() {
   camEstado = "iniciando"; cancelarInicio = false; tituloCam(); vistaCamara(true); estadoEsc(""); estadoCam("Encendiendo cámara…");
   let leido = false;
   const alAcertar = txt => { if (leido) return; leido = true; alLeer(txt.trim()); };
-  const cfg = { fps: 15, qrbox: (w, h) => { const l = Math.floor(Math.min(w, h) * .72); return { width: l, height: l }; } };
+  /* El QR del carnet es chico y denso: se pide más resolución, se lee casi todo el cuadro y se usa el lector nativo del teléfono si existe */
+  const fino = !!carnet;
+  $("bFoto").classList.toggle("oculto", !fino);
+  const nuevoLector = () => new Html5Qrcode("lector", { verbose: false, formatsToSupport: [Html5QrcodeSupportedFormats.QR_CODE], experimentalFeatures: { useBarCodeDetectorIfSupported: true } });
+  const cfg = (id, alta) => {
+    const c = { fps: fino ? 12 : 15, qrbox: (w, h) => { const l = Math.floor(Math.min(w, h) * (fino ? .92 : .72)); return { width: l, height: l }; } };
+    if (alta) c.videoConstraints = Object.assign(id ? { deviceId: { exact: id } } : { facingMode: { ideal: "environment" } },
+      { width: { ideal: fino ? 1920 : 1280 }, height: { ideal: fino ? 1080 : 720 } });
+    return c;
+  };
+  // si el teléfono no acepta la resolución alta o la cámara guardada ya no existe, se prueba algo más simple
+  const intentos = (camId ? [[camId, true], [camId, false]] : []).concat([["", true], ["", false]]);
   try {
-    lector = new Html5Qrcode("lector");
-    try { await lector.start(camId ? camId : { facingMode: "environment" }, cfg, alAcertar, () => {}); }
-    catch (e) {                                   // la cámara guardada ya no existe: volver a la trasera
-      if (!camId) throw e;
-      camId = ""; lector = new Html5Qrcode("lector");
-      await lector.start({ facingMode: "environment" }, cfg, alAcertar, () => {});
+    let error = null;
+    for (const [id, alta] of intentos) {
+      try { lector = nuevoLector(); await lector.start(id || { facingMode: "environment" }, cfg(id, alta), alAcertar, () => {}); error = null; if (!id) camId = ""; break; }
+      catch (e) { error = e; try { lector.clear(); } catch (_) {} }
     }
+    if (error) throw error;
   } catch (_) {
     lector = null; camEstado = "off"; vistaCamara(false);
     estadoEsc("No se pudo abrir la cámara. Da permiso de cámara al navegador y vuelve a pulsar.");
@@ -643,6 +684,15 @@ async function encender() {
   $("bCambiar").disabled = lista.length < 2;
   const n = lista.findIndex(c => c.deviceId === idActual());
   let aviso = (carnet ? "Apunta al QR del reverso del carnet" : "Apunta al QR de la pulsera") + (lista.length > 1 && n >= 0 ? ` · cámara ${n + 1} de ${lista.length}` : "");
+  if (fino) {   // acercar (zoom 2x) y enfoque continuo: el carnet se lee a unos 15-20 cm, donde la cámara sí enfoca
+    try {
+      const cap = lector.getRunningTrackCapabilities(), adv = {};
+      if (cap.zoom && cap.zoom.max > 1) adv.zoom = Math.min(cap.zoom.max, 2);
+      if (Array.isArray(cap.focusMode) && cap.focusMode.indexOf("continuous") >= 0) adv.focusMode = "continuous";
+      if (Object.keys(adv).length) await lector.applyVideoConstraints({ advanced: [adv] });
+      if (adv.zoom) aviso += " · zoom " + adv.zoom + "x: aleja el carnet unos 20 cm";
+    } catch (_) {}
+  }
   if (tieneLuz()) { $("bLuz").disabled = false; aviso += " · mantén pulsada la linterna para alumbrar"; }
   else aviso += " · esta cámara no permite usar la linterna desde la web";
   estadoCam(aviso);
@@ -669,7 +719,10 @@ $("bCambiar").onclick = async () => {
   camId = lista[(n + 1) % lista.length].deviceId; guardado("camara_g30", camId);   // se recuerda en este teléfono
   await apagar(); await encender();
 };
-document.addEventListener("visibilitychange", () => { if (document.hidden) volverCam(); });
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden) { if (eligiendoFoto) apagar(); else volverCam(); }
+  else if (eligiendoFoto) setTimeout(fotoCancelada, 4000);   // si en 4 s no llegó la foto, se volvió sin tomarla
+});
 
 /* ===== Pestañas: para agregar una sección nueva, suma un botón en #tabs, un <section id="tab-NOMBRE"> y el nombre aquí ===== */
 const TABS = ["puerta", "consultar", "correos", "mas"];
