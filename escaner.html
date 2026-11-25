@@ -36,7 +36,7 @@
   .volver-cam { padding:.85rem; }
   .laser { position:absolute; left:8%; right:8%; height:2px; background:linear-gradient(90deg,transparent,var(--cian),transparent); box-shadow:0 0 .9rem var(--cian); animation:barrido 1.8s ease-in-out infinite alternate; pointer-events:none; z-index:2; }
   @keyframes barrido { from { top:18%; } to { top:82%; } }
-  .controles { display:grid; grid-template-columns:1fr 1fr 1fr; gap:.5rem; }
+  .controles { display:grid; grid-template-columns:1fr 1fr; gap:.5rem; }
   .controles button { font:inherit; font-weight:700; font-size:.8rem; color:var(--texto); cursor:pointer; padding:.7rem .2rem; min-height:3.8rem; border-radius:1rem; border:1px solid var(--borde); background:var(--vidrio); }
   .controles button span { display:block; font-size:1.3rem; line-height:1.2; }
   .controles button.on { background:rgba(255,211,107,.22); border-color:var(--oro-2); color:var(--oro-2); }
@@ -182,7 +182,6 @@
             <div class="visor"><div id="lector"></div><i class="laser" aria-hidden="true"></i></div>
             <p class="estado-esc" id="estadoCam" role="status"></p>
             <div class="controles">
-              <button type="button" id="bDetener"><span>✕</span>Detener</button>
               <button type="button" id="bCambiar" disabled><span>🔄</span>Cambiar cámara</button>
               <button type="button" id="bLuz" disabled><span>🔦</span>Linterna / Escáner</button>
             </div>
@@ -524,7 +523,6 @@ async function apagar() {
   camEstado = "off"; vistaCamara(false); estadoEsc("");
 }
 $("gatillo").onclick = encender;
-$("bDetener").onclick = apagar;
 $("bVolver").onclick = apagar;
 const luz = $("bLuz");
 luz.addEventListener("pointerdown", e => { if (luz.disabled) return; e.preventDefault(); try { luz.setPointerCapture(e.pointerId); } catch (_) {} ponerLuz(true); });
