@@ -769,7 +769,7 @@ const hist = { el: document.getElementById("historia"), escena: document.getElem
   barras: document.getElementById("h-barras"), fondo: document.getElementById("h-fondo"), audio: new Audio(),
   i: 0, lam: [], t: 0, dur: 0, pausa: false, reloj: 0, antes: 0, foco: null };
 hist.audio.preload = "auto";
-const DUR_INTRO = 4500, DUR_CANCION = 8000;
+const DUR_INTRO = 6000, DUR_CANCION = 15000;   // 15 s por canción (el trozo de Spotify dura 30 s)
 const sp = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
 function laminas() {
