@@ -524,15 +524,22 @@ function pintarEvento(m) {
   document.getElementById("etiqueta").hidden = modoEvento === "fiesta";
   tick();
 }
+const VID = Math.random().toString(36).slice(2, 10);
+let esperaEvento = 8, relojEvento = null, consultando = false;   // el servidor ajusta la espera según cuántos miran
 async function consultarEvento() {
-  if (!window.API_URL) return;
-  try {
-    const r = await (await fetch(window.API_URL, { method: "POST", body: JSON.stringify({ accion: "evento" }) })).json();
-    if (r && r.ok) pintarEvento(r.modo);
-  } catch (_) {}
+  clearTimeout(relojEvento);
+  if (!window.API_URL || consultando) return;
+  consultando = true;
+  if (!document.hidden) {
+    try {
+      const r = await (await fetch(window.API_URL, { method: "POST", body: JSON.stringify({ accion: "evento", vid: VID }) })).json();
+      if (r && r.ok) { pintarEvento(r.modo); if (r.cada) esperaEvento = r.cada; }
+    } catch (_) {}
+  }
+  consultando = false;
+  relojEvento = setTimeout(consultarEvento, esperaEvento * 1000 * (.9 + Math.random() * .2));
 }
 consultarEvento();
-setInterval(consultarEvento, 30000);
 document.addEventListener("visibilitychange", () => { if (!document.hidden) consultarEvento(); });
 </script>
 </body>

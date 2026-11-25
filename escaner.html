@@ -65,6 +65,10 @@
   .bio svg { width:1.9rem; height:1.9rem; flex:none; }
   .o-pin { text-align:center; font-size:.72rem; letter-spacing:.16em; text-transform:uppercase; color:var(--suave); margin:.7rem 0 .2rem; }
 
+  .al-toque { font-size:1.5rem !important; font-weight:800; line-height:1.2; margin:.2rem 0; }
+  .girando { width:2.6rem; height:2.6rem; margin:.4rem auto .8rem; border-radius:50%; border:4px solid rgba(255,255,255,.15); border-top-color:var(--oro-2); animation:giro .7s linear infinite; }
+  @keyframes giro { to { transform:rotate(360deg); } }
+
   /* Verificación con el carnet */
   .carnet-btn { display:flex; align-items:center; justify-content:center; gap:.6rem; margin:.2rem 0 .5rem; font-size:1.1rem; }
   .carnet-btn span { font-size:1.6rem; line-height:1; }
@@ -432,6 +436,7 @@ function pedirPin(tipo) {
     const b = $("pinOk"), clave = $("pinFiesta").value.trim(); if (!clave) return;
     b.disabled = true; b.textContent = "Verificando…";
     try {
+      if (fin) api({ accion: "avisar", evento: tipo }).catch(() => {});   // antes de cerrar: que no quede ningún correo de retiro sin salir
       const r = await api({ accion: fin ? "finalizar" : "activar", tipo, clave });
       if (r.auth === false) return cerrarSesion();
       if (!r.ok) { $("pinRes").textContent = r.msg === "Acción desconocida" ? "Falta publicar la nueva versión del servidor." : r.msg; $("pinFiesta").value = ""; }
@@ -453,19 +458,41 @@ function extraerToken(txt) {
   return (i >= 0 ? txt.slice(i + 1) : txt).trim();
 }
 
+/* ===== Nómina en el teléfono: permite mostrar el nombre al instante, mientras el servidor confirma ===== */
+let nomina = new Map(), nominaEn = 0;
+async function cargarNomina() {
+  if (Date.now() - nominaEn < 120000) return;
+  nominaEn = Date.now();
+  try {
+    const r = await api({ accion: "nomina" });
+    if (r.ok && r.alumnos) nomina = new Map(r.alumnos.map(a => [a.h, a])); else nominaEn = 0;
+  } catch (_) { nominaEn = 0; }
+}
+async function deLaNomina(token) {
+  try {
+    const d = new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(token)));
+    return nomina.get(Array.from(d.slice(0, 8), b => b.toString(16).padStart(2, "0")).join("")) || null;
+  } catch (_) { return null; }
+}
+/* cada lectura tiene un número: si llega tarde la respuesta de una anterior, no pisa la pantalla actual */
+let turno = 0;
+
 async function alLeer(leido) {
   const token = extraerToken(leido);
-  await apagar();                         // como un escáner de mano: lee y apaga cámara y luz
+  apagar();                               // lee y apaga cámara y luz, sin esperar a que termine
   if (ocupado) return;
   ocupado = true;
   if (navigator.vibrate) navigator.vibrate(40);
   if (carnet) { const c = carnet; carnet = null; return verificarCarnet(c, leido); }
-  if (tabActual === "consultar") return consultar(token);
-  mostrar("conf", '<div class="ico">⏳</div><h2>Verificando…</h2>');
+  const yo = ++turno, ya = await deLaNomina(token);
+  if (tabActual === "consultar") return consultar(token, ya, yo);
+  mostrar("conf", `<div class="girando"></div>`
+    + (ya ? `<h2 class="al-toque">${esc(ya.a)}</h2><p class="sub">${esc(ya.k)} · Pulsera ${esc(ya.f)}<br>${modo === "salida" ? "Buscando quién puede retirar…" : "Registrando la entrada…"}</p>` : "<h2>Verificando…</h2>"));
   try {
     const r = await api({ accion: "escanear", token, modo, evento });
     if (r.auth === false) return cerrarSesion();
     if (r.recargar) contadores();
+    if (yo !== turno) return;
     if (r.requiere === "confirmar") { pitar(true); return mostrarPersonas({ token, r }); }
     pitar(r.ok);
     mostrar(r.ok ? "ok" : "mal",
@@ -577,50 +604,69 @@ function verificarCarnet(c, leido) {
 }
 
 /* Consulta: muestra la credencial de la pulsera, sin registrar movimientos de puerta */
-async function consultar(token) {
-  mostrar("conf", '<div class="ico">⏳</div><h2>Buscando pulsera…</h2>');
+function credencial(x, estado) {
+  mostrar("pase", `<div class="cred">
+      <div class="marca">Prom Party G'30</div>
+      <div class="adorno">★</div>
+      <span class="rot">Alumno</span>
+      <div class="nombre">${esc(x.alumno)}</div>
+      <div class="grado">
+        <div class="curso"><b>${esc(x.curso)}</b><span>Curso</span></div>
+        <div class="colegio"><span class="rot">Colegio</span><b>${esc(x.colegio)}</b></div>
+      </div>
+      <div class="apod"><span class="rot">Apoderado</span><b>${esc(x.apoderado)}</b></div>
+      <div class="pieta"><span>Pulsera N.º <b>${esc(x.folio)}</b></span><span class="chip ${estado[0]}">${estado[1]}</span></div>
+      ${botonesFin}
+    </div>`);
+  activarFin();
+}
+async function consultar(token, ya, yo) {
+  const rapido = ya && { alumno: ya.a, curso: ya.k, colegio: ya.col, apoderado: ya.ap, folio: ya.f };
+  if (rapido) { pitar(true); credencial(rapido, ["", "Consultando…"]); }
+  else mostrar("conf", '<div class="girando"></div><h2>Buscando pulsera…</h2>');
   try {
     const r = await api({ accion: "consultar", token });
     if (r.auth === false) return cerrarSesion();
+    if (yo !== turno || (rapido && !ocupado)) return;     // ya se cerró o se escaneó otra
     if (!r.ok) {
       pitar(false);
       const msg = r.msg === "Acción desconocida" ? "Falta publicar la nueva versión del servidor" : r.msg;
       mostrar("mal", `<div class="ico">⛔</div><h2>${esc(msg)}</h2>` + botonesFin);
       return activarFin();
     }
-    pitar(true);
-    const estado = r.presencia === "Dentro" ? ["dentro", "Dentro"] : r.presencia === "Retirado" ? ["retirado", "Retirado"] : ["", "Sin ingresar"];
-    mostrar("pase", `<div class="cred">
-        <div class="marca">Prom Party G'30</div>
-        <div class="adorno">★</div>
-        <span class="rot">Alumno</span>
-        <div class="nombre">${esc(r.alumno)}</div>
-        <div class="grado">
-          <div class="curso"><b>${esc(r.curso)}</b><span>Curso</span></div>
-          <div class="colegio"><span class="rot">Colegio</span><b>${esc(r.colegio)}</b></div>
-        </div>
-        <div class="apod"><span class="rot">Apoderado</span><b>${esc(r.apoderado)}</b></div>
-        <div class="pieta"><span>Pulsera N.º <b>${esc(r.folio)}</b></span><span class="chip ${estado[0]}">${estado[1]}</span></div>
-        ${botonesFin}
-      </div>`);
-    activarFin();
+    if (!rapido) pitar(true);
+    credencial(r, r.presencia === "Dentro" ? ["dentro", "Dentro"] : r.presencia === "Retirado" ? ["retirado", "Retirado"] : ["", "Sin ingresar"]);
   } catch (_) {
+    if (rapido) return credencial(rapido, ["", "Sin conexión"]);
     pitar(false);
     mostrar("mal", `<div class="ico">📡</div><h2>Sin conexión</h2><p class="sub">Intenta de nuevo.</p>` + botonesFin);
     activarFin();
   }
 }
 
+const textoCorreo = estado => estado === "Enviado" ? "✉️ Correo enviado" + (evento === "simulacro" ? " (simulacro)" : " al apoderado")
+  : estado === "Pendiente" ? "✉️ Enviando el correo…" : "⚠ El correo NO salió (" + estado + ")";
+/* El correo se pide aparte, para no dejar esperando a la puerta */
+async function avisarRetiro(folio, ev) {
+  let estado = "sin conexión; saldrá con el próximo retiro";
+  try {
+    const r = await api({ accion: "avisar", evento: ev });
+    if (r.ok) { const mio = (r.enviados || []).find(x => String(x.folio) === String(folio)); estado = mio ? mio.estado : "Enviado"; }
+  } catch (_) {}
+  const e = $("estadoCorreo"); if (e && e.dataset.folio === String(folio)) e.textContent = textoCorreo(estado);
+}
+
 async function retirar(token, quien) {
-  mostrar("conf", '<div class="ico">⏳</div><h2>Guardando…</h2>');
+  mostrar("conf", '<div class="girando"></div><h2>Guardando…</h2>');
   try {
     const r = await api({ accion: "retirar", token, quien, evento });
     pitar(r.ok);
     mostrar(r.ok ? "ok" : "mal",
       `<div class="ico">${r.ok ? "✅" : "⛔"}</div><h2>${esc(r.msg)}</h2>`
-      + (r.ok ? `<p class="alu">${esc(r.alumno)}</p><p class="sub">Retirado por ${esc(r.retiradoPor)}<br>${r.correo === "Enviado" ? "✉️ Correo enviado" + (evento === "simulacro" ? " (simulacro)" : " al apoderado") : "⚠ El correo NO salió (" + esc(r.correo) + ")"}</p>` : "")
+      + (r.ok ? `<p class="alu">${esc(r.alumno)}</p><p class="sub">Retirado por ${esc(r.retiradoPor)}<br><span id="estadoCorreo" data-folio="${esc(r.folio)}">${esc(textoCorreo(r.correo))}</span></p>` : "")
       + botonesFin);
     activarFin(); contadores();
+    if (r.ok && r.correo === "Pendiente") avisarRetiro(r.folio, evento);
   } catch (_) {
     mostrar("mal", `<div class="ico">📡</div><h2>Sin conexión</h2><p class="sub">No se registró la salida. Vuelve a escanear.</p>` + botonesFin);
     activarFin();
@@ -662,6 +708,7 @@ async function camaras() {
 const idActual = () => { try { return lector.getRunningTrackSettings().deviceId || ""; } catch (_) { return ""; } };
 
 async function encender() {
+  if (camEstado === "apagando") await cerrandoCam;
   if (camEstado !== "off" || (tabActual === "puerta" && !evento)) return;
   camEstado = "iniciando"; cancelarInicio = false; tituloCam(); vistaCamara(true); estadoEsc(""); estadoCam("Encendiendo cámara…");
   let leido = false;
@@ -712,12 +759,18 @@ async function encender() {
   else aviso += " · esta cámara no permite usar la linterna desde la web";
   estadoCam(aviso);
 }
+let cerrandoCam = null;
 async function apagar() {
   clearTimeout(tiempoCam);
   if (camEstado === "iniciando") { cancelarInicio = true; return; }
+  if (camEstado === "apagando") return cerrandoCam;
   const l = lector; lector = null;
-  if (l) { camEstado = "apagando"; try { await l.stop(); l.clear(); } catch (_) {} }
-  camEstado = "off"; vistaCamara(false); estadoEsc("");
+  if (l) {
+    camEstado = "apagando"; vistaCamara(false);
+    cerrandoCam = (async () => { try { await l.stop(); l.clear(); } catch (_) {} camEstado = "off"; })();
+    await cerrandoCam;
+  } else camEstado = "off";
+  vistaCamara(camEstado !== "off" && camEstado !== "apagando"); estadoEsc("");
 }
 $("gatillo").onclick = encender;
 async function volverCam() { const c = carnet; carnet = null; await apagar(); if (c) mostrarPersonas(c); }
@@ -1149,10 +1202,10 @@ async function ofrecerBio() {
 
 function entrarPanel() {
   $("login").classList.add("oculto"); $("panel").classList.remove("oculto");
-  irTab("puerta"); contadores(); clearInterval(window._c); window._c = setInterval(contadores, 8000);
+  irTab("puerta"); contadores(); nominaEn = 0; cargarNomina(); clearInterval(window._c); window._c = setInterval(() => { contadores(); cargarNomina(); }, 8000);
 }
 function cerrarSesion() {
-  pin = ""; carnet = null; try { sessionStorage.removeItem("pin_g30"); } catch (_) {}
+  pin = ""; carnet = null; nomina = new Map(); try { sessionStorage.removeItem("pin_g30"); } catch (_) {}
   clearInterval(window._c); apagar(); cerrar(); cerrarSala();
   $("panel").classList.add("oculto"); $("login").classList.remove("oculto");
   $("pin").value = "";
