@@ -82,6 +82,8 @@
   .chips { display:flex; flex-wrap:wrap; gap:.4rem; margin-bottom:.4rem; }
   .chips button { font:inherit; font-size:.78rem; font-weight:700; color:var(--suave); cursor:pointer; padding:.42rem .8rem; border-radius:99px; border:1px solid var(--borde); background:var(--vidrio); }
   .chips button.on { color:#1a1204; background:linear-gradient(110deg,var(--oro),var(--oro-2)); border-color:transparent; }
+  .chips button b { margin-left:.35rem; opacity:.75; font-weight:800; }
+  .quitar { display:block; margin:.6rem auto 0; font:inherit; font-size:.82rem; font-weight:700; color:var(--oro-2); background:none; border:1px dashed var(--oro-2); border-radius:99px; padding:.45rem 1rem; cursor:pointer; }
   .chips button.on.m { color:#fff; background:var(--mackay); } .chips button.on.s { color:#fff; background:var(--margaret); }
   .cuenta { font-size:.78rem; color:var(--suave); margin:.4rem 0 .3rem; }
   .fila-a { display:flex; align-items:center; gap:.7rem; padding:.6rem .2rem; border-bottom:1px solid rgba(255,255,255,.07); }
@@ -485,12 +487,16 @@ function movimientos(alumnos) {
 }
 
 /* ---------- listas con búsqueda y filtros ---------- */
+/* Los botones solo se vuelven a crear si cambian: así un toque no se pierde cuando la lista se actualiza sola */
 function chips(cont, opciones, valor, alElegir) {
-  cont.textContent = "";
-  opciones.forEach(([v, t, cls]) => {
-    const b = document.createElement("button");
-    b.type = "button"; b.textContent = t; b.className = (valor === v ? "on " : "") + (cls || "");
+  const firma = JSON.stringify([opciones, valor]);
+  if (cont.dataset.firma === firma) return;
+  cont.dataset.firma = firma; cont.textContent = "";
+  opciones.forEach(([v, t, cls, n]) => {
+    const b = document.createElement("button"), c = document.createElement("b");
+    b.type = "button"; b.className = (valor === v ? "on " : "") + (cls || "");
     b.setAttribute("aria-pressed", valor === v);
+    c.textContent = n; b.append(t, c);
     b.onclick = () => alElegir(v);
     cont.append(b);
   });
@@ -498,22 +504,37 @@ function chips(cont, opciones, valor, alElegir) {
 function lista(tipo) {
   const sec = $("lista-" + tipo), f = filtros[tipo];
   const todos = datos.alumnos.filter(a => a.e === tipo);
-  const cursos = [...new Set(datos.alumnos.map(a => a.k).filter(Boolean))].sort();
-  chips(sec.querySelector("[data-col]"), [["", "Todos"], ["M", "Mackay", "m"], ["S", "St Margaret's", "s"]], f.col, v => { f.col = v; lista(tipo); });
-  chips(sec.querySelector("[data-cur]"), [["", "Todos los cursos"]].concat(cursos.map(c => [c, c])), f.cur, v => { f.cur = v; lista(tipo); });
+  const cursos = [...new Set(todos.map(a => a.k).filter(Boolean))].sort();
+  if (f.cur && !cursos.includes(f.cur)) f.cur = "";
   const q = norm(f.q).trim();
-  const vis = todos.filter(a => (!f.col || a.c === f.col) && (!f.cur || a.k === f.cur) && (!q || norm(a.a).includes(q))).sort(orden);
+  const porNombre = todos.filter(a => !q || norm(a.a).includes(q));
+  // cada botón muestra cuántos aparecerían al tocarlo
+  const delCurso = porNombre.filter(a => !f.cur || a.k === f.cur), delColegio = porNombre.filter(a => !f.col || a.c === f.col);
+  const cuantos = (l, campo, v) => l.filter(a => !v || a[campo] === v).length;
+  chips(sec.querySelector("[data-col]"), [["", "Todos", "", delCurso.length], ["M", "The Mackay School", "m", cuantos(delCurso, "c", "M")], ["S", "St Margaret's", "s", cuantos(delCurso, "c", "S")]], f.col, v => {
+    f.col = v;
+    if (f.cur && v && !datos.alumnos.some(a => a.e === tipo && a.c === v && a.k === f.cur)) f.cur = "";   // ese curso no existe en el otro colegio: se quita
+    lista(tipo);
+  });
+  chips(sec.querySelector("[data-cur]"), [["", "Todos los cursos", "", delColegio.length]].concat(cursos.map(c => [c, c, "", cuantos(delColegio, "k", c)])), f.cur, v => { f.cur = v; lista(tipo); });
+  const vis = porNombre.filter(a => (!f.col || a.c === f.col) && (!f.cur || a.k === f.cur)).sort(orden);
   sec.querySelector("[data-cuenta]").textContent = vis.length === todos.length ? `${todos.length} alumnos` : `${vis.length} de ${todos.length} alumnos`;
   const filas = sec.querySelector("[data-filas]"); filas.textContent = "";
   if (!vis.length) {
     const p = document.createElement("p"); p.className = "nada";
     p.textContent = todos.length ? "Nadie coincide con la búsqueda o el filtro." : tipo === "D" ? "Todavía no entra nadie." : "Todavía no se ha ido nadie.";
-    filas.append(p); return;
+    filas.append(p);
+    if (todos.length) {
+      const b = document.createElement("button"); b.type = "button"; b.className = "quitar"; b.textContent = "Quitar filtros";
+      b.onclick = () => { f.q = f.col = f.cur = ""; sec.querySelector("[data-q]").value = ""; lista(tipo); };
+      filas.append(b);
+    }
+    return;
   }
   vis.forEach(a => {
     const fila = document.createElement("div"); fila.className = "fila-a " + a.c.toLowerCase();
     const d = document.createElement("div"), n = document.createElement("b"), s = document.createElement("small");
-    n.textContent = a.a; s.textContent = (a.c === "S" ? "St Margaret's" : "Mackay") + " · " + a.k; d.append(n, s);
+    n.textContent = a.a; s.textContent = COLEGIO[a.c] + " · " + a.k; d.append(n, s);
     const h = document.createElement("div"); h.className = "hora";
     const et = document.createElement("span"); et.textContent = tipo === "D" ? "entró" : "salió";
     h.append(et, document.createTextNode((tipo === "D" ? a.he : a.hs) || "—"));
