@@ -409,16 +409,6 @@
         <button class="btn sec" id="bDj" type="button">Ver pedidos y dedicatorias</button>
       </div>
       <div class="tarjeta solo-admin">
-        <h2>⌚ Pulsera perdida</h2>
-        <p class="nota">Anula la pulsera perdida y asigna una de repuesto (una sin asignar). La anulada deja de servir en la puerta.</p>
-        <div class="busca">
-          <input type="text" id="puQ" placeholder="Nombre o N.º de pulsera" autocomplete="off" autocapitalize="none" spellcheck="false">
-          <button class="btn" id="puBuscar" type="button">Buscar</button>
-        </div>
-        <p class="res" id="puRes"></p>
-        <div id="puLista"></div>
-      </div>
-      <div class="tarjeta solo-admin">
         <h2>📱 Panel de alumnos</h2>
         <p class="nota" id="alEstado">Revisando…</p>
         <div class="mus-k"><div><b id="alActivos">–</b><span>Alumnos</span></div><div><b id="alFotos">–</b><span>Fotos</span></div><div><b id="alRep">–</b><span>Reportadas</span></div></div>
@@ -516,7 +506,6 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
 <script src="config.js"></script>
 <script src="galeria.js"></script>
-<script src="lector.js?v=3"></script>
 <script>
 const $ = id => document.getElementById(id);
 const API = window.API_URL;
@@ -1197,55 +1186,6 @@ $("clavesForm").addEventListener("submit", async ev => {
   b.disabled = false; b.textContent = "Guardar cambios";
 });
 
-/* ===== Más (solo Admin): pulsera perdida · anular y asignar la de repuesto ===== */
-async function buscarPulseras() {
-  const q = $("puQ").value.trim(), cont = $("puLista");
-  $("puRes").className = "res"; $("puRes").textContent = "";
-  if (q.length < 2 && !/^\d+$/.test(q)) return mostrarRes("puRes", false, "Escribe al menos 2 letras o el número de pulsera.");
-  cont.innerHTML = '<p class="nota">Buscando…</p>';
-  try {
-    const r = await api({ accion: "buscarRegistros", q });
-    if (r.auth === false) return cerrarSesion();
-    cont.textContent = "";
-    if (!r.ok) return mostrarRes("puRes", false, r.msg);
-    if (!r.resultados.length) { cont.innerHTML = '<p class="nota">No hay registros con eso.</p>'; return; }
-    r.resultados.forEach(x => cont.append(filaPulsera(x)));
-  } catch (_) { cont.textContent = ""; mostrarRes("puRes", false, "Sin conexión."); }
-}
-function filaPulsera(x) {
-  const d = document.createElement("div"); d.className = "al-fila"; d.style.flexWrap = "wrap";
-  d.innerHTML = `<div><b>${esc(x.alumno)}</b><small>${esc(x.curso)} · ${x.pulsera ? "Pulsera N.º " + esc(x.pulsera) : x.pulsera === 0 ? "SIN pulsera (anulada)" : "Registro " + esc(x.folio)}</small></div>`;
-  const anular = document.createElement("button"); anular.type = "button"; anular.textContent = "Anular"; anular.hidden = x.pulsera === 0;
-  anular.onclick = async () => {
-    if (anular.dataset.seguro !== "1") { anular.dataset.seguro = "1"; anular.textContent = "Toca otra vez"; return; }
-    anular.disabled = true;
-    try {
-      const r = await api({ accion: "pulseraAnular", folio: x.folio });
-      if (r.auth === false) return cerrarSesion();
-      mostrarRes("puRes", r.ok, r.msg); nominaEn = 0; if (r.ok) $("puQ").value = x.alumno;   // el número cambió: se vuelve a buscar por nombre
-      if (r.ok) buscarPulseras().then(() => mostrarRes("puRes", true, r.msg)); else anular.disabled = false;
-    } catch (_) { anular.disabled = false; mostrarRes("puRes", false, "Sin conexión."); }
-  };
-  const nueva = document.createElement("button"); nueva.type = "button"; nueva.textContent = "Escanear la nueva";
-  nueva.onclick = () => {
-    let ocupado = false;
-    LectorQR.abrir("Pulsera de repuesto para " + x.alumno, async token => {
-      if (ocupado) return; ocupado = true;
-      LectorQR.estado("Asignando…");
-      try {
-        const r = await api({ accion: "pulseraAsignar", folio: x.folio, token });
-        if (r.auth === false) { await LectorQR.cerrar(); return cerrarSesion(); }
-        if (!r.ok) { LectorQR.estado(r.msg, "mal"); ocupado = false; return; }
-        await LectorQR.cerrar(); nominaEn = 0; $("puQ").value = x.alumno; await buscarPulseras(); mostrarRes("puRes", true, r.msg);
-      } catch (_) { LectorQR.estado("Sin conexión.", "mal"); ocupado = false; }
-    }, { boton: "Cancelar" });
-  };
-  d.append(anular, nueva);
-  return d;
-}
-$("puBuscar").onclick = buscarPulseras;
-$("puQ").addEventListener("keydown", e => { if (e.key === "Enter") buscarPulseras(); });
-
 /* ===== Más (solo Admin): panel de alumnos · abrir/cerrar, moderar fotos y revisar el espacio ===== */
 let alDatos = null, alFiltro = "reportadas", alLista = [], alTotal = 0, alVista = "fotos";
 function pintarPanelAlumnos(r) {
@@ -1703,7 +1643,7 @@ function entrarPanel() {
 function cerrarSesion() {
   pin = ""; tk = ""; carnet = null; nomina = new Map(); try { sessionStorage.removeItem("pin_g30"); sessionStorage.removeItem("tk_g30"); } catch (_) {}
   clearInterval(window._c); apagar(); cerrar(); cerrarSala(); $("dj").classList.add("oculto"); musDj = null; cerrarClaves();
-  LectorQR.cerrar(); $("puLista").textContent = ""; $("puQ").value = ""; $("alModal").classList.add("oculto"); $("alCuerpo").textContent = ""; alDatos = null; GaleriaG30.vaciar(); document.querySelectorAll(".gx-visor").forEach(v => v.remove());
+  $("alModal").classList.add("oculto"); $("alCuerpo").textContent = ""; alDatos = null; GaleriaG30.vaciar(); document.querySelectorAll(".gx-visor").forEach(v => v.remove());
   $("pin").value = "";
   elegirAcceso();
 }

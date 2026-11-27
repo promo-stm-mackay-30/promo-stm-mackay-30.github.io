@@ -238,7 +238,7 @@
       <button class="acceso" type="button" data-ir="autorizados"><span class="ico">👨‍👩‍👧</span><span><strong>Autorizados para el retiro</strong><small id="rAut"></small></span><span class="der ok">Ver</span></button>
       <button class="acceso" type="button" data-ir="foto"><span class="ico">📸</span><span><strong>Foto del alumno</strong><small>Ayudará a encontrar sus fotos de la fiesta</small></span><span class="der" id="rFoto"></span></button>
       <button class="acceso" type="button" data-ir="musica"><span class="ico">🎶</span><span><strong>Música de la fiesta</strong><small>Pide, vota y dedícale una canción</small></span><span class="der nuevo" id="rMus">Nuevo</span></button>
-      <button class="acceso" type="button" data-ir="panel"><span class="ico">📱</span><span><strong>Panel y pulsera</strong><small>Su acceso, sus fotos y pulsera perdida</small></span><span class="der" id="rPanel" hidden></span></button>
+      <button class="acceso" type="button" data-ir="panel"><span class="ico">📱</span><span><strong>Panel de tu hijo/a</strong><small>Su acceso, código y fotos</small></span><span class="der" id="rPanel" hidden></span></button>
       <button class="acceso" type="button" data-ir="recuerdos"><span class="ico">🎞️</span><span><strong>Fotos del evento</strong><small>Disponibles después de la fiesta</small></span><span class="der pronto">Pronto</span></button>
       <div class="tarjeta" style="margin-top:1rem">
         <h2>La fiesta</h2>
@@ -524,7 +524,7 @@ function ir(v) {
 document.querySelectorAll("[data-ir]").forEach(b => b.onclick = () => ir(b.dataset.ir));
 $("avatar").onclick = () => ir("foto");
 
-function pintarPastilla() { const a = actual(); $("pulsera").textContent = a.pulsera === 0 ? "Pulsera anulada" : "Pulsera N.º " + (a.pulsera || a.folio); }
+function pintarPastilla() { const a = actual(); $("pulsera").textContent = "Pulsera N.º " + (a.pulsera || a.folio); }
 const iniciales = n => String(n).trim().split(/\s+/).slice(0, 2).map(p => p.charAt(0).toUpperCase()).join("");
 function pintar() {
   const a = actual();
@@ -939,22 +939,21 @@ const PASOS_AL = '<ol class="pasos-al"><li>Tu hijo/a abre <b>Panel de alumnos</b
 function pintarPanel() {
   const a = actual(), r = paneles[a.folio], p = r.panel, pul = r.pulsera, nombre = primerNombre(a.alumno), caja = $("panelCaja");
   const activo = p.estado === "Activo", frenado = p.estado === "Frenado";
-  $("rPanel").hidden = false; $("rPanel").textContent = pul.anulada ? "Sin pulsera" : activo ? "Activo ✓" : frenado ? "Frenado" : "Sin crear";
-  $("rPanel").className = "der " + (activo && !pul.anulada ? "ok" : "falta");
+  $("rPanel").hidden = false; $("rPanel").textContent = activo ? "Activo ✓" : frenado ? "Frenado" : p.pendiente ? "Código pedido" : "Sin crear";
+  $("rPanel").className = "der " + (activo ? "ok" : "falta");
   $("panelFotos").hidden = false;
   let panel;
-  if (activo) panel = `<dl class="datos"><div><dt>Estado</dt><dd>Activo ✓</dd></div><div><dt>Su correo</dt><dd>${esc(p.correo)}</dd></div>${p.ingreso ? `<div><dt>Último ingreso</dt><dd>${esc(p.ingreso)}</dd></div>` : ""}</dl>
+  if (activo) panel = `<dl class="datos"><div><dt>Estado</dt><dd>Activo ✓</dd></div><div><dt>Su correo</dt><dd>${esc(p.correo)}</dd></div>${p.ingreso ? `<div><dt>Último ingreso</dt><dd>${esc(p.ingreso)}</dd></div>` : ""}<div><dt>Pulsera</dt><dd>N.º ${esc(pul.numero)}</dd></div></dl>
       <button class="btn" id="alRestablecer" type="button" style="margin-top:1rem">Restablecer acceso</button>
       <p class="nota" style="margin:.6rem 0 .9rem">Úsalo si olvidó su clave, escribió mal su correo o no fue tu hijo/a quien se registró.</p>
       <button class="btn peligro" id="alFrenar" type="button">Frenar acceso</button>`;
   else if (frenado) panel = `<p class="nota" style="margin-bottom:1rem">🛑 <b style="color:#fff">Frenado:</b> ${esc(nombre)} no puede entrar al panel ni pedir códigos.</p><button class="btn" id="alReactivar" type="button">Reactivar acceso</button>`;
-  else panel = (r.abierto ? `<p class="nota" style="margin-bottom:.6rem">${esc(nombre)} todavía no crea su panel. Así se hace:</p>${PASOS_AL}<p class="nota" style="margin:.7rem 0 1rem">Podrá subir fotos, etiquetar escaneando pulseras y pedir canciones.</p>`
+  else panel = (p.pendiente
+      ? `<p class="nota" style="margin-bottom:1rem">✉️ <b style="color:#fff">Hay un código de acceso pedido</b> para ${esc(nombre)} (llegó a tu correo). Dáselo solo si fue tu hijo/a.</p><button class="btn" id="alAnular" type="button">Anular el código pedido</button><p class="nota" style="margin:.6rem 0 1rem">El código deja de servir. Después se puede pedir otro.</p>`
+      : r.abierto ? `<p class="nota" style="margin-bottom:.6rem">${esc(nombre)} todavía no crea su panel. Así se hace:</p>${PASOS_AL}<p class="nota" style="margin:.7rem 0 1rem">Podrá subir fotos, etiquetar escaneando pulseras y pedir canciones.</p>`
       : '<p class="nota" style="margin-bottom:1rem">El panel de alumnos todavía no está abierto.</p>')
       + '<button class="btn peligro" id="alFrenar" type="button">No autorizar (frenar acceso)</button>';
-  const pulsera = pul.anulada
-    ? `<p class="nota">⛔ <b style="color:#fff">Su pulsera está anulada.</b> Pide una de repuesto a la organización. Cuando la tenga, ${esc(nombre)} entra a su panel y toca <b>Escanear mi pulsera nueva</b>.</p>`
-    : `<p style="margin-bottom:.9rem">Usa la <b>pulsera N.º ${esc(pul.numero)}</b></p><button class="btn sec" id="alPerdida" type="button" style="margin-top:0"${pul.bloqueado ? " disabled" : ""}>Se perdió la pulsera</button>${pul.bloqueado ? '<p class="nota" style="margin-top:.6rem">Durante la fiesta habla con la organización en la puerta.</p>' : ""}`;
-  caja.innerHTML = `<div class="tarjeta"><h2>Panel de ${esc(nombre)}</h2>${panel}</div><div class="tarjeta"><h2>Su pulsera</h2>${pulsera}</div>`;
+  caja.innerHTML = `<div class="tarjeta"><h2>Panel de ${esc(nombre)}</h2>${panel}</div>`;
   const preguntar = (id, titulo, texto, si, hacer, peligro) => {
     if (!$(id)) return;
     $(id).onclick = () => {
@@ -966,7 +965,7 @@ function pintarPanel() {
   };
   preguntar("alRestablecer", "¿Restablecer su acceso?", "Se cerrará su sesión y quedará libre el cupo: tendrá que hacer la primera vez de nuevo, con un código que te llegará. Sus fotos se conservan.", "Sí, restablecer", "restablecer");
   preguntar("alFrenar", "¿Frenar el acceso?", "No podrá entrar ni pedir códigos hasta que lo reactives. Sus fotos se conservan.", "Sí, frenar", "frenar", true);
-  preguntar("alPerdida", "¿Se perdió la pulsera?", "La pulsera N.º " + pul.numero + " quedará anulada al instante: no servirá en la puerta. Después hay que pedir una de repuesto a la organización.", "Sí, anularla", "pulseraPerdida", true);
+  if ($("alAnular")) $("alAnular").onclick = () => hacerPanel("anularCodigo", $("alAnular"));
   if ($("alReactivar")) $("alReactivar").onclick = () => hacerPanel("reactivar", $("alReactivar"));
 }
 async function hacerPanel(hacer, boton) {
@@ -975,10 +974,10 @@ async function hacerPanel(hacer, boton) {
   try {
     const r = await pedirPanel(folio, hacer);
     if (r.sesion === false) return cerrarSesion(r.msg);
-    if (!r.ok) { cerrarHoja(); avisar(r.msg || "No se pudo.", true); boton.disabled = false; boton.textContent = texto; return; }
-    paneles[folio] = r; cerrarHoja(); a.pulsera = r.pulsera.anulada ? 0 : r.pulsera.numero;
-    if (datos && actual().folio === folio) { pintarPastilla(); pintarPanel(); }
-    avisar({ frenar: "Acceso frenado", reactivar: "Acceso reactivado", restablecer: "Acceso restablecido", pulseraPerdida: "Pulsera anulada. Avisamos a la organización." }[hacer]);
+    if (!r.ok) { cerrarHoja(); avisar(r.msg === "Acción desconocida" ? "Esta opción estará disponible muy pronto." : r.msg || "No se pudo.", true); boton.disabled = false; boton.textContent = texto; return; }
+    paneles[folio] = r; cerrarHoja();
+    if (datos && actual().folio === folio) pintarPanel();
+    avisar({ anularCodigo: "Código anulado", frenar: "Acceso frenado", reactivar: "Acceso reactivado", restablecer: "Acceso restablecido" }[hacer]);
   } catch (_) { avisar(SIN_RED, true); boton.disabled = false; boton.textContent = texto; }
 }
 $("verFotosHijo").onclick = async () => {

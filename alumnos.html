@@ -87,8 +87,6 @@
 
   .opcion { display: flex; gap: .7rem; align-items: center; margin: 0 0 .5rem; padding: .85rem 1rem; border-radius: 1rem; border: 1px solid var(--borde); background: var(--vidrio); color: var(--texto); font-size: .95rem; cursor: pointer; }
   .opcion input { accent-color: var(--oro); width: 1.15rem; height: 1.15rem; flex: none; }
-  .sin-pulsera { padding: 1rem; border-radius: 1.1rem; background: rgba(255,90,110,.14); border: 1px solid rgba(255,90,110,.55); margin-bottom: 1rem; }
-  .sin-pulsera p { font-size: .9rem; line-height: 1.5; margin: .3rem 0 .8rem; }
 
   /* música */
   .cancion-fila { display: flex; align-items: center; gap: .8rem; min-width: 0; flex: 1; }
@@ -191,8 +189,6 @@
       <div><small id="curso"></small><b id="saludo"></b></div>
       <button class="redondo" id="bAjustes" type="button" aria-label="Ajustes">⚙️</button>
     </header>
-
-    <div class="sin-pulsera" id="sinPulsera" hidden><b>⌚ Tu pulsera fue anulada</b><p>Pide una de repuesto a la organización y vincúlala aquí. Tus fotos siguen guardadas.</p><button class="btn" id="bPulsera" type="button">📷 Escanear mi pulsera nueva</button></div>
 
     <div id="v-subir">
       <div id="cola"></div>
@@ -385,6 +381,7 @@ $("r2").addEventListener("submit", async ev => {
     const r = await api({ accion: "alumnoCodigo", pedido: reg.pedido, codigo });
     if (r.cerrado) pantalla("cerrado");
     else if (r.ok) { reg.paso = r.paso; reg.alumnos = r.alumnos; mensaje("m3", ""); pasoRegistro(3); }
+    else if (r.vencido) { reg.pedido = ""; guardado.poner("localStorage", PASO, null); pasoRegistro(1); mensaje("m1", r.msg); }
     else mensaje("m2", r.msg || "No se pudo continuar.");
   } catch (_) { mensaje("m2", SIN_RED); }
   b.disabled = false; b.textContent = "Continuar";
@@ -410,23 +407,6 @@ $("r3").addEventListener("submit", async ev => {
   b.disabled = false; b.textContent = "Crear mi panel";
 });
 
-/* ---------- Pulsera nueva (si la anterior fue anulada) ---------- */
-$("bPulsera").onclick = () => {
-  let ocupado = false;
-  LectorQR.abrir("Escanea tu pulsera NUEVA", async token => {
-    if (ocupado) return; ocupado = true;
-    LectorQR.estado("Revisando…");
-    try {
-      const r = await conSesion({ accion: "alumnoPulsera", token });
-      if (!r.ok) { LectorQR.estado(r.msg || "No se pudo vincular.", "mal"); ocupado = false; return; }
-      yo = r; pintar(); await LectorQR.cerrar(); avisar(r.aviso || "✓ Pulsera vinculada");
-    } catch (e) {
-      if (e.message === "sesion" || e.message === "cerrado") return LectorQR.cerrar();
-      LectorQR.estado(SIN_RED, "mal"); ocupado = false;
-    }
-  }, { boton: "Cancelar" });
-};
-
 /* ---------- Panel ---------- */
 function entrarCon(r) { sesion = r.sesion; guardado.poner("localStorage", SESION, sesion); abrir(r); }
 function abrir(r) { yo = r; pantalla("panel"); pintar(); ir("subir"); procesarCola(); }
@@ -435,7 +415,6 @@ function pintar() {
   $("curso").textContent = yo.curso + " · " + yo.colegio;
   $("cupo").textContent = !yo.puedeSubir ? "Por ahora no puedes subir fotos. Habla con la organización."
     : yo.quedan ? `Te quedan ${yo.quedan} de ${yo.max} fotos.` : `Llegaste a las ${yo.max} fotos. Borra alguna para subir otra.`;
-  $("sinPulsera").hidden = yo.pulsera !== 0;
   const g = $("globo"); g.hidden = !yo.nuevas; g.textContent = yo.nuevas > 99 ? "99+" : yo.nuevas;
 }
 async function refrescar() {
