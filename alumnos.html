@@ -256,7 +256,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
 <script src="config.js"></script>
 <script src="galeria.js"></script>
-<script src="lector.js"></script>
+<script src="lector.js?v=3"></script>
 <script>
 const $ = id => document.getElementById(id);
 const API = window.API_URL;
@@ -358,12 +358,14 @@ $("bPedir").onclick = () => {
   let ocupado = false;
   LectorQR.abrir("Escanea TU pulsera", async token => {
     if (ocupado) return; ocupado = true;
-    LectorQR.estado("Enviando el código a tu apoderado…");
+    LectorQR.estado("✓ Pulsera leída. Enviando el código a tu apoderado…", "ok");
     try {
       const r = await api({ accion: "alumnoPedir", token });
       if (r.ok) {
         reg = { n: 2, pedido: r.pedido, para: r.para, paso: "", alumnos: [], hora: Date.now() };
-        await LectorQR.cerrar(); $("rCod").value = ""; mensaje("m2", ""); pasoRegistro(2); avisar("✉️ Le enviamos el código a tu apoderado"); return;
+        $("rCod").value = ""; mensaje("m2", ""); pasoRegistro(2);   // queda lista la pantalla del código detrás de la confirmación
+        await LectorQR.exito("¡Pulsera leída!", "Le enviamos el código a tu apoderado (" + r.para + "). Pídeselo y escríbelo a continuación.");
+        await LectorQR.cerrar(); $("rCod").focus(); return;
       }
       if (r.campo === "pulsera") { LectorQR.estado(r.msg, "mal"); ocupado = false; return; }
       await LectorQR.cerrar();
@@ -519,7 +521,7 @@ $("bEtiquetar").onclick = () => {
       agregar("Pulsera " + (elegida.etiquetas.length + 1));   // sin señal: el servidor la reconoce al subir
       LectorQR.estado("✓ Pulsera leída. Se reconocerá al subir.", "ok");
     }
-  });
+  }, { boton: "Listo" });
   pintarEtiquetas();
 };
 
