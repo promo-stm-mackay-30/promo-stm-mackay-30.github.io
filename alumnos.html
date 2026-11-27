@@ -212,6 +212,7 @@
           <button class="etiquetar" id="bEtiquetar" type="button" style="margin-top:.8rem">🏷️ Etiquetar escaneando pulseras</button>
         </div>
         <button class="btn" id="bSubir" type="button">⬆️ Subir foto</button>
+        <p class="cupo" id="pGuardada" style="margin-top:.8rem" hidden></p>
         <button class="btn sec" id="bGuardarTel" type="button">💾 Guardar en mi teléfono</button>
         <p class="centro"><button class="enlace" id="bDescartar" type="button">Descartar</button></p>
       </div>
@@ -456,9 +457,23 @@ async function preparar(archivo) {
   }
   return { foto, mini: reducir(img, 400, .72) };
 }
+/* Android: la foto recién tomada se guarda sola en el teléfono (carpeta Descargas, se ve en la galería).
+ * iPhone no permite que una página guarde sin un toque: ahí queda el botón. */
+function guardarSolo(archivo) {
+  try {
+    const tipo = (String(archivo.type).split("/")[1] || "jpg").replace("jpeg", "jpg");
+    const url = URL.createObjectURL(archivo), a = document.createElement("a");
+    a.href = url; a.download = GaleriaG30.nombreArchivo(Date.now()).replace(/jpg$/, tipo);
+    document.body.append(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 60000);
+    return true;
+  } catch (_) { return false; }
+}
 ["fCam", "fGal"].forEach(id => $(id).addEventListener("change", async e => {
   const archivo = e.target.files[0]; e.target.value = "";
   if (!archivo) return;
+  const deCamara = id === "fCam";
+  const sola = deCamara && /Android/i.test(navigator.userAgent) && guardarSolo(archivo);   // la original, antes de cualquier otra cosa
   if (yo && !yo.puedeSubir) return avisar("Por ahora no puedes subir fotos.", true);
   if (yo && yo.quedan <= 0) return avisar(`Llegaste a las ${yo.max} fotos. Borra alguna para subir otra.`, true);
   avisar("Preparando la foto…");
@@ -466,6 +481,10 @@ async function preparar(archivo) {
     const p = await preparar(archivo), ahora = Date.now(), t = archivo.lastModified;
     elegida = { archivo, foto: p.foto, mini: p.mini, tomada: t && t > ahora - 7 * 864e5 && t <= ahora ? t : ahora, etiquetas: [] };
     $("pImg").src = p.foto; $("pFecha").textContent = "🕒 " + GaleriaG30.cuando(elegida.tomada); $("pMsg").value = ""; pintarEtiquetas();
+    // una foto elegida de la galería ya está en el teléfono: no hace falta guardarla
+    $("bGuardarTel").hidden = !deCamara || sola;
+    $("pGuardada").hidden = !deCamara;
+    $("pGuardada").textContent = sola ? "✓ Guardada en tu teléfono (carpeta Descargas)" : /iPhone|iPad/i.test(navigator.userAgent) ? "En iPhone: toca «Guardar en mi teléfono» y luego «Guardar imagen»." : "Para guardarla en tu teléfono, toca el botón de abajo.";
     $("sElegir").hidden = true; $("sPreparar").hidden = false; $("flota").hidden = true; window.scrollTo(0, 0);
   } catch (_) { avisar("No se pudo abrir esa imagen. Prueba con otra.", true); }
 }));
