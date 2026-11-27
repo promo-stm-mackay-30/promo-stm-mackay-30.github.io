@@ -186,20 +186,58 @@
   .pronto { list-style:none; display:grid; gap:.5rem; }
   .pronto li { padding:.7rem .8rem; border:1px dashed var(--borde); border-radius:.9rem; color:var(--suave); font-size:.9rem; }
   .pronto li b { color:var(--texto); }
+
+  /* ---------- Elección de acceso ---------- */
+  .accesos { display:grid; gap:.9rem; }
+  .acceso-rol { display:flex; align-items:center; gap:1rem; width:100%; text-align:left; font:inherit; color:var(--texto); cursor:pointer; padding:1.15rem 1.1rem; border-radius:1.3rem; border:1px solid rgba(255,255,255,.22); background:var(--vidrio);
+    box-shadow:0 .35rem 0 rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.18); transition:transform .15s, filter .15s; -webkit-tap-highlight-color:transparent; }
+  .acceso-rol:hover { filter:brightness(1.12); transform:translateY(-.15rem); }
+  .acceso-rol:active { transform:translateY(.25rem); box-shadow:0 .05rem 0 rgba(0,0,0,.45); }
+  .acceso-rol:focus-visible { outline:3px solid var(--cian); outline-offset:3px; }
+  .acceso-rol .ico { flex:none; font-size:2.1rem; width:2.8rem; text-align:center; }
+  .acceso-rol strong { display:block; font-size:1.15rem; }
+  .acceso-rol small { display:block; color:var(--suave); font-size:.84rem; line-height:1.4; margin-top:.15rem; }
+  .acceso-rol.puerta { background:linear-gradient(120deg, rgba(46,229,157,.22), var(--vidrio) 70%); border-color:rgba(46,229,157,.55); }
+  .acceso-rol.staff { background:linear-gradient(120deg, rgba(138,77,255,.32), var(--vidrio) 70%); border-color:rgba(170,130,255,.6); }
+  .acceso-rol.admin { background:linear-gradient(120deg, rgba(245,166,35,.26), var(--vidrio) 70%); border-color:rgba(245,166,35,.6); }
+  .cambiar-acceso { background:none; border:none; color:var(--cian); font:inherit; font-weight:700; font-size:.85rem; cursor:pointer; padding:.2rem 0 .8rem; }
+  .espera { text-align:center; padding:2rem 1.2rem; }
+  .espera .ico { font-size:3.4rem; }
+  .espera h2 { margin:.6rem 0 .4rem; }
+
+  /* Lo que cada acceso no puede usar (además, el servidor lo rechaza) */
+  body.rol-puerta .tabs, body.rol-puerta .eventos { display:none !important; }
+  body.rol-staff .tabs { grid-template-columns:repeat(3,1fr); }
+  body.rol-staff .tabs [data-tab=correos], body.rol-staff .solo-admin, body.rol-staff .descargas, body.rol-staff .dj .acc button { display:none !important; }
+
+  /* ¿A quién van los correos del simulacro? */
+  .destinos { display:grid; gap:.5rem; margin:0 0 .8rem; text-align:left; }
+  .destinos label { display:flex; gap:.7rem; align-items:flex-start; margin:0; padding:.7rem .8rem; border-radius:.9rem; border:1px solid var(--borde); background:rgba(255,255,255,.05); cursor:pointer; color:var(--texto); font-weight:700; font-size:.92rem; }
+  .destinos input { margin-top:.2rem; width:1.15rem; height:1.15rem; accent-color:var(--oro); flex:none; }
+  .destinos small { display:block; font-weight:400; color:var(--suave); font-size:.78rem; margin-top:.1rem; }
+  .destinos label:has(input:checked) { border-color:var(--oro); background:rgba(245,166,35,.12); }
 </style>
 </head>
 <body>
 <div class="aurora" aria-hidden="true"><i></i><i></i><i></i></div>
 <main class="contenedor">
   <a class="volver" href="./">← Inicio</a>
-  <h1>Acceso de staff</h1>
+  <h1 id="tituloAcceso">Acceso de staff</h1>
 
-  <section id="login" class="tarjeta">
-    <h2>Ingreso</h2>
+  <section id="elegir" class="accesos oculto">
+    <p class="sub" style="margin:0">¿Qué vas a hacer?</p>
+    <button type="button" class="acceso-rol puerta" data-como="puerta"><span class="ico">🚪</span><span><strong>Control de Acceso</strong><small>Solo escanear entradas y salidas en la puerta</small></span></button>
+    <button type="button" class="acceso-rol staff" data-como="staff"><span class="ico">🎫</span><span><strong>Acceso Staff</strong><small>Puerta, iniciar o finalizar fiesta y simulacro, y ver las listas</small></span></button>
+    <button type="button" class="acceso-rol admin" data-como="admin"><span class="ico">🔑</span><span><strong>Acceso Admin</strong><small>Control total: correos, alumnos, música y cambios</small></span></button>
+  </section>
+
+  <section id="login" class="tarjeta oculto">
+    <button type="button" class="cambiar-acceso" id="volverElegir">← Cambiar de acceso</button>
+    <h2 id="loginTit">Ingreso</h2>
     <p class="msg mal oculto" id="loginError"></p>
     <button class="btn bio oculto" id="bBio" type="button"></button>
     <p class="o-pin oculto" id="oPin">o entra con el PIN</p>
-    <label for="pin">PIN del staff</label>
+    <label for="pin" id="pinEti">PIN</label>
     <input type="password" id="pin" autocomplete="off" inputmode="text">
     <div style="height:1rem"></div>
     <button class="btn" id="entrar" type="button">Entrar</button>
@@ -215,6 +253,11 @@
 
     <!-- ===== Puerta ===== -->
     <section id="tab-puerta">
+      <div class="tarjeta espera oculto" id="espera">
+        <div class="ico">⏳</div>
+        <h2>Esperando el inicio</h2>
+        <p class="sub" style="margin:0">El escáner se activa solo cuando el staff inicia la <b>fiesta</b> o un <b>simulacro</b>.</p>
+      </div>
       <div class="contadores">
         <div><b id="cDentro">–</b><span>Dentro</span></div>
         <div><b id="cRetirados">–</b><span>Retirados</span></div>
@@ -317,7 +360,7 @@
         <p class="nota">Toca un colegio o un curso para ver quién ya se registró y quién falta, y descargar la lista.</p>
         <p class="nota" id="kNota"></p>
       </div>
-      <div class="tarjeta">
+      <div class="tarjeta solo-admin">
         <h2>Agregar alumno a la lista</h2>
         <p class="nota">Para un alumno nuevo que no está en la lista. Al agregarlo, su familia ya puede registrarse con el teléfono del apoderado.</p>
         <form id="aForm" autocomplete="off" novalidate>
@@ -347,7 +390,7 @@
         <p class="nota" id="kPlaylist"></p>
         <button class="btn sec" id="bDj" type="button">Ver pedidos y dedicatorias</button>
       </div>
-      <div class="tarjeta">
+      <div class="tarjeta solo-admin">
         <h2>Envíos de anuncios</h2>
         <div id="kCamp"><p class="nota">Aún no hay envíos.</p></div>
       </div>
@@ -411,10 +454,13 @@ const API = window.API_URL;
 let pin = "", modo = "entrada", ocupado = false, tabActual = "puerta", evento = "";   // evento: "" | "fiesta" | "simulacro" (lo define el servidor)
 
 let tk = "";   // pase firmado que entrega el servidor al entrar: se usa en vez del PIN (si el PIN cambia, deja de servir)
-try { pin = sessionStorage.getItem("pin_g30") || ""; tk = sessionStorage.getItem("tk_g30") || ""; } catch (_) {}
+let como = "", correosSim = "", destinoCorreo = "";   // como: "puerta" | "staff" | "admin" (el botón elegido)
+try { pin = sessionStorage.getItem("pin_g30") || ""; tk = sessionStorage.getItem("tk_g30") || ""; como = sessionStorage.getItem("como_g30") || ""; } catch (_) {}
+const ACCESOS = { puerta: "Control de Acceso", staff: "Acceso Staff", admin: "Acceso Admin" };
+if (!ACCESOS[como]) como = "";
 
 async function api(body) {
-  const r = await (await fetch(API, { method: "POST", body: JSON.stringify(Object.assign({ pin, tk }, body)) })).json();
+  const r = await (await fetch(API, { method: "POST", body: JSON.stringify(Object.assign({ pin: tk ? "" : pin, tk, como }, body)) })).json();
   if (r && r.tk) { tk = r.tk; try { sessionStorage.setItem("tk_g30", tk); } catch (_) {} }
   return r;
 }
@@ -442,7 +488,7 @@ async function contadores() {
   try {
     const r = await api({ accion: "presentes" });
     if (r.auth === false) return cerrarSesion();
-    if (r.ok) { $("cDentro").textContent = r.dentro; $("cRetirados").textContent = r.retirados; $("cRegistrados").textContent = r.registrados; pintarEvento(r.evento); }
+    if (r.ok) { $("cDentro").textContent = r.dentro; $("cRetirados").textContent = r.retirados; $("cRegistrados").textContent = r.registrados; correosSim = r.correos || ""; pintarEvento(r.evento); }
   } catch (_) {}
 }
 
@@ -456,7 +502,13 @@ function pintarEvento(nuevo) {
   $("gatilloSub").textContent = tabActual === "consultar" ? "Ver de quién es" : on ? "Pulsa para leer la pulsera" : "Inicia la fiesta primero";
   const e = $("estadoPuerta");
   e.className = "estado-puerta " + evento;
-  e.textContent = sinServidor ? "Falta publicar la nueva versión del servidor" : evento === "fiesta" ? "🎉 Fiesta en curso" : evento === "simulacro" ? "🧪 Simulacro · nada es real" : "Fiesta sin iniciar";
+  e.textContent = sinServidor ? "Falta publicar la nueva versión del servidor" : evento === "fiesta" ? "🎉 Fiesta en curso"
+    : evento === "simulacro" ? (correosSim === "apoderados" ? "🧪 Simulacro · ⚠ los correos van a los APODERADOS" : "🧪 Simulacro · correos solo al organizador") : "Fiesta sin iniciar";
+  /* Control de Acceso: sin fiesta ni simulacro no hay escáner */
+  const esperando = como === "puerta" && !on;
+  $("espera").classList.toggle("oculto", !esperando);
+  ["#tab-puerta .contadores", "#estadoPuerta", "#tab-puerta .modos", "#slot-puerta"].forEach(q => document.querySelector(q).classList.toggle("oculto", esperando));
+  if (esperando) apagar();
   const f = $("bFiesta"), m = $("bSim");
   f.textContent = evento === "fiesta" ? "■ Finalizar fiesta" : "✨ INICIAR FIESTA";
   m.textContent = evento === "simulacro" ? "■ Finalizar" : "🧪 Simulacro";
@@ -467,20 +519,25 @@ function pedirPin(tipo) {
   const fin = evento === tipo, nombre = tipo === "fiesta" ? "la fiesta" : "el simulacro";
   ocupado = true;
   mostrar("conf", `<div class="ico">${tipo === "fiesta" ? "🎉" : "🧪"}</div><h2>${fin ? "Finalizar" : "Iniciar"} ${nombre}</h2>
-    <p class="sub">${fin ? "Entrada y salida quedarán desactivadas en todos los teléfonos." : tipo === "fiesta" ? "Los movimientos serán reales y los apoderados recibirán correos." : "Prueba: no toca los datos reales y los correos van solo al organizador."}</p>
+    <p class="sub">${fin ? "Entrada y salida quedarán desactivadas en todos los teléfonos." : tipo === "fiesta" ? "Los movimientos serán reales y los apoderados recibirán correos." : "Prueba: no toca los datos reales. Elige a quién llegan los correos de retiro."}</p>
+    ${!fin && tipo === "simulacro" ? `<div class="destinos" role="radiogroup" aria-label="Correos del simulacro">
+      <label><input type="radio" name="destino" value="admin" checked><span>Solo al organizador<small>Ninguna familia recibe nada</small></span></label>
+      <label><input type="radio" name="destino" value="apoderados"><span>A los apoderados<small>Correos reales marcados «SIMULACRO», a la familia de cada alumno que se retire</small></span></label></div>` : ""}
     <input type="password" class="pin-fiesta" id="pinFiesta" inputmode="numeric" maxlength="12" autocomplete="off" aria-label="PIN" placeholder="PIN">
     <p class="res mal" id="pinRes"></p>
     <button class="btn" id="pinOk" type="button">Confirmar</button><button class="btn sec" id="pinNo" type="button">Cancelar</button>`);
   $("pinNo").onclick = cerrar;
+  const destino = () => { const r = document.querySelector('input[name="destino"]:checked'); return r ? r.value : ""; };
+  document.querySelectorAll('input[name="destino"]').forEach(r => r.onchange = () => $("pinOk").textContent = destino() === "apoderados" ? "Iniciar y escribir a las familias" : "Confirmar");
   const enviar = async () => {
     const b = $("pinOk"), clave = $("pinFiesta").value.trim(); if (!clave) return;
     b.disabled = true; b.textContent = "Verificando…";
     try {
       if (fin) api({ accion: "avisar", evento: tipo }).catch(() => {});   // antes de cerrar: que no quede ningún correo de retiro sin salir
-      const r = await api({ accion: fin ? "finalizar" : "activar", tipo, clave });
+      const r = await api({ accion: fin ? "finalizar" : "activar", tipo, clave, correos: destino() });
       if (r.auth === false) return cerrarSesion();
       if (!r.ok) { $("pinRes").textContent = r.msg === "Acción desconocida" ? "Falta publicar la nueva versión del servidor." : r.msg; $("pinFiesta").value = ""; }
-      else { cerrar(); pintarEvento(r.evento); contadores(); return; }
+      else { cerrar(); correosSim = r.correos || ""; pintarEvento(r.evento); contadores(); return; }
     } catch (_) { $("pinRes").textContent = "Sin conexión con el servidor."; }
     b.disabled = false; b.textContent = "Confirmar";
   };
@@ -684,7 +741,7 @@ async function consultar(token, ya, yo) {
   }
 }
 
-const textoCorreo = estado => estado === "Enviado" ? "✉️ Correo enviado" + (evento === "simulacro" ? " (simulacro)" : " al apoderado")
+const textoCorreo = estado => estado === "Enviado" ? "✉️ Correo enviado" + (evento === "simulacro" ? (destinoCorreo === "apoderado" ? " al apoderado (simulacro)" : " al organizador (simulacro)") : " al apoderado")
   : estado === "Pendiente" ? "✉️ Enviando el correo…" : "⚠ El correo NO salió (" + estado + ")";
 /* El correo se pide aparte, para no dejar esperando a la puerta */
 async function avisarRetiro(folio, ev) {
@@ -700,6 +757,7 @@ async function retirar(token, quien) {
   mostrar("conf", '<div class="girando"></div><h2>Guardando…</h2>');
   try {
     const r = await api({ accion: "retirar", token, quien, evento });
+    destinoCorreo = r.para || "";
     pitar(r.ok);
     mostrar(r.ok ? "ok" : "mal",
       `<div class="ico">${r.ok ? "✅" : "⛔"}</div><h2>${esc(r.msg)}</h2>`
@@ -834,13 +892,16 @@ document.addEventListener("visibilitychange", () => {
 
 /* ===== Pestañas: para agregar una sección nueva, suma un botón en #tabs, un <section id="tab-NOMBRE"> y el nombre aquí ===== */
 const TABS = ["puerta", "consultar", "correos", "mas"];
+const PERMITIDAS = { puerta: ["puerta"], staff: ["puerta", "consultar", "mas"], admin: TABS };
 function irTab(n) {
+  if (como && PERMITIDAS[como].indexOf(n) < 0) n = "puerta";
   TABS.forEach(t => $("tab-" + t).classList.toggle("oculto", t !== n));
   document.querySelectorAll("#tabs button").forEach(b => b.classList.toggle("on", b.dataset.tab === n));
   tabActual = n; carnet = null; apagar();                        // la cámara nunca queda encendida al cambiar de pestaña
   if (n === "puerta" || n === "consultar") $("slot-" + n).appendChild($("escaner"));
   pintarEvento(evento);
   if (n === "mas") { cargarResumen(); cargarMusicaDj(); }
+  window.scrollTo(0, 0);
 }
 document.querySelectorAll("#tabs button").forEach(b => b.onclick = () => irTab(b.dataset.tab));
 
@@ -1118,7 +1179,8 @@ async function abrirSala(colegio, curso) {
     $("salaListas").innerHTML =
       `<h4 class="falta">Faltan por registrar (${r.pendientes.length})</h4>`
       + (r.pendientes.length ? r.pendientes.map(a => { const w = linkWhatsapp(a.tel);
-          return `<div class="fila-alu"><div>${esc(a.alumno)}<small>${esc(a.apoderado)} · ${esc(a.tel)}</small></div>${w ? `<a href="${w}" target="_blank" rel="noopener">WhatsApp</a>` : ""}</div>`; }).join("")
+          const verTel = como === "admin" && a.tel;
+          return `<div class="fila-alu"><div>${esc(a.alumno)}<small>${esc(a.apoderado)}${verTel ? " · " + esc(a.tel) : ""}</small></div>${verTel && w ? `<a href="${w}" target="_blank" rel="noopener">WhatsApp</a>` : ""}</div>`; }).join("")
         : '<p class="nota">Todos los alumnos de esta sala ya se registraron 🎉</p>')
       + `<h4 class="ok">Registrados (${r.registrados.length})</h4>`
       + (r.registrados.length ? r.registrados.map(a => `<div class="fila-alu"><div>${esc(a.alumno)}<small>Pulsera N.º ${esc(a.folio)}</small></div></div>`).join("") : '<p class="nota">Todavía no se registra nadie.</p>');
@@ -1230,12 +1292,12 @@ $("dComp").onclick = () => accionDescarga($("dComp"), "Imagen", generarImagen, "
    Usa una llave de acceso del propio teléfono (la misma tecnología que "passkeys").
    La primera vez se entra con el PIN y se activa; después la huella o el rostro desbloquean ese PIN,
    que queda cifrado en el teléfono cuando el navegador lo permite. El servidor sigue validando el mismo PIN. */
-const BIO_K = "bio_g30";
+const bioK = () => como && como !== "admin" ? "bio_g30_" + como : "bio_g30";
 const ICO_HUELLA = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M12 11v3.5c0 2.2-.6 4.2-1.7 5.8M8.6 9.3A4 4 0 0 1 16 11v2.5c0 1.8-.3 3.4-.9 4.9M5.5 15.5c.3-1.2.5-2.6.5-4a6 6 0 0 1 9.2-5.1M18 10.2c.1.4.1.9.1 1.3v1.5M3.8 9.4A8.5 8.5 0 0 1 19.6 7.2M8.3 19c.9-1.6 1.3-3.4 1.3-5.3"/></svg>';
 const b64 = buf => btoa(String.fromCharCode.apply(null, new Uint8Array(buf)));
 const deB64 = t => Uint8Array.from(atob(t), c => c.charCodeAt(0));
 const aleatorio = n => crypto.getRandomValues(new Uint8Array(n));
-const bioGuardado = () => { try { return JSON.parse(localStorage.getItem(BIO_K) || "null"); } catch (_) { return null; } };
+const bioGuardado = () => { try { return JSON.parse(localStorage.getItem(bioK()) || "null"); } catch (_) { return null; } };
 async function bioDisponible() {
   try { return !!(window.PublicKeyCredential && window.isSecureContext && await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable()); } catch (_) { return false; }
 }
@@ -1250,7 +1312,7 @@ async function activarBio() {
   const sal = aleatorio(32);
   const cred = await navigator.credentials.create({ publicKey: {
     challenge: aleatorio(32), rp: { name: "Prom Party G'30 · Staff" },
-    user: { id: aleatorio(16), name: "staff-prom-g30", displayName: "Staff Prom Party G'30" },
+    user: { id: aleatorio(16), name: "prom-g30-" + (como || "staff"), displayName: (ACCESOS[como] || "Staff") + " · Prom Party G'30" },
     pubKeyCredParams: [{ type: "public-key", alg: -7 }, { type: "public-key", alg: -257 }],
     authenticatorSelection: { authenticatorAttachment: "platform", userVerification: "required", residentKey: "discouraged" },
     timeout: 60000, extensions: { prf: { eval: { first: sal } } } } });
@@ -1263,7 +1325,7 @@ async function activarBio() {
     reg.sal = b64(sal); reg.iv = b64(iv);
     reg.pin = b64(await crypto.subtle.encrypt({ name: "AES-GCM", iv }, await claveAes(secreto), new TextEncoder().encode(pin)));
   } else reg.pin = pin;   // el teléfono no permite cifrar con la huella: la huella solo controla la entrada
-  localStorage.setItem(BIO_K, JSON.stringify(reg));
+  localStorage.setItem(bioK(), JSON.stringify(reg));
   try { localStorage.removeItem("bio_no"); } catch (_) {}
   return reg.cifrado;
 }
@@ -1274,7 +1336,7 @@ async function pinConHuella() {
   if (!secreto) throw new Error("sin-clave");
   return new TextDecoder().decode(await crypto.subtle.decrypt({ name: "AES-GCM", iv: deB64(reg.iv) }, await claveAes(secreto), deB64(reg.pin)));
 }
-function borrarBio() { try { localStorage.removeItem(BIO_K); } catch (_) {} }
+function borrarBio() { try { localStorage.removeItem(bioK()); } catch (_) {} }
 async function pintarBio() {
   const disp = await bioDisponible(), reg = bioGuardado();
   $("bBio").innerHTML = ICO_HUELLA + "<span>Entrar con huella o Face ID</span>";
@@ -1300,11 +1362,12 @@ $("bBio").onclick = async () => {
   const falla = t => { e.textContent = t; e.classList.remove("oculto"); };
   try {
     pin = await pinConHuella();
+    tk = "";
     let r;
     try { r = await api({ accion: "presentes" }); } catch (_) { pin = ""; return falla("Sin conexión con el servidor."); }
     if (r.ok) { try { sessionStorage.setItem("pin_g30", pin); } catch (_) {} entrarPanel(); }
     else if (r.bloqueado) { pin = ""; falla(r.msg); }
-    else { pin = ""; borrarBio(); pintarBio(); falla("El PIN del staff cambió. Entra con el PIN nuevo y vuelve a activar la huella."); }
+    else { pin = ""; borrarBio(); pintarBio(); falla("El PIN cambió o no sirve para " + ACCESOS[como] + ". Entra con el PIN y vuelve a activar la huella."); }
   } catch (err) {
     pin = "";
     if (err && err.name === "NotAllowedError") falla("Se canceló la lectura. Intenta de nuevo o entra con el PIN.");
@@ -1330,15 +1393,34 @@ async function ofrecerBio() {
   };
 }
 
+function elegirAcceso() {
+  como = ""; try { sessionStorage.removeItem("como_g30"); } catch (_) {}
+  document.body.classList.remove("rol-puerta", "rol-staff", "rol-admin");
+  $("tituloAcceso").textContent = "Acceso de staff";
+  $("login").classList.add("oculto"); $("panel").classList.add("oculto"); $("elegir").classList.remove("oculto");
+}
+function pedirIngreso(rol) {
+  como = rol;
+  $("tituloAcceso").textContent = ACCESOS[rol];
+  $("loginTit").textContent = "Ingreso"; $("pinEti").textContent = "PIN de " + ACCESOS[rol];
+  $("loginError").classList.add("oculto"); $("pin").value = "";
+  $("elegir").classList.add("oculto"); $("panel").classList.add("oculto"); $("login").classList.remove("oculto");
+  pintarBio();
+}
+document.querySelectorAll(".acceso-rol").forEach(b => b.onclick = () => pedirIngreso(b.dataset.como));
+$("volverElegir").onclick = elegirAcceso;
 function entrarPanel() {
-  $("login").classList.add("oculto"); $("panel").classList.remove("oculto");
+  try { sessionStorage.setItem("como_g30", como); } catch (_) {}
+  document.body.classList.remove("rol-puerta", "rol-staff", "rol-admin"); document.body.classList.add("rol-" + como);
+  $("tituloAcceso").textContent = ACCESOS[como];
+  $("elegir").classList.add("oculto"); $("login").classList.add("oculto"); $("panel").classList.remove("oculto");
   irTab("puerta"); contadores(); nominaEn = 0; cargarNomina(); clearInterval(window._c); window._c = setInterval(() => { contadores(); cargarNomina(); }, 8000);
 }
 function cerrarSesion() {
   pin = ""; tk = ""; carnet = null; nomina = new Map(); try { sessionStorage.removeItem("pin_g30"); sessionStorage.removeItem("tk_g30"); } catch (_) {}
   clearInterval(window._c); apagar(); cerrar(); cerrarSala(); $("dj").classList.add("oculto"); musDj = null;
-  $("panel").classList.add("oculto"); $("login").classList.remove("oculto");
   $("pin").value = "";
+  elegirAcceso();
 }
 
 $("entrar").onclick = async () => {
@@ -1351,10 +1433,10 @@ $("entrar").onclick = async () => {
     const r = await api({ accion: "presentes" });
     if (r.ok) {
       try { sessionStorage.setItem("pin_g30", pin); } catch (_) {}
-      const reg = bioGuardado(); if (reg && reg.cifrado === false && reg.pin !== pin) { reg.pin = pin; try { localStorage.setItem(BIO_K, JSON.stringify(reg)); } catch (_) {} }
+      const reg = bioGuardado(); if (reg && reg.cifrado === false && reg.pin !== pin) { reg.pin = pin; try { localStorage.setItem(bioK(), JSON.stringify(reg)); } catch (_) {} }
       entrarPanel(); ofrecerBio();
     }
-    else { e.textContent = r.bloqueado ? r.msg : "PIN incorrecto."; e.classList.remove("oculto"); pin = ""; }
+    else { e.textContent = r.bloqueado || r.otroRol ? r.msg : "PIN incorrecto."; e.classList.remove("oculto"); pin = ""; }
   } catch (_) { e.textContent = "Sin conexión con el servidor."; e.classList.remove("oculto"); }
   b.disabled = false; b.textContent = "Entrar";
 };
@@ -1363,8 +1445,8 @@ $("salir").onclick = cerrarSesion;
 $("mE").onclick = () => { modo = "entrada"; $("mE").className = "activo e"; $("mS").className = "s"; };
 $("mS").onclick = () => { modo = "salida"; $("mS").className = "activo s"; $("mE").className = "e"; };
 
-pintarBio();
-if (pin && API) entrarPanel();
+if (pin && como && API) { pintarBio(); entrarPanel(); }
+else { pin = ""; tk = ""; elegirAcceso(); }
 </script>
 </body>
 </html>
