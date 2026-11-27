@@ -1056,6 +1056,9 @@ $("mConfirmar").onclick = async () => {
   b.disabled = false; b.textContent = "Confirmar envío";
 };
 
+/* Un texto que empieza con = + - @ se abriría en Excel como fórmula: se le antepone un apóstrofo (los teléfonos +56… se dejan). */
+const sinFormula = v => { const s = String(v == null ? "" : v); return /^[=@\t\r]|^[+\-](?![\d ]+$)/.test(s) ? "'" + s : s; };
+
 /* ===== Más: música para el DJ (pedidos, votos y dedicatorias del Portal de apoderados) ===== */
 let musDj = null;
 const buscarSpotify = c => "https://open.spotify.com/search/" + encodeURIComponent((c.t + " " + c.a).trim());
@@ -1130,7 +1133,7 @@ $("djCopiar").onclick = async () => {
 };
 $("djCsv").onclick = () => {
   if (!musDj) return;
-  const q = v => '"' + String(v == null ? "" : v).replace(/"/g, '""') + '"';
+  const q = v => '"' + sinFormula(v).replace(/"/g, '""') + '"';
   const filas = [["Tipo", "Canción", "Artista", "Votos", "Explícita", "Para (alumno)", "Curso", "Mensaje"]]
     .concat(musDj.pedidos.map(c => ["Pedido", c.t, c.a, c.v, c.e ? "Sí" : "", "", "", ""]))
     .concat(musDj.dedicatorias.map(c => ["Dedicatoria", c.t, c.a, "", c.e ? "Sí" : "", c.alumno, c.curso, c.msg]));
@@ -1487,7 +1490,7 @@ async function generarPdf() {
 
 /* Excel: CSV con ; como separador y BOM, que Excel en español abre con tildes bien. */
 function generarCsv() {
-  const f = v => '"' + String(v == null ? "" : v).replace(/"/g, '""') + '"';
+  const f = v => '"' + sinFormula(v).replace(/"/g, '""') + '"';
   const filas = [["Estado", "Alumno", "Curso", "Pulsera N.º", "Apoderado", "Teléfono"]]
     .concat(sala.pendientes.map(a => ["Falta registrar", a.alumno, a.curso, "", a.apoderado, a.tel]))
     .concat(sala.registrados.map(a => ["Registrado", a.alumno, a.curso, a.folio, a.apoderado, ""]));
