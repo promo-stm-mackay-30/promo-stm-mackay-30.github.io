@@ -180,6 +180,8 @@
   .aviso-flotante.mal { background: #6d1a26; border-color: rgba(255,90,110,.8); }
   .girando { width: 3rem; height: 3rem; margin: 3rem auto 1rem; border-radius: 50%; border: 4px solid rgba(255,255,255,.18); border-top-color: var(--oro-2); animation: giro .9s linear infinite; }
   @keyframes giro { to { transform: rotate(360deg); } }
+  .clave-grande { text-align: center; font-size: 2.6rem; font-weight: 800; letter-spacing: .3em; padding: .6rem 0 .6rem .3em; color: var(--oro-2); border: 2px solid var(--oro-2); border-radius: 1.1rem; margin: .8rem 0; }
+  ol.pasos-al { margin: .2rem 0 0 1.1rem; padding: 0; } ol.pasos-al li { padding: .25rem 0; font-size: .88rem; color: var(--suave); line-height: 1.45; }
   [hidden] { display: none !important; }
 </style>
 </head>
@@ -236,6 +238,7 @@
       <button class="acceso" type="button" data-ir="autorizados"><span class="ico">👨‍👩‍👧</span><span><strong>Autorizados para el retiro</strong><small id="rAut"></small></span><span class="der ok">Ver</span></button>
       <button class="acceso" type="button" data-ir="foto"><span class="ico">📸</span><span><strong>Foto del alumno</strong><small>Ayudará a encontrar sus fotos de la fiesta</small></span><span class="der" id="rFoto"></span></button>
       <button class="acceso" type="button" data-ir="musica"><span class="ico">🎶</span><span><strong>Música de la fiesta</strong><small>Pide, vota y dedícale una canción</small></span><span class="der nuevo" id="rMus">Nuevo</span></button>
+      <button class="acceso" type="button" data-ir="panel"><span class="ico">📱</span><span><strong>Panel de tu hijo/a</strong><small>Actívalo y controla su acceso</small></span><span class="der" id="rPanel" hidden></span></button>
       <button class="acceso" type="button" data-ir="recuerdos"><span class="ico">🎞️</span><span><strong>Fotos del evento</strong><small>Disponibles después de la fiesta</small></span><span class="der pronto">Pronto</span></button>
       <div class="tarjeta" style="margin-top:1rem">
         <h2>La fiesta</h2>
@@ -307,6 +310,16 @@
       <p class="nota centro" style="margin-bottom:1rem">El DJ decide qué suena: tus pedidos, votos y dedicatorias lo ayudan a elegir.</p>
     </div>
 
+    <div id="v-panel" hidden>
+      <div id="panelCaja"><div class="girando"></div></div>
+      <div class="tarjeta" id="panelFotos" hidden>
+        <h2>Sus fotos</h2>
+        <p class="nota" style="margin-bottom:.8rem">Las que subió y aquellas donde le etiquetaron. Si alguna no corresponde, puedes reportarla.</p>
+        <button class="btn sec" id="verFotosHijo" type="button" style="margin-top:0">Ver sus fotos</button>
+        <div id="gHijo" style="margin-top:1rem"></div>
+      </div>
+    </div>
+
     <div id="v-recuerdos" hidden>
       <div class="tarjeta" id="recLista" hidden>
         <h2>🎶 La banda sonora de la G'30</h2>
@@ -338,6 +351,7 @@
 <div class="aviso-flotante" id="flota" role="status" hidden></div>
 
 <script src="config.js"></script>
+<script src="galeria.js"></script>
 <script>
 const $ = id => document.getElementById(id);
 const API = window.API_URL;
@@ -370,6 +384,7 @@ function pantalla(p) {
   window.scrollTo(0, 0);
 }
 function cerrarSesion(texto) {
+  Object.keys(paneles).forEach(k => delete paneles[k]); GaleriaG30.vaciar(); document.querySelectorAll(".gx-visor").forEach(v => v.remove());
   sesion = ""; datos = null; nuevaFoto = ""; musicaDe = {}; playlistId = ""; musicaCargada = false;
   Object.keys(fotos).forEach(k => delete fotos[k]);
   guardado.poner("localStorage", SESION, null);
@@ -498,10 +513,11 @@ function actualizar(r) { datos = r; if (idx >= datos.alumnos.length) idx = 0; pi
 function ir(v) {
   if (vista === "autorizados" && v !== "autorizados") verAutorizados();
   vista = v;
-  ["inicio", "autorizados", "foto", "musica", "recuerdos"].forEach(s => $("v-" + s).hidden = s !== v);
+  ["inicio", "autorizados", "foto", "musica", "recuerdos", "panel"].forEach(s => $("v-" + s).hidden = s !== v);
   $("musListaPlayer").textContent = ""; $("recListaPlayer").textContent = "";   // al salir de la vista se detiene la música
   if (v === "musica") cargarMusica();
   if (v === "recuerdos") pintarRecuerdos();
+  if (v === "panel") cargarPanel();
   document.querySelectorAll(".barra button").forEach(b => b.dataset.ir === v ? b.setAttribute("aria-current", "page") : b.removeAttribute("aria-current"));
   window.scrollTo(0, 0);
 }
@@ -515,7 +531,7 @@ function pintar() {
   const h = $("hijos"); h.textContent = ""; h.hidden = datos.alumnos.length < 2;
   datos.alumnos.forEach((x, i) => {
     const b = document.createElement("button"); b.type = "button"; b.textContent = x.alumno.split(/\s+/)[0]; b.setAttribute("aria-pressed", i === idx);
-    b.onclick = () => { idx = i; nuevaFoto = ""; verAutorizados(); pintar(); traerFoto(); if (vista === "musica") cargarMusica(); };
+    b.onclick = () => { idx = i; nuevaFoto = ""; verAutorizados(); pintar(); traerFoto(); if (vista === "musica") cargarMusica(); if (vista === "panel") cargarPanel(); };
     h.append(b);
   });
   $("nombre").textContent = a.alumno;
@@ -533,6 +549,7 @@ function pintar() {
     dt.textContent = t; dd.textContent = v; d.append(dt, dd); dl.append(d);
   });
   pintarAutorizados(); pintarFoto();
+  $("rPanel").hidden = true;
 }
 
 /* ---------- Autorizados ---------- */
@@ -901,6 +918,102 @@ async function quitarCancion(id, texto) {
     if (r.ok) { musicaDe[a.folio] = r; pintarMusica(); avisar(texto); } else avisar(r.msg || "No se pudo quitar.", true);
   } catch (_) { avisar(SIN_RED, true); }
 }
+
+/* ---------- Panel del alumno: activar, restablecer su clave y ver sus fotos ---------- */
+const paneles = {};   // folio → { abierto, panel }
+const pedirPanel = (folio, hacer, extra) => api(Object.assign({ accion: "portalPanelAlumno", sesion, folio, hacer }, extra));
+async function cargarPanel() {
+  const a = actual(), folio = a.folio, caja = $("panelCaja");
+  $("gHijo").textContent = ""; $("panelFotos").hidden = true;
+  if (paneles[folio]) pintarPanel(); else caja.innerHTML = '<div class="girando"></div>';
+  try {
+    const r = await pedirPanel(folio, "estado");
+    if (r.sesion === false) return cerrarSesion(r.msg);
+    if (!r.ok) { caja.innerHTML = '<div class="tarjeta"><p class="nota">El panel de alumnos estará disponible muy pronto.</p></div>'; return; }
+    paneles[folio] = r;
+    if (datos && actual().folio === folio) pintarPanel();
+  } catch (_) { if (!paneles[folio]) caja.innerHTML = '<div class="tarjeta"><p class="nota">Sin conexión. Vuelve a intentarlo.</p></div>'; }
+}
+const PASOS_AL = '<ol class="pasos-al"><li>Tu hijo/a abre <b>Panel de alumnos</b> en la página de la fiesta y toca "Es mi primera vez".</li><li>Escribe la clave y escanea <b>su</b> pulsera.</li><li>Registra su correo personal y crea su propia clave.</li></ol>';
+function pintarPanel(clave) {
+  const a = actual(), r = paneles[a.folio], p = r.panel, nombre = primerNombre(a.alumno), caja = $("panelCaja");
+  const activo = p.estado === "Activo", espera = p.estado === "Por registrar";
+  $("rPanel").hidden = !p.estado; $("rPanel").textContent = activo ? "Activo ✓" : espera ? "Pendiente" : "Apagado"; $("rPanel").className = "der " + (activo ? "ok" : "falta");
+  $("panelFotos").hidden = !p.estado;
+  if (clave) {
+    caja.innerHTML = `<div class="tarjeta"><h2>Clave de activación de ${esc(nombre)}</h2><div class="clave-grande">${esc(clave)}</div>
+      <p class="nota" style="margin-bottom:.6rem">Entrégasela solo a tu hijo/a. Vence en 7 días y no se vuelve a mostrar.</p>${PASOS_AL}
+      <button class="btn" id="claveLista" type="button" style="margin-top:1rem">Ya se la di</button></div>`;
+    $("claveLista").onclick = () => pintarPanel();
+    window.scrollTo(0, 0); return;
+  }
+  if (!r.abierto && !p.estado) { caja.innerHTML = `<div class="tarjeta recuerdos"><div class="grande">📱</div><h2 style="margin:.6rem 0;font-size:1rem">Muy pronto</h2><p class="nota">El panel de alumnos todavía no está abierto. Te avisaremos cuando puedas activarlo.</p></div>`; return; }
+  if (!p.estado || p.estado === "Desactivado") {
+    caja.innerHTML = `<div class="tarjeta"><h2>Panel de ${esc(nombre)}</h2>
+      <p class="nota" style="margin-bottom:.9rem">Con su panel puede subir fotos, etiquetar compañeros escaneando su pulsera y pedir canciones. Las fotos solo las ven quien las sube, los etiquetados, sus apoderados y la organización.</p>
+      <label class="chk"><input type="checkbox" id="alConsiento"><span>Como apoderado/a, <b>autorizo</b> que mi hijo/a tenga este panel, que registre su correo personal, y que pueda subir fotos y aparecer etiquetado/a en fotos de la fiesta.</span></label>
+      <button class="btn" id="alActivar" type="button" style="margin-top:1rem" disabled>Activar su panel</button></div>`;
+    $("alConsiento").onchange = e => $("alActivar").disabled = !e.target.checked || !r.abierto;
+    $("alActivar").onclick = () => hacerPanel("activar", { consiento: true }, $("alActivar"));
+    return;
+  }
+  caja.innerHTML = `<div class="tarjeta"><h2>Panel de ${esc(nombre)}</h2>
+    <dl class="datos">
+      <div><dt>Estado</dt><dd>${activo ? "Activo ✓" : p.pendiente ? "Esperando que se registre" : "La clave venció"}</dd></div>
+      ${p.correo ? `<div><dt>Su correo</dt><dd>${esc(p.correo)}</dd></div>` : ""}
+      ${p.ingreso ? `<div><dt>Último ingreso</dt><dd>${esc(p.ingreso)}</dd></div>` : ""}
+    </dl>
+    ${espera ? '<p class="nota" style="margin-top:.7rem">Si perdió la clave de activación, genera una nueva.</p>' : ""}
+    <button class="btn" id="alRestablecer" type="button" style="margin-top:1rem">${activo ? "Restablecer su clave" : "Generar clave nueva"}</button>
+    ${p.correo ? '<button class="btn sec" id="alQuitar" type="button">Quitar su correo</button>' : ""}
+    <button class="btn peligro" id="alApagar" type="button" style="margin-top:.9rem">Desactivar su panel</button></div>`;
+  const preguntar = (titulo, texto, si, hacer, peligro) => {
+    abrirHoja(`<h1 style="font-size:1.3rem">${esc(titulo)}</h1><p class="nota" style="margin-bottom:1rem">${esc(texto)}</p>
+      <button class="btn${peligro ? " peligro" : ""}" id="pSi" type="button">${esc(si)}</button><button class="btn sec" id="pNo" type="button">Cancelar</button>`);
+    $("pNo").onclick = cerrarHoja;
+    $("pSi").onclick = () => hacerPanel(hacer, {}, $("pSi"));
+  };
+  $("alRestablecer").onclick = () => preguntar(activo ? "¿Restablecer su clave?" : "¿Generar una clave nueva?", "Se cerrarán sus sesiones y tendrá que registrarse de nuevo con su pulsera y la clave nueva. Sus fotos se conservan.", "Sí, generar", "restablecer");
+  if ($("alQuitar")) $("alQuitar").onclick = () => preguntar("¿Quitar su correo?", "Se cerrarán sus sesiones y dejará de recibir avisos. Para volver a entrar necesitará una clave nueva.", "Sí, quitarlo", "quitarCorreo", true);
+  $("alApagar").onclick = () => preguntar("¿Desactivar su panel?", "No podrá entrar hasta que vuelvas a activarlo. Sus fotos se conservan.", "Sí, desactivar", "desactivar", true);
+}
+async function hacerPanel(hacer, extra, boton) {
+  const a = actual(), folio = a.folio, texto = boton.textContent;
+  boton.disabled = true; boton.textContent = "Un momento…";
+  try {
+    const r = await pedirPanel(folio, hacer, extra);
+    if (r.sesion === false) return cerrarSesion(r.msg);
+    if (!r.ok) { avisar(r.msg || "No se pudo.", true); boton.disabled = false; boton.textContent = texto; return; }
+    paneles[folio] = r; cerrarHoja();
+    if (datos && actual().folio === folio) pintarPanel(r.activacion);
+    if (!r.activacion) avisar(hacer === "desactivar" ? "Panel desactivado" : "Listo");
+  } catch (_) { avisar(SIN_RED, true); boton.disabled = false; boton.textContent = texto; }
+}
+$("verFotosHijo").onclick = async () => {
+  const a = actual(), folio = a.folio, b = $("verFotosHijo"), pedir = body => api(Object.assign({ apoderado: true, sesion, folio }, body));
+  b.disabled = true; b.textContent = "Cargando…";
+  try {
+    const r = await pedir({ accion: "galeria" });
+    if (r.sesion === false) return cerrarSesion(r.msg);
+    if (r.ok && datos && actual().folio === folio) {
+      GaleriaG30.rejilla($("gHijo"), r.mias.concat(r.etiquetado).sort((x, y) => y.ms - x.ms), {
+        traer: async ids => (await pedir({ accion: "fotoMinis", ids })).minis,
+        etiqueta: f => f.revision ? "⚠ En revisión" : f.mia ? "Suya" : f.autor.split(" ")[0],
+        vacio: "<span>🖼️</span>Todavía no hay fotos.",
+        abrir: f => {
+          const acciones = [{ texto: "💾 Guardar en mi teléfono", clase: "oro", espera: true, hacer: (_, img) => GaleriaG30.guardar(img, GaleriaG30.nombreArchivo(f.ms)) }];
+          if (!f.revision) acciones.push({ texto: "🚩 Reportar", clase: "mal", hacer: async (cerrar, _, boton) => {
+            if (boton.dataset.seguro !== "1") { boton.dataset.seguro = "1"; boton.textContent = "Toca otra vez para reportar"; return; }
+            boton.disabled = true;
+            try { const x = await pedir({ accion: "fotoReportar", id: f.id }); cerrar(); avisar(x.msg || "Listo", !x.ok); $("verFotosHijo").click(); } catch (_) { avisar(SIN_RED, true); boton.disabled = false; }
+          } });
+          GaleriaG30.visor(f, { cargar: async () => (await pedir({ accion: "fotoVer", id: f.id })).foto, acciones });
+        }
+      });
+    }
+  } catch (_) { avisar(SIN_RED, true); }
+  b.disabled = false; b.textContent = "Actualizar sus fotos";
+};
 
 /* ---------- Inicio ---------- */
 async function iniciar() {

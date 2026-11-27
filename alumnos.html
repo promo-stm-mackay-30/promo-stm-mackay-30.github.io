@@ -1,0 +1,819 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Panel de alumnos · Prom Party G'30</title>
+<meta name="description" content="Sube tus fotos, etiqueta a tus amigos escaneando su pulsera y pide tu canción.">
+<meta name="theme-color" content="#070a1c">
+<meta name="color-scheme" content="dark">
+<meta name="robots" content="noindex">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="es_CL">
+<meta property="og:url" content="https://promo-stm-mackay-30.github.io/alumnos.html">
+<meta property="og:title" content="📸 Panel de alumnos · Prom Party G'30">
+<meta property="og:description" content="Tus fotos, tus amigos y tu música · The Mackay School & St Margaret's">
+<meta property="og:image" content="https://promo-stm-mackay-30.github.io/og-image.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<link rel="icon" href="flyer.jpg">
+<link rel="apple-touch-icon" href="flyer.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="estilo.css">
+<style>
+  html { font-size: 16px; }
+  body { padding-bottom: max(2rem, env(safe-area-inset-bottom)); }
+  body.dentro { padding-bottom: calc(6.4rem + env(safe-area-inset-bottom)); }
+  .contenedor { width: min(100%, 30rem); }
+  button, input, textarea { font: inherit; }
+  :focus-visible { outline: 3px solid var(--cian); outline-offset: 3px; }
+  [hidden] { display: none !important; }
+  h1 { font-size: 1.75rem; }
+  input[type=text], input[type=email], input[type=password] { font-size: 1.05rem; min-height: 3.1rem; }
+  .btn { min-height: 3.2rem; }
+  .btn + .btn, .btn.sec { margin-top: .9rem; }
+  .enlace { background: none; border: none; color: var(--cian); font-weight: 700; font-size: .9rem; cursor: pointer; padding: .7rem; text-decoration: underline; text-underline-offset: 3px; }
+  .centro { text-align: center; }
+  .nota { color: var(--suave); font-size: .85rem; line-height: 1.5; }
+  .girando { width: 3rem; height: 3rem; margin: 3rem auto 1rem; border-radius: 50%; border: 4px solid rgba(255,255,255,.18); border-top-color: var(--oro-2); animation: giro .9s linear infinite; }
+  @keyframes giro { to { transform: rotate(360deg); } }
+  .codigo { text-align: center; font-size: 1.8rem !important; font-weight: 800; letter-spacing: .4em; padding-left: .4em !important; min-height: 4rem !important; }
+  .pasos { display: flex; gap: .4rem; margin: .2rem 0 1rem; }
+  .pasos i { flex: 1; height: .35rem; border-radius: 99px; background: rgba(255,255,255,.15); }
+  .pasos i.on { background: linear-gradient(90deg, var(--oro), var(--cian)); }
+  .leida { display: flex; align-items: center; gap: .8rem; padding: .9rem 1rem; border-radius: 1rem; background: rgba(46,229,157,.14); border: 1px solid rgba(46,229,157,.55); margin-top: .8rem; }
+  .leida span { font-size: 1.6rem; }
+
+  .cabecera { display: flex; align-items: center; justify-content: space-between; gap: .8rem; margin: .2rem 0 .9rem; }
+  .cabecera b { display: block; font-size: 1.2rem; }
+  .cabecera small { color: var(--suave); font-size: .7rem; letter-spacing: .18em; text-transform: uppercase; font-weight: 700; }
+  .redondo { flex: none; width: 2.8rem; height: 2.8rem; border-radius: 50%; background: var(--vidrio); border: 1px solid var(--borde); color: var(--texto); font-size: 1.2rem; cursor: pointer; }
+
+  .elegir-foto { display: grid; grid-template-columns: 1fr 1fr; gap: .7rem; margin-bottom: 1rem; }
+  .elegir { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .35rem; cursor: pointer; margin: 0; min-height: 9rem; padding: 1rem .5rem; border-radius: 1.4rem; color: var(--texto); font-weight: 800; font-size: 1rem; text-align: center; border: 1px solid rgba(255,255,255,.22); box-shadow: 0 .35rem 0 rgba(0,0,0,.4); position: relative; }
+  .elegir.camara { background: linear-gradient(145deg, rgba(255,61,127,.45), rgba(138,77,255,.45)); }
+  .elegir.carrete { background: linear-gradient(145deg, rgba(138,77,255,.35), rgba(25,211,230,.35)); }
+  .elegir span { font-size: 2.8rem; }
+  .elegir input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+  .elegir:focus-within { outline: 3px solid var(--cian); }
+  .previa { position: relative; border-radius: 1.4rem; overflow: hidden; background: rgba(0,0,0,.4); border: 1px solid var(--borde); margin-bottom: .9rem; display: flex; justify-content: center; }
+  .previa img { max-width: 100%; max-height: 55dvh; display: block; }
+  .previa small { position: absolute; left: .7rem; bottom: .7rem; font-size: .78rem; font-weight: 800; background: rgba(7,10,28,.8); border-radius: 99px; padding: .3rem .75rem; }
+  textarea { width: 100%; color: var(--texto); background: rgba(0,0,0,.3); border: 1px solid var(--borde); border-radius: .8rem; padding: .75rem .9rem; font-size: 1.05rem; resize: vertical; min-height: 4.2rem; outline: none; }
+  textarea:focus { border-color: var(--cian); box-shadow: 0 0 0 3px rgba(25,211,230,.2); }
+  .chips { display: flex; flex-wrap: wrap; gap: .45rem; margin: .7rem 0 0; }
+  .chip { display: inline-flex; align-items: center; gap: .4rem; border-radius: 99px; padding: .35rem .4rem .35rem .8rem; background: rgba(25,211,230,.18); color: #a8f3fb; font-weight: 700; font-size: .84rem; }
+  .chip button { width: 1.5rem; height: 1.5rem; border-radius: 50%; border: none; background: rgba(255,255,255,.18); color: #fff; cursor: pointer; font-size: .75rem; }
+  .etiquetar { width: 100%; cursor: pointer; border-radius: 1.1rem; padding: .95rem; font-weight: 800; color: #fff; background: rgba(25,211,230,.16); border: 1.5px dashed rgba(25,211,230,.7); }
+  .cola { display: flex; align-items: center; gap: .8rem; padding: .8rem 1rem; border-radius: 1rem; background: rgba(245,166,35,.14); border: 1px solid rgba(245,166,35,.5); margin-bottom: 1rem; font-size: .88rem; line-height: 1.4; }
+  .cola .girando { width: 1.4rem; height: 1.4rem; margin: 0; flex: none; border-width: 3px; }
+  .cola img { width: 2.8rem; height: 2.8rem; border-radius: .6rem; object-fit: cover; flex: none; }
+  .cupo { text-align: center; color: var(--suave); font-size: .82rem; }
+
+  .barra { position: fixed; z-index: 5; left: 50%; transform: translateX(-50%); bottom: max(.6rem, env(safe-area-inset-bottom)); width: min(calc(100% - 1.2rem), 29rem); display: grid; grid-template-columns: repeat(4, 1fr); gap: .2rem; padding: .35rem; border-radius: 1.4rem; background: rgba(14,19,48,.94); border: 1px solid var(--borde); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); box-shadow: 0 1rem 2.4rem rgba(0,0,0,.55); }
+  .barra button { position: relative; display: flex; flex-direction: column; align-items: center; gap: .1rem; background: none; border: none; color: var(--suave); border-radius: 1.05rem; padding: .5rem 0 .4rem; cursor: pointer; font-size: .66rem; font-weight: 700; min-height: 3.4rem; }
+  .barra button span { font-size: 1.35rem; line-height: 1.2; }
+  .barra button[aria-current=page] { background: linear-gradient(135deg, rgba(245,166,35,.28), rgba(25,211,230,.18)); color: #fff; }
+  .globo { position: absolute; top: .15rem; right: calc(50% - 1.8rem); min-width: 1.15rem; height: 1.15rem; border-radius: 99px; background: #ff3d7f; color: #fff; font-style: normal; font-size: .68rem; font-weight: 800; display: grid; place-items: center; padding: 0 .25rem; }
+
+  .velo { position: fixed; inset: 0; z-index: 20; display: flex; align-items: flex-end; justify-content: center; background: rgba(4,6,18,.75); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
+  .hoja { width: min(100%, 30rem); max-height: 90dvh; overflow-y: auto; background: #121942; border: 1px solid var(--borde); border-radius: 1.6rem 1.6rem 0 0; padding: 1.3rem 1.2rem calc(1.2rem + env(safe-area-inset-bottom)); animation: sube .3s cubic-bezier(.2,.9,.3,1); }
+  @keyframes sube { from { transform: translateY(40%); opacity: 0; } }
+  .btn.peligro { --edge: #6d1a26; color: #ffd9de; background: rgba(255,90,110,.16); border-color: rgba(255,90,110,.55); animation: none; }
+  .aviso-flotante { position: fixed; z-index: 60; left: 50%; transform: translateX(-50%); top: max(.8rem, env(safe-area-inset-top)); width: min(calc(100% - 1.6rem), 27rem); border-radius: 1rem; padding: .85rem 1rem; font-weight: 700; font-size: .9rem; text-align: center; background: #0f5b40; border: 1px solid rgba(46,229,157,.7); box-shadow: 0 1rem 2rem rgba(0,0,0,.5); }
+  .aviso-flotante.mal { background: #6d1a26; border-color: rgba(255,90,110,.8); }
+
+  /* escáner de pulseras */
+  .escaner { position: fixed; inset: 0; z-index: 50; background: #04060f; display: flex; flex-direction: column; padding: max(.8rem, env(safe-area-inset-top)) 1rem max(1rem, env(safe-area-inset-bottom)); }
+  .escaner h2 { font-size: 1.15rem; text-align: center; margin-bottom: .6rem; }
+  #lector { flex: 1; min-height: 0; width: 100%; border-radius: 1.2rem; overflow: hidden; background: #000; }
+  #lector video { width: 100% !important; height: 100% !important; object-fit: cover; }
+  .esc-estado { min-height: 3.2rem; display: grid; place-items: center; text-align: center; font-weight: 800; padding: .5rem 0; }
+  .esc-estado.ok { color: #7ff3c4; } .esc-estado.mal { color: #ff9aa6; }
+  .escaner .chips { margin: 0 0 .7rem; justify-content: center; max-height: 6.5rem; overflow-y: auto; }
+  .escaner .btn + label, .escaner label.foto-qr { display: block; text-align: center; margin-top: .7rem; color: var(--cian); font-weight: 700; font-size: .88rem; text-decoration: underline; cursor: pointer; }
+  .escaner label.foto-qr input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+
+  /* música */
+  .cancion-fila { display: flex; align-items: center; gap: .8rem; min-width: 0; flex: 1; }
+  .cancion-fila > div { min-width: 0; flex: 1; }
+  .cancion-fila b, .cancion-fila span.art { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .cancion-fila span.art { font-size: .82rem; color: var(--suave); }
+  .tapa { width: 3rem; height: 3rem; flex: none; border-radius: .6rem; object-fit: cover; background: linear-gradient(135deg, rgba(138,77,255,.5), rgba(25,211,230,.3)); display: grid; place-items: center; font-size: 1.3rem; }
+  .exp { display: inline-block; font-size: .6rem; font-weight: 800; color: #1a1204; background: var(--suave); border-radius: .25rem; padding: 0 .3rem; margin-left: .35rem; vertical-align: middle; }
+  .buscador { display: flex; align-items: center; gap: .6rem; background: rgba(0,0,0,.3); border: 1px solid var(--borde); border-radius: 99px; padding: 0 .4rem 0 1rem; }
+  .buscador input { flex: 1; min-width: 0; background: none; border: none; outline: none; color: var(--texto); font-size: 1.05rem; min-height: 3.1rem; }
+  .buscador:focus-within { border-color: var(--cian); }
+  .res-cancion { display: flex; width: 100%; align-items: center; gap: .8rem; text-align: left; cursor: pointer; color: var(--texto); background: none; border: none; border-bottom: 1px solid rgba(255,255,255,.08); padding: .6rem .2rem; }
+  .res-cancion .mas { flex: none; width: 2.2rem; height: 2.2rem; border-radius: 50%; display: grid; place-items: center; background: rgba(30,215,96,.2); color: #6ff3a6; font-size: 1.3rem; font-weight: 800; }
+  .ranking { list-style: none; padding: 0; margin: 0; }
+  .rk { display: flex; align-items: center; gap: .65rem; padding: .6rem 0; border-bottom: 1px solid rgba(255,255,255,.08); }
+  .rk .pos { width: 1.4rem; flex: none; text-align: center; font-weight: 800; color: var(--suave); font-size: .85rem; }
+  .voto { flex: none; display: flex; align-items: center; gap: .3rem; min-width: 3.6rem; justify-content: center; border-radius: 99px; padding: .5rem .7rem; font-weight: 800; font-size: .9rem; cursor: pointer; color: var(--texto); background: rgba(255,255,255,.08); border: 1px solid var(--borde); }
+  .voto[aria-pressed=true] { background: linear-gradient(110deg, #ff3d7f, var(--viol)); border-color: transparent; }
+  .tuya { flex: none; display: flex; flex-direction: column; align-items: center; gap: .15rem; }
+  .tuya span { font-size: .66rem; font-weight: 800; color: #1a1204; background: var(--oro-2); border-radius: 99px; padding: .1rem .5rem; }
+  .tuya button { background: none; border: none; color: #ff9aa6; font-size: .72rem; font-weight: 700; cursor: pointer; text-decoration: underline; }
+  .spotify-marco iframe { display: block; width: 100%; border: 0; border-radius: 12px; }
+</style>
+</head>
+<body>
+<div class="aurora" aria-hidden="true"><i></i><i></i><i></i></div>
+<main class="contenedor">
+
+  <section id="cargando" class="centro"><div class="girando"></div><p class="nota">Abriendo tu panel…</p></section>
+
+  <section id="cerrado" class="centro" hidden>
+    <a class="volver" href="./">← Volver al inicio</a>
+    <div style="font-size:3.6rem;margin-top:2rem">🔒</div>
+    <h1>Muy pronto</h1>
+    <p class="sub">El panel de alumnos todavía no está abierto. Vuelve cuando la organización avise.</p>
+    <button class="btn sec" type="button" onclick="location.reload()">Volver a revisar</button>
+  </section>
+
+  <section id="entrada" hidden>
+    <a class="volver" href="./">← Volver al inicio</a>
+    <h1>Panel de alumnos</h1>
+    <p class="sub">Sube tus fotos, etiqueta a tus amigos escaneando su pulsera y pide tu canción.</p>
+    <form id="fEntrar" class="tarjeta" novalidate>
+      <label for="eCorreo">Tu correo</label>
+      <input type="email" id="eCorreo" autocomplete="username" inputmode="email" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="nombre@gmail.com">
+      <label for="eClave">Tu clave</label>
+      <input type="password" id="eClave" autocomplete="current-password">
+      <p class="msg mal" id="eMsg" role="alert" hidden></p>
+      <button class="btn" id="bEntrar" type="submit" style="margin-top:1.1rem">Entrar</button>
+    </form>
+    <button class="btn sec" id="bPrimera" type="button">✨ Es mi primera vez</button>
+    <p class="nota centro" style="margin-top:1rem">¿Olvidaste tu clave? Tu apoderado puede restablecerla en el Portal de apoderados.</p>
+  </section>
+
+  <section id="registro" hidden>
+    <button class="enlace" id="rVolver" type="button" style="padding-left:0">← Volver</button>
+    <div class="pasos" aria-hidden="true"><i></i><i></i><i></i></div>
+
+    <div id="r1">
+      <h1>Primero, tú</h1>
+      <p class="sub">Necesitas dos cosas: la <b>clave de activación</b> que genera tu apoderado en su portal, y <b>tu pulsera</b>.</p>
+      <div class="tarjeta">
+        <label for="rActiva">Clave de activación (6 números)</label>
+        <input type="text" id="rActiva" class="codigo" inputmode="numeric" maxlength="6" autocomplete="off" placeholder="••••••">
+        <p class="msg mal" id="m1" role="alert" hidden></p>
+        <button class="btn" id="bPulsera" type="button" style="margin-top:1.1rem">📷 Escanear mi pulsera</button>
+      </div>
+    </div>
+
+    <form id="r2" novalidate hidden>
+      <h1 id="rHola">Hola</h1>
+      <p class="sub">Escribe <b>tu correo personal</b>. Ahí te avisaremos cuando te etiqueten.</p>
+      <div class="tarjeta">
+        <label for="rCorreo">Tu correo</label>
+        <input type="email" id="rCorreo" autocomplete="email" inputmode="email" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="nombre@gmail.com">
+        <p class="msg mal" id="m2" role="alert" hidden></p>
+        <button class="btn" id="bCodigo" type="submit" style="margin-top:1.1rem">Enviarme el código</button>
+      </div>
+    </form>
+
+    <form id="r3" novalidate hidden>
+      <h1>Último paso</h1>
+      <p class="sub">Enviamos un código a <b id="rPara" style="overflow-wrap:anywhere"></b>. Si no lo ves, mira en spam.</p>
+      <div class="tarjeta">
+        <label for="rCod">Código de 6 números</label>
+        <input type="text" id="rCod" class="codigo" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="••••••">
+        <label for="rClave">Crea tu clave (6 o más caracteres)</label>
+        <input type="password" id="rClave" autocomplete="new-password">
+        <label for="rClave2">Repite tu clave</label>
+        <input type="password" id="rClave2" autocomplete="new-password">
+        <label class="chk" style="margin-top:.8rem"><input type="checkbox" id="rVer"><span>Mostrar la clave</span></label>
+        <p class="msg mal" id="m3" role="alert" hidden></p>
+        <button class="btn" id="bCrear" type="submit" style="margin-top:1.1rem">Crear mi panel</button>
+      </div>
+      <p class="centro"><button class="enlace" id="rOtro" type="button">Cambiar correo o pedir otro código</button></p>
+    </form>
+  </section>
+
+  <section id="panel" hidden>
+    <header class="cabecera">
+      <div><small id="curso"></small><b id="saludo"></b></div>
+      <button class="redondo" id="bAjustes" type="button" aria-label="Ajustes">⚙️</button>
+    </header>
+
+    <div id="v-subir">
+      <div id="cola"></div>
+      <div id="sElegir">
+        <div class="elegir-foto">
+          <label class="elegir camara"><span>📷</span>Tomar foto<input type="file" id="fCam" accept="image/*" capture="environment"></label>
+          <label class="elegir carrete"><span>🖼️</span>Elegir del teléfono<input type="file" id="fGal" accept="image/*"></label>
+        </div>
+        <p class="cupo" id="cupo"></p>
+        <div class="tarjeta" style="margin-top:1rem">
+          <h2>Quién ve tus fotos</h2>
+          <p class="nota">Solo tú, quienes etiquetes, sus apoderados y los tuyos, y la organización. No hay galería pública. Sube solo fotos que a tus amigos les gustaría ver.</p>
+        </div>
+      </div>
+      <div id="sPreparar" hidden>
+        <div class="previa"><img id="pImg" alt="Foto elegida"><small id="pFecha"></small></div>
+        <div class="tarjeta">
+          <label for="pMsg">Mensaje (opcional)</label>
+          <textarea id="pMsg" maxlength="200" placeholder="Ej.: ¡La mejor noche! 💜"></textarea>
+          <div class="chips" id="pChips"></div>
+          <button class="etiquetar" id="bEtiquetar" type="button" style="margin-top:.8rem">🏷️ Etiquetar escaneando pulseras</button>
+        </div>
+        <button class="btn" id="bSubir" type="button">⬆️ Subir foto</button>
+        <button class="btn sec" id="bGuardarTel" type="button">💾 Guardar en mi teléfono</button>
+        <p class="centro"><button class="enlace" id="bDescartar" type="button">Descartar</button></p>
+      </div>
+    </div>
+
+    <div id="v-mias" hidden><div id="gMias"></div></div>
+    <div id="v-etiquetado" hidden><div id="gEtiquetado"></div></div>
+
+    <div id="v-musica" hidden>
+      <div class="tarjeta">
+        <h2>Pide una canción</h2>
+        <div class="buscador"><span aria-hidden="true">🔎</span><input type="search" id="busca" placeholder="Canción o artista" aria-label="Buscar canción o artista" autocomplete="off" autocorrect="off" spellcheck="false" enterkeyhint="search"></div>
+        <div id="resultados" aria-live="polite"></div>
+        <p class="nota" id="cupoMus" style="margin-top:.7rem"></p>
+      </div>
+      <div class="tarjeta">
+        <h2>Lo más pedido</h2>
+        <p class="nota" style="margin-bottom:.4rem">Toca 💜 para votar. El DJ decide qué suena.</p>
+        <ol class="ranking" id="ranking"><li class="nota">Cargando…</li></ol>
+      </div>
+      <div class="tarjeta" id="musLista" hidden><h2>La playlist del grupo</h2><div class="spotify-marco" id="musPlayer"></div></div>
+    </div>
+  </section>
+
+  <p class="pie">The Mackay School &amp; St Margaret's · Prom Party G'30</p>
+</main>
+
+<nav class="barra" id="barra" aria-label="Secciones del panel" hidden>
+  <button type="button" data-ir="subir" aria-current="page"><span>📸</span>Subir</button>
+  <button type="button" data-ir="mias"><span>🖼️</span>Mi galería</button>
+  <button type="button" data-ir="etiquetado"><span>🏷️</span>Me etiquetaron<i class="globo" id="globo" hidden></i></button>
+  <button type="button" data-ir="musica"><span>🎶</span>Música</button>
+</nav>
+
+<div class="velo" id="velo" role="dialog" aria-modal="true" hidden><div class="hoja" id="hoja"></div></div>
+<div class="escaner" id="escaner" role="dialog" aria-modal="true" aria-label="Escáner de pulseras" hidden>
+  <h2 id="escTitulo">Apunta al QR de la pulsera</h2>
+  <div id="lector"></div>
+  <p class="esc-estado" id="escEstado" role="status"></p>
+  <div class="chips" id="escChips"></div>
+  <button class="btn" id="escListo" type="button">Listo</button>
+  <label class="foto-qr">¿No lee? Saca una foto del QR<input type="file" id="fQr" accept="image/*" capture="environment"></label>
+  <div id="lectorFoto" hidden></div>
+</div>
+<div class="aviso-flotante" id="flota" role="status" hidden></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
+<script src="config.js"></script>
+<script src="galeria.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+const API = window.API_URL;
+const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const SESION = "alumno_g30", PASO = "alumno_g30_registro", CORREO = "alumno_g30_correo";
+const guardado = {   // el navegador puede negar el almacenamiento (modo privado): nunca debe romper la página
+  leer(a, k) { try { return window[a].getItem(k); } catch (_) { return null; } },
+  poner(a, k, v) { try { v == null ? window[a].removeItem(k) : window[a].setItem(k, v); } catch (_) {} }
+};
+let sesion = guardado.leer("localStorage", SESION) || "", yo = null, vista = "subir";
+const SIN_RED = "No hay conexión con el servidor. Inténtalo de nuevo.";
+
+async function api(body) {
+  const r = await (await fetch(API, { method: "POST", body: JSON.stringify(body) })).json();
+  if (r && r.msg === "Acción desconocida") r.msg = "El panel de alumnos estará disponible muy pronto.";
+  return r;
+}
+/* llamadas ya con sesión: si el panel se cerró o la sesión murió, se vuelve a la pantalla que corresponde */
+async function conSesion(body) {
+  const r = await api(Object.assign({ sesion }, body));
+  if (r.cerrado) { pantalla("cerrado"); throw new Error("cerrado"); }
+  if (r.sesion === false) { cerrarSesion(r.msg); throw new Error("sesion"); }
+  return r;
+}
+function mensaje(id, t) { const m = $(id); m.textContent = t || ""; m.hidden = !t; if (t) m.scrollIntoView({ behavior: "smooth", block: "center" }); }
+let relojFlota = null;
+function avisar(t, mal) {
+  const f = $("flota"); f.textContent = t; f.className = "aviso-flotante" + (mal ? " mal" : ""); f.hidden = false;
+  clearTimeout(relojFlota); relojFlota = setTimeout(() => f.hidden = true, 4500);
+}
+function pantalla(p) {
+  ["cargando", "cerrado", "entrada", "registro", "panel"].forEach(s => $(s).hidden = s !== p);
+  $("barra").hidden = p !== "panel";
+  document.body.classList.toggle("dentro", p === "panel");
+  window.scrollTo(0, 0);
+}
+function abrirHoja(html) { $("hoja").innerHTML = html; $("velo").hidden = false; document.body.style.overflow = "hidden"; }
+function cerrarHoja() { $("hoja").querySelectorAll("audio").forEach(a => a.pause()); $("velo").hidden = true; document.body.style.overflow = ""; }
+function confirmar(titulo, texto, si, peligro) {
+  return new Promise(res => {
+    abrirHoja(`<h1 style="font-size:1.3rem">${esc(titulo)}</h1><p class="nota" style="margin-bottom:1rem">${esc(texto)}</p><button class="btn${peligro ? " peligro" : ""}" id="cSi" type="button">${esc(si)}</button><button class="btn sec" id="cNo" type="button">Cancelar</button>`);
+    $("velo").style.zIndex = 55;
+    const fin = v => { cerrarHoja(); $("velo").style.zIndex = ""; res(v); };
+    $("cSi").onclick = () => fin(true); $("cNo").onclick = () => fin(false);
+  });
+}
+function cerrarSesion(texto) {
+  sesion = ""; yo = null; GaleriaG30.vaciar(); musica = null;
+  guardado.poner("localStorage", SESION, null);
+  document.querySelectorAll(".gx-visor").forEach(v => v.remove());
+  cerrarHoja(); document.body.style.overflow = ""; pantalla("entrada"); mensaje("eMsg", texto || "");
+}
+
+/* ---------- Escáner de pulseras ---------- */
+const extraerToken = txt => { txt = String(txt || "").trim(); const i = txt.lastIndexOf("#"); return (i >= 0 ? txt.slice(i + 1) : txt).trim(); };
+let lector = null, alLeerPulsera = null, ultimoLeido = "", ultimoEn = 0, alCerrarEscaner = null;
+const nuevoLector = id => new Html5Qrcode(id, { verbose: false, formatsToSupport: [Html5QrcodeSupportedFormats.QR_CODE], experimentalFeatures: { useBarCodeDetectorIfSupported: true } });
+function estadoEscaner(t, tipo) { const e = $("escEstado"); e.textContent = t || ""; e.className = "esc-estado" + (tipo ? " " + tipo : ""); }
+async function abrirEscaner(titulo, alLeer, alCerrar) {
+  alLeerPulsera = alLeer; alCerrarEscaner = alCerrar; ultimoLeido = "";
+  $("escTitulo").textContent = titulo; $("escChips").textContent = ""; $("escaner").hidden = false; document.body.style.overflow = "hidden";
+  estadoEscaner("Encendiendo la cámara…");
+  if (typeof Html5Qrcode === "undefined") return estadoEscaner("No se pudo cargar el escáner. Revisa la conexión.", "mal");
+  const cfg = { fps: 12, qrbox: (w, h) => { const l = Math.floor(Math.min(w, h) * .85); return { width: l, height: l }; } };
+  const leer = txt => {
+    const t = extraerToken(txt), ahora = Date.now();
+    if (!t || (t === ultimoLeido && ahora - ultimoEn < 4000)) { ultimoEn = ahora; return; }
+    ultimoLeido = t; ultimoEn = ahora;
+    if (navigator.vibrate) navigator.vibrate(40);
+    alLeerPulsera && alLeerPulsera(t);
+  };
+  try {
+    const l = nuevoLector("lector");
+    lector = l;
+    await l.start({ facingMode: "environment" }, cfg, leer, () => {});
+    if (lector !== l || $("escaner").hidden) { try { await l.stop(); l.clear(); } catch (_) {} return; }
+    estadoEscaner("Busca el código QR de la pulsera");
+  } catch (_) { lector = null; estadoEscaner("No se pudo abrir la cámara. Da permiso, o usa la foto del QR.", "mal"); }
+}
+async function cerrarEscaner() {
+  $("escaner").hidden = true; document.body.style.overflow = "";
+  const l = lector, fin = alCerrarEscaner; lector = null; alLeerPulsera = null; alCerrarEscaner = null;
+  if (l) { try { await l.stop(); l.clear(); } catch (_) {} }
+  fin && fin();
+}
+$("escListo").onclick = cerrarEscaner;
+$("fQr").onchange = async e => {
+  const f = e.target.files[0]; e.target.value = "";
+  if (!f) return;
+  estadoEscaner("Leyendo la foto…");
+  try { const txt = await nuevoLector("lectorFoto").scanFile(f, false); ultimoLeido = ""; alLeerPulsera && alLeerPulsera(extraerToken(txt)); }
+  catch (_) { estadoEscaner("No encontramos el QR en la foto. Acércate y que se vea nítido.", "mal"); }
+};
+
+/* ---------- Entrada y primera vez ---------- */
+const correoFormato = v => String(v || "").replace(/\s+/g, "").toLowerCase();
+$("eCorreo").value = guardado.leer("localStorage", CORREO) || "";
+$("fEntrar").addEventListener("submit", async ev => {
+  ev.preventDefault(); mensaje("eMsg", "");
+  const email = correoFormato($("eCorreo").value), clave = $("eClave").value;
+  if (!email || !clave) return mensaje("eMsg", "Escribe tu correo y tu clave.");
+  const b = $("bEntrar"); b.disabled = true; b.textContent = "Entrando…";
+  try {
+    const r = await api({ accion: "alumnoEntrar", email, clave });
+    if (r.cerrado) pantalla("cerrado");
+    else if (r.ok) { guardado.poner("localStorage", CORREO, email); $("eClave").value = ""; entrarCon(r); }
+    else mensaje("eMsg", r.msg || "No se pudo entrar.");
+  } catch (_) { mensaje("eMsg", SIN_RED); }
+  b.disabled = false; b.textContent = "Entrar";
+});
+let reg = { paso: "", email: "", alumno: "", n: 1 };
+function pasoRegistro(n) {
+  reg.n = n; pantalla("registro");
+  [1, 2, 3].forEach(i => $("r" + i).hidden = i !== n);
+  document.querySelectorAll(".pasos i").forEach((x, i) => x.classList.toggle("on", i < n));
+  if (n === 2) $("rHola").textContent = "Hola, " + (reg.alumno.split(/\s+/)[0] || "");
+  if (n === 3) $("rPara").textContent = reg.email;
+  guardado.poner("sessionStorage", PASO, n > 1 ? JSON.stringify(Object.assign({ hora: Date.now() }, reg)) : null);   // si vas al correo y se recarga, sigues aquí
+}
+$("bPrimera").onclick = () => { mensaje("m1", ""); $("rActiva").value = ""; pasoRegistro(1); };
+$("rVolver").onclick = () => { if (reg.n > 1) return pasoRegistro(reg.n - 1 === 2 ? 2 : 1); guardado.poner("sessionStorage", PASO, null); pantalla("entrada"); };
+$("rActiva").addEventListener("input", e => e.target.value = e.target.value.replace(/\D/g, "").slice(0, 6));
+$("bPulsera").onclick = () => {
+  mensaje("m1", "");
+  const activacion = $("rActiva").value;
+  if (activacion.length !== 6) return mensaje("m1", "Primero escribe los 6 números de la clave de activación.");
+  let ocupado = false;
+  abrirEscaner("Escanea TU pulsera", async token => {
+    if (ocupado) return; ocupado = true;
+    estadoEscaner("Revisando…");
+    try {
+      const r = await api({ accion: "alumnoActivar", token, activacion });
+      if (r.ok) { reg = { paso: r.paso, email: "", alumno: r.alumno, n: 2 }; $("rCorreo").value = r.correoPrevio || ""; await cerrarEscaner(); pasoRegistro(2); return; }
+      if (r.campo === "pulsera") { estadoEscaner(r.msg, "mal"); ocupado = false; return; }
+      await cerrarEscaner();
+      if (r.cerrado) return pantalla("cerrado");
+      mensaje("m1", r.msg || "No se pudo continuar.");
+    } catch (_) { estadoEscaner(SIN_RED, "mal"); ocupado = false; }
+  });
+  $("escListo").textContent = "Cancelar";
+};
+async function pedirCodigo(boton, texto, idMsg) {
+  const email = correoFormato($("rCorreo").value); $("rCorreo").value = email;
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return mensaje(idMsg, "Escribe un correo válido (ej.: nombre@gmail.com).");
+  boton.disabled = true; boton.textContent = "Enviando…"; mensaje(idMsg, "");
+  try {
+    const r = await api({ accion: "alumnoCorreo", paso: reg.paso, email });
+    if (r.ok) { reg.email = email; $("rCod").value = ""; pasoRegistro(3); }
+    else if (r.vencido) { pasoRegistro(1); mensaje("m1", r.msg); }
+    else mensaje(idMsg, r.msg || "No se pudo enviar.");
+  } catch (_) { mensaje(idMsg, SIN_RED); }
+  boton.disabled = false; boton.textContent = texto;
+}
+$("r2").addEventListener("submit", ev => { ev.preventDefault(); pedirCodigo($("bCodigo"), "Enviarme el código", "m2"); });
+$("rOtro").onclick = () => pasoRegistro(2);
+$("rCod").addEventListener("input", e => e.target.value = e.target.value.replace(/\D/g, "").slice(0, 6));
+$("rVer").onchange = e => ["rClave", "rClave2"].forEach(i => $(i).type = e.target.checked ? "text" : "password");
+$("r3").addEventListener("submit", async ev => {
+  ev.preventDefault(); mensaje("m3", "");
+  const codigo = $("rCod").value, clave = $("rClave").value;
+  if (codigo.length !== 6) return mensaje("m3", "Escribe los 6 números que te llegaron.");
+  if (clave.length < 6) return mensaje("m3", "Tu clave debe tener al menos 6 caracteres.");
+  if (clave !== $("rClave2").value) return mensaje("m3", "Las dos claves no son iguales.");
+  const b = $("bCrear"); b.disabled = true; b.textContent = "Creando…";
+  try {
+    const r = await api({ accion: "alumnoCrear", paso: reg.paso, email: reg.email, codigo, clave });
+    if (r.ok) {
+      guardado.poner("sessionStorage", PASO, null); guardado.poner("localStorage", CORREO, reg.email);
+      $("rClave").value = $("rClave2").value = ""; entrarCon(r); avisar("✓ ¡Tu panel está listo!");
+    } else if (r.vencido) { pasoRegistro(1); mensaje("m1", r.msg); }
+    else mensaje("m3", r.msg || "No se pudo crear.");
+  } catch (_) { mensaje("m3", SIN_RED); }
+  b.disabled = false; b.textContent = "Crear mi panel";
+});
+
+/* ---------- Panel ---------- */
+function entrarCon(r) { sesion = r.sesion; guardado.poner("localStorage", SESION, sesion); abrir(r); }
+function abrir(r) { yo = r; pantalla("panel"); pintar(); ir("subir"); procesarCola(); }
+function pintar() {
+  $("saludo").textContent = "Hola, " + (yo.alumno.split(/\s+/)[0] || "");
+  $("curso").textContent = yo.curso + " · " + yo.colegio;
+  $("cupo").textContent = !yo.puedeSubir ? "Por ahora no puedes subir fotos. Habla con la organización."
+    : yo.quedan ? `Te quedan ${yo.quedan} de ${yo.max} fotos.` : `Llegaste a las ${yo.max} fotos. Borra alguna para subir otra.`;
+  const g = $("globo"); g.hidden = !yo.nuevas; g.textContent = yo.nuevas > 99 ? "99+" : yo.nuevas;
+}
+async function refrescar() {
+  try { const r = await conSesion({ accion: "alumno" }); if (r.ok) { yo = r; pintar(); } } catch (_) {}
+}
+function ir(v) {
+  vista = v;
+  ["subir", "mias", "etiquetado", "musica"].forEach(s => $("v-" + s).hidden = s !== v);
+  $("musPlayer").textContent = "";
+  document.querySelectorAll(".barra button").forEach(b => b.dataset.ir === v ? b.setAttribute("aria-current", "page") : b.removeAttribute("aria-current"));
+  window.scrollTo(0, 0);
+  if (v === "mias" || v === "etiquetado") cargarGaleria();
+  if (v === "musica") cargarMusica();
+}
+document.querySelectorAll("[data-ir]").forEach(b => b.onclick = () => ir(b.dataset.ir));
+
+/* ---------- Subir: la foto se achica en el teléfono antes de enviarla ---------- */
+let elegida = null;   // { archivo, foto, mini, tomada, etiquetas: [{token, nombre}] }
+function leerArchivo(archivo) {
+  return new Promise((listo, error) => {
+    const url = URL.createObjectURL(archivo), img = new Image();
+    img.onload = () => { URL.revokeObjectURL(url); listo(img); };
+    img.onerror = () => { URL.revokeObjectURL(url); error(); };
+    img.src = url;
+  });
+}
+function reducir(img, lado, calidad) {
+  const k = Math.min(1, lado / Math.max(img.width, img.height));
+  const c = document.createElement("canvas"); c.width = Math.max(1, Math.round(img.width * k)); c.height = Math.max(1, Math.round(img.height * k));
+  const x = c.getContext("2d"); x.fillStyle = "#000"; x.fillRect(0, 0, c.width, c.height); x.drawImage(img, 0, 0, c.width, c.height);
+  return c.toDataURL("image/jpeg", calidad);
+}
+async function preparar(archivo) {
+  const img = await leerArchivo(archivo);
+  let lado = 2048, calidad = .84, foto = reducir(img, lado, calidad);
+  while (foto.length > 820000 && (calidad > .6 || lado > 1280)) {   // ≈ 600 KB como máximo, sin perder demasiada nitidez
+    if (calidad > .6) calidad -= .08; else lado -= 256;
+    foto = reducir(img, lado, calidad);
+  }
+  return { foto, mini: reducir(img, 400, .72) };
+}
+["fCam", "fGal"].forEach(id => $(id).addEventListener("change", async e => {
+  const archivo = e.target.files[0]; e.target.value = "";
+  if (!archivo) return;
+  if (yo && !yo.puedeSubir) return avisar("Por ahora no puedes subir fotos.", true);
+  if (yo && yo.quedan <= 0) return avisar(`Llegaste a las ${yo.max} fotos. Borra alguna para subir otra.`, true);
+  avisar("Preparando la foto…");
+  try {
+    const p = await preparar(archivo), ahora = Date.now(), t = archivo.lastModified;
+    elegida = { archivo, foto: p.foto, mini: p.mini, tomada: t && t > ahora - 7 * 864e5 && t <= ahora ? t : ahora, etiquetas: [] };
+    $("pImg").src = p.foto; $("pFecha").textContent = "🕒 " + GaleriaG30.cuando(elegida.tomada); $("pMsg").value = ""; pintarEtiquetas();
+    $("sElegir").hidden = true; $("sPreparar").hidden = false; $("flota").hidden = true; window.scrollTo(0, 0);
+  } catch (_) { avisar("No se pudo abrir esa imagen. Prueba con otra.", true); }
+}));
+function volverAElegir() { elegida = null; $("pImg").removeAttribute("src"); $("sPreparar").hidden = true; $("sElegir").hidden = false; window.scrollTo(0, 0); }
+$("bDescartar").onclick = volverAElegir;
+$("bGuardarTel").onclick = () => { if (elegida) GaleriaG30.guardar(elegida.archivo.type === "image/jpeg" ? new File([elegida.archivo], GaleriaG30.nombreArchivo(elegida.tomada), { type: "image/jpeg" }) : elegida.foto, GaleriaG30.nombreArchivo(elegida.tomada)); };
+function chip(x, quitar) {
+  const s = document.createElement("span"); s.className = "chip"; s.textContent = x.nombre;
+  const b = document.createElement("button"); b.type = "button"; b.textContent = "✕"; b.setAttribute("aria-label", "Quitar a " + x.nombre); b.onclick = quitar;
+  s.append(b); return s;
+}
+function pintarEtiquetas() {
+  [$("pChips"), $("escChips")].forEach(caja => {
+    caja.textContent = "";
+    elegida && elegida.etiquetas.forEach((x, i) => caja.append(chip(x, () => { elegida.etiquetas.splice(i, 1); pintarEtiquetas(); })));
+  });
+  $("bEtiquetar").textContent = elegida && elegida.etiquetas.length ? "🏷️ Escanear otra pulsera" : "🏷️ Etiquetar escaneando pulseras";
+}
+$("bEtiquetar").onclick = () => {
+  abrirEscaner("Escanea la pulsera de tu amigo/a", async token => {
+    if (!elegida) return;
+    if (elegida.etiquetas.some(x => x.token === token)) return estadoEscaner("Ya está etiquetado ✓", "ok");
+    if (elegida.etiquetas.length >= 15) return estadoEscaner("Máximo 15 personas por foto.", "mal");
+    estadoEscaner("Revisando…");
+    const agregar = nombre => { if (!elegida || elegida.etiquetas.some(x => x.token === token)) return; elegida.etiquetas.push({ token, nombre }); pintarEtiquetas(); };
+    try {
+      const r = await conSesion({ accion: "alumnoEtiqueta", token });
+      if (!r.ok) return estadoEscaner(r.msg || "No se pudo leer.", "mal");
+      agregar(r.nombre); estadoEscaner("✓ " + r.nombre + " · puedes escanear otra", "ok");
+    } catch (e) {
+      if (e.message === "sesion" || e.message === "cerrado") return cerrarEscaner();
+      agregar("Pulsera " + (elegida.etiquetas.length + 1));   // sin señal: el servidor la reconoce al subir
+      estadoEscaner("✓ Pulsera leída. Se reconocerá al subir.", "ok");
+    }
+  }, () => { $("escListo").textContent = "Listo"; });
+  $("escListo").textContent = "Listo";
+  pintarEtiquetas();
+};
+
+/* ---------- Cola de subida: si no hay señal (o es la noche de la fiesta) las fotos esperan y suben solas ---------- */
+const memoria = new Map();
+let baseDatos = null;
+function abrirBD() {
+  return baseDatos || (baseDatos = new Promise(res => {
+    try {
+      const p = indexedDB.open("g30alumnos", 1);
+      p.onupgradeneeded = () => p.result.createObjectStore("cola", { keyPath: "envio" });
+      p.onsuccess = () => res(p.result);
+      p.onerror = () => res(null);
+    } catch (_) { res(null); }
+  }));
+}
+async function bd(modo, hacer) {
+  const db = await abrirBD();
+  if (!db) return null;
+  return new Promise(res => {
+    try {
+      const t = db.transaction("cola", modo), p = hacer(t.objectStore("cola"));
+      t.oncomplete = () => res(p.result === undefined ? true : p.result); t.onerror = t.onabort = () => res(null);
+    } catch (_) { res(null); }
+  });
+}
+async function enCola() {
+  const guardadas = await bd("readonly", s => s.getAll()) || [];
+  const todas = new Map(guardadas.map(x => [x.envio, x]));
+  memoria.forEach((v, k) => todas.set(k, v));
+  return Array.from(todas.values()).filter(x => yo && x.folio === yo.folio).sort((a, b) => a.creado - b.creado);
+}
+async function ponerEnCola(x) { if (!await bd("readwrite", s => s.put(x))) memoria.set(x.envio, x); }
+async function sacarDeCola(envio) { memoria.delete(envio); await bd("readwrite", s => s.delete(envio)); }
+async function pintarCola(estado) {
+  const lista = await enCola(), caja = $("cola");
+  caja.textContent = "";
+  if (!lista.length) return;
+  const d = document.createElement("div"); d.className = "cola";
+  const img = document.createElement("img"); img.src = lista[0].mini; img.alt = "";
+  const t = document.createElement("div"); t.style.flex = "1";
+  t.innerHTML = `<b>${lista.length === 1 ? "1 foto por subir" : lista.length + " fotos por subir"}</b><br><span class="nota">${esc(estado || "Subiendo… puedes seguir usando el panel.")}</span>`;
+  const g = document.createElement("div"); g.className = "girando";
+  d.append(img, t, g); caja.append(d);
+}
+let subiendo = false, relojCola = null;
+const reintentar = ms => { clearTimeout(relojCola); relojCola = setTimeout(procesarCola, ms); };
+async function procesarCola() {
+  if (subiendo || !sesion || !yo) return;
+  subiendo = true; clearTimeout(relojCola);
+  try {
+    for (;;) {
+      const lista = await enCola();
+      if (!lista.length) break;
+      const x = lista[0];
+      pintarCola();
+      let r;
+      try { r = await conSesion({ accion: "alumnoSubir", envio: x.envio, foto: x.foto, mini: x.mini, msg: x.msg, tomada: x.tomada, etiquetas: x.etiquetas.map(e => e.token) }); }
+      catch (e) {
+        if (e.message === "sesion" || e.message === "cerrado") return;
+        pintarCola("Sin conexión. Se reintentará sola."); reintentar(20000); return;
+      }
+      if (r.ok) {
+        await sacarDeCola(x.envio);
+        if (typeof r.quedan === "number") yo.quedan = r.quedan;
+        pintar();
+        avisar(r.etiquetadas && r.etiquetadas.length ? "✓ Foto subida · etiquetaste a " + r.etiquetadas.map(n => n.split(" ")[0]).join(", ") : "✓ Foto subida");
+        if (vista === "mias") cargarGaleria();
+      } else if (r.definitivo) { await sacarDeCola(x.envio); avisar(r.msg || "No se pudo subir esa foto.", true); }
+      else { pintarCola(r.msg || "Se reintentará en un momento."); reintentar((r.espera || 30) * 1000); return; }
+      // en la noche de la fiesta se sube más pausado para no frenar la puerta
+      if (yo.evento === "fiesta" && (await enCola()).length) { pintarCola("En la fiesta las fotos suben de a poco."); reintentar(15000 + Math.random() * 30000); return; }
+    }
+    pintarCola();
+  } finally { subiendo = false; }
+}
+window.addEventListener("online", procesarCola);
+$("bSubir").onclick = async () => {
+  if (!elegida || !yo) return;
+  const b = $("bSubir"); b.disabled = true;
+  const id = (crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2)).replace(/-/g, "").slice(0, 24);
+  await ponerEnCola({ envio: id, folio: yo.folio, creado: Date.now(), foto: elegida.foto, mini: elegida.mini, msg: $("pMsg").value.trim(), tomada: elegida.tomada, etiquetas: elegida.etiquetas });
+  b.disabled = false;
+  volverAElegir(); await pintarCola(); procesarCola();
+};
+
+/* ---------- Galerías ---------- */
+let galeriaDatos = null, pidiendoGaleria = false;
+async function cargarGaleria() {
+  const caja = $(vista === "mias" ? "gMias" : "gEtiquetado");
+  if (galeriaDatos) pintarGaleria(); else caja.innerHTML = '<div class="girando"></div>';
+  if (pidiendoGaleria) return;
+  pidiendoGaleria = true;
+  try {
+    const r = await conSesion({ accion: "galeria" });
+    if (r.ok) {
+      const antes = JSON.stringify(galeriaDatos);
+      galeriaDatos = r;
+      if (antes !== JSON.stringify(r)) pintarGaleria();
+      if (vista === "etiquetado" && yo.nuevas) { yo.nuevas = 0; pintar(); conSesion({ accion: "alumnoVisto" }).catch(() => {}); }
+    }
+  } catch (_) { if (!galeriaDatos) caja.innerHTML = '<div class="gx-vacio"><span>📡</span>Sin conexión. Vuelve a intentarlo.</div>'; }
+  pidiendoGaleria = false;
+}
+const traerMinis = async ids => (await conSesion({ accion: "fotoMinis", ids })).minis;
+function pintarGaleria() {
+  if (!galeriaDatos || (vista !== "mias" && vista !== "etiquetado")) return;
+  const mias = vista === "mias";
+  GaleriaG30.rejilla($(mias ? "gMias" : "gEtiquetado"), mias ? galeriaDatos.mias : galeriaDatos.etiquetado, {
+    traer: traerMinis, abrir: verFoto,
+    etiqueta: f => f.revision ? "⚠ En revisión" : mias ? (f.personas.length ? "🏷️ " + f.personas.length : "") : f.autor.split(" ")[0],
+    vacio: mias ? "<span>📸</span>Todavía no subes fotos.<br>Ve a <b>Subir</b> y comparte la primera." : "<span>🏷️</span>Todavía no te etiquetan.<br>Cuando escaneen tu pulsera en una foto, aparecerá aquí."
+  });
+}
+function verFoto(f) {
+  const guardar = { texto: "💾 Guardar en mi teléfono", clase: "oro", espera: true, hacer: (_, img) => GaleriaG30.guardar(img, GaleriaG30.nombreArchivo(f.ms)) };
+  const accion = (texto, clase, titulo, detalle, si, body, listo) => ({ texto, clase, hacer: async cerrar => {
+    if (!await confirmar(titulo, detalle, si, true)) return;
+    document.body.style.overflow = "hidden";
+    try {
+      const r = await conSesion(Object.assign({ id: f.id }, body));
+      if (!r.ok) return avisar(r.msg || "No se pudo.", true);
+      cerrar(); avisar(listo || r.msg); galeriaDatos = null; cargarGaleria(); refrescar();
+    } catch (e) { if (e.message !== "sesion" && e.message !== "cerrado") avisar(SIN_RED, true); }
+  } });
+  const acciones = [guardar];
+  if (f.mia) acciones.push(accion("🗑️ Borrar", "mal", "¿Borrar esta foto?", "Se borrará para ti y para quienes etiquetaste.", "Sí, borrar", { accion: "alumnoBorrar" }, "Foto borrada"));
+  else {
+    if (f.yo) acciones.push(accion("🏷️ Quitar mi etiqueta", "", "¿Quitar tu etiqueta?", "La foto dejará de aparecer en tu panel.", "Sí, quitarla", { accion: "alumnoQuitarEtiqueta" }, "Etiqueta quitada"));
+    acciones.push(accion("🚩 Reportar", "mal", "¿Reportar esta foto?", "Se ocultará al instante hasta que la organización la revise.", "Sí, reportar", { accion: "fotoReportar" }));
+  }
+  GaleriaG30.visor(f, { cargar: async () => (await conSesion({ accion: "fotoVer", id: f.id })).foto, acciones });
+}
+
+/* ---------- Música ---------- */
+let musica = null, playlistJson = "";
+fetch("musica.json", { cache: "no-cache" }).then(r => r.json()).then(m => { if (m && m.ok && m.id) { playlistJson = String(m.id).replace(/[^A-Za-z0-9]/g, ""); if (vista === "musica") pintarPlayer(); } }).catch(() => {});
+const claveCancion = (t, a) => (String(t).replace(/[\(\[].*?[\)\]]/g, "") + "|" + a).normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/[^a-z0-9|]/g, "");
+function tapa(img) {
+  if (!img) { const s = document.createElement("span"); s.className = "tapa"; s.textContent = "🎵"; return s; }
+  const i = document.createElement("img"); i.className = "tapa"; i.src = img; i.alt = ""; i.loading = "lazy"; i.onerror = () => i.replaceWith(tapa("")); return i;
+}
+function filaCancion(c) {
+  const f = document.createElement("div"); f.className = "cancion-fila";
+  const t = document.createElement("div"), b = document.createElement("b"), a = document.createElement("span");
+  b.textContent = c.t; if (c.e) { const e = document.createElement("span"); e.className = "exp"; e.textContent = "E"; b.append(e); }
+  a.className = "art"; a.textContent = c.a || "—"; t.append(b, a); f.append(tapa(c.img), t); return f;
+}
+const musicaApi = body => conSesion(Object.assign({ alumno: true }, body));
+async function cargarMusica() {
+  if (musica) pintarMusica();
+  try { const r = await musicaApi({ accion: "musica" }); if (r.ok) { musica = r; pintarMusica(); } }
+  catch (_) { if (!musica) $("ranking").innerHTML = '<li class="nota">Sin conexión. Vuelve a intentarlo.</li>'; }
+}
+function pintarPlayer() {
+  if (!musica) return;
+  const id = musica.playlist || playlistJson, c = $("musPlayer");
+  $("musLista").hidden = !id;
+  if (id && vista === "musica" && !c.querySelector("iframe")) {
+    const f = document.createElement("iframe"); f.src = `https://open.spotify.com/embed/playlist/${id}?utm_source=generator&theme=0`; f.height = 352; f.title = "Playlist del grupo en Spotify";
+    f.allow = "autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"; c.append(f);
+  }
+}
+function pintarMusica() {
+  const m = musica, qp = m.max.pedidos - m.pedidos, qv = m.max.votos - m.votos;
+  $("cupoMus").textContent = `Te quedan ${qp} ${qp === 1 ? "pedido" : "pedidos"} y ${qv} ${qv === 1 ? "voto" : "votos"} (los compartes con tu apoderado).`;
+  const ol = $("ranking"); ol.textContent = "";
+  if (!m.lista.length) ol.innerHTML = '<li class="nota">Todavía nadie pide canciones. ¡Parte tú!</li>';
+  m.lista.forEach((c, i) => {
+    const li = document.createElement("li"); li.className = "rk";
+    const pos = document.createElement("span"); pos.className = "pos"; pos.textContent = i + 1;
+    li.append(pos, filaCancion(c));
+    if (c.mio) {
+      const t = document.createElement("div"); t.className = "tuya"; t.innerHTML = `<span>Tu pedido</span><b>💜 ${c.v}</b>`;
+      const q = document.createElement("button"); q.type = "button"; q.textContent = "Quitar"; q.onclick = () => cambiarMusica({ accion: "musicaQuitar", id: c.id }, "Pedido quitado");
+      t.append(q); li.append(t);
+    } else {
+      const v = document.createElement("button"); v.type = "button"; v.className = "voto"; v.setAttribute("aria-pressed", c.yo); v.setAttribute("aria-label", "Votar por " + c.t);
+      v.innerHTML = `<span>💜</span><b>${c.v}</b>`;
+      v.onclick = () => { if (!c.yo && m.votos >= m.max.votos) return avisar(`Ya usaste tus ${m.max.votos} votos.`, true); v.disabled = true; cambiarMusica({ accion: "musicaVotar", id: c.id, si: !c.yo }); };
+      li.append(v);
+    }
+    ol.append(li);
+  });
+  pintarPlayer();
+}
+async function cambiarMusica(body, texto) {
+  try {
+    const r = await musicaApi(body);
+    if (r.lista) { musica = r; pintarMusica(); }
+    if (!r.ok || r.aviso || texto) avisar(r.msg || r.aviso || texto, !r.ok);
+    return r.ok;
+  } catch (_) { avisar(SIN_RED, true); if (musica) pintarMusica(); return false; }
+}
+let relojBusca = null, ctrlBusca = null;
+$("busca").addEventListener("input", () => { clearTimeout(relojBusca); relojBusca = setTimeout(buscar, 350); });
+$("busca").addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); clearTimeout(relojBusca); buscar(); e.target.blur(); } });
+async function buscar() {
+  const q = $("busca").value.trim(), caja = $("resultados");
+  if (ctrlBusca) ctrlBusca.abort();
+  if (q.length < 2) { caja.textContent = ""; return; }
+  ctrlBusca = new AbortController();
+  caja.innerHTML = '<p class="nota">Buscando…</p>';
+  let lista = [];
+  try {
+    const r = await (await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(q)}&entity=song&limit=10&country=CL`, { signal: ctrlBusca.signal })).json();
+    const vistos = new Set();
+    lista = (r.results || []).map(x => ({ t: x.trackName, a: x.artistName, img: x.artworkUrl100 || "", e: x.trackExplicitness === "explicit" }))
+      .filter(x => x.t && !vistos.has(claveCancion(x.t, x.a)) && vistos.add(claveCancion(x.t, x.a))).slice(0, 7);
+  } catch (e) { if (e.name === "AbortError") return; }
+  lista.push({ t: q, a: "", img: "", manual: true });
+  caja.textContent = "";
+  lista.forEach(c => {
+    const b = document.createElement("button"); b.type = "button"; b.className = "res-cancion";
+    b.append(filaCancion(c.manual ? { t: `Agregar «${c.t}»`, a: "Tal como la escribiste" } : c));
+    const mas = document.createElement("span"); mas.className = "mas"; mas.textContent = "+"; mas.setAttribute("aria-hidden", "true"); b.append(mas);
+    b.onclick = async () => {
+      b.disabled = true;
+      if (await cambiarMusica({ accion: "musicaPedir", tipo: "pedido", t: c.t, a: c.a, img: c.img || "", e: !!c.e })) { $("busca").value = ""; caja.textContent = ""; } else b.disabled = false;
+    };
+    caja.append(b);
+  });
+}
+
+/* ---------- Ajustes ---------- */
+$("bAjustes").onclick = () => {
+  abrirHoja(`<h1 style="font-size:1.3rem">Ajustes</h1>
+    <p class="nota" style="overflow-wrap:anywhere;margin-bottom:.9rem">${esc(yo.alumno)}<br>${esc(yo.correo)}</p>
+    <label class="chk"><input type="checkbox" id="aAvisos"${yo.avisos ? " checked" : ""}><span>Avisarme por correo cuando me etiqueten (máximo uno al día)</span></label>
+    <form id="aForm" novalidate style="margin-top:1.1rem">
+      <label for="aActual">Cambiar clave: tu clave actual</label><input type="password" id="aActual" autocomplete="current-password">
+      <label for="aNueva">Clave nueva</label><input type="password" id="aNueva" autocomplete="new-password">
+      <p class="msg mal" id="aMsg" role="alert" hidden></p>
+      <button class="btn sec" type="submit">Guardar clave nueva</button>
+    </form>
+    <button class="btn sec" id="aSalir" type="button">Salir de mi panel</button>
+    <button class="btn" id="aCerrar" type="button" style="margin-top:.9rem">Listo</button>`);
+  $("aCerrar").onclick = cerrarHoja;
+  $("aSalir").onclick = async () => { if ((await enCola()).length && !await confirmar("Hay fotos sin subir", "Se subirán la próxima vez que entres desde este teléfono.", "Salir igual")) return; cerrarSesion(""); };
+  $("aAvisos").onchange = async e => {
+    try { const r = await conSesion({ accion: "alumnoAjustes", avisos: e.target.checked }); if (r.ok) { yo = r; avisar(r.avisos ? "Te avisaremos por correo" : "Avisos apagados"); } }
+    catch (_) { avisar(SIN_RED, true); }
+  };
+  $("aForm").onsubmit = async ev => {
+    ev.preventDefault(); mensaje("aMsg", "");
+    if ($("aNueva").value.length < 6) return mensaje("aMsg", "La clave nueva debe tener al menos 6 caracteres.");
+    try {
+      const r = await conSesion({ accion: "alumnoAjustes", claveActual: $("aActual").value, claveNueva: $("aNueva").value });
+      if (r.ok) { yo = r; cerrarHoja(); avisar("✓ Clave cambiada"); } else mensaje("aMsg", r.msg || "No se pudo cambiar.");
+    } catch (_) { mensaje("aMsg", SIN_RED); }
+  };
+};
+document.addEventListener("visibilitychange", () => { if (!document.hidden && sesion && yo) { refrescar(); procesarCola(); if (vista === "mias" || vista === "etiquetado") cargarGaleria(); } });
+setInterval(() => { if (!document.hidden && sesion && yo) refrescar(); }, 90000);
+
+/* ---------- Inicio ---------- */
+async function iniciar() {
+  if (sesion) {
+    try {
+      const r = await api({ accion: "alumno", sesion });
+      if (r.ok) return abrir(r);
+      if (r.cerrado) return pantalla("cerrado");
+      if (r.sesion === false) return cerrarSesion(r.msg);
+      throw 0;
+    } catch (_) { pantalla("entrada"); return mensaje("eMsg", "No pudimos abrir tu panel. Revisa la conexión y vuelve a cargar la página."); }
+  }
+  try {
+    const p = JSON.parse(guardado.leer("sessionStorage", PASO) || "null");
+    if (p && p.paso && Date.now() - p.hora < 18 * 60000) { reg = p; $("rCorreo").value = p.email || ""; return pasoRegistro(p.n); }
+  } catch (_) {}
+  try { const r = await api({ accion: "evento" }); if (r.ok && r.alumnos !== true) return pantalla("cerrado"); } catch (_) {}
+  pantalla("entrada");
+}
+iniciar();
+</script>
+</body>
+</html>

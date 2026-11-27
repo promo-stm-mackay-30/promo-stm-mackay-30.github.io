@@ -476,6 +476,10 @@
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { animation: none !important; transition: none !important; }
   }
+  .botones [hidden] { display: none !important; }
+  /* Panel de alumnos: ocupa todo el ancho, en una fila, bajo el portal de apoderados */
+  .botones #link-alumnos { flex: 1 1 100%; flex-direction: row; align-items: center; gap: .9rem; }
+  .botones #link-alumnos .flecha { display: inline; margin-left: auto; }
 </style>
 </head>
 <body>
@@ -517,6 +521,11 @@
       <a class="btn registro" id="link-portal" target="_blank" rel="noopener">
         <span class="icono">👨‍👩‍👧</span>
         <span><strong>Portal de apoderados</strong><small>Retiro autorizado, foto y recuerdos</small></span>
+        <span class="flecha">→</span>
+      </a>
+      <a class="btn" id="link-alumnos" href="alumnos.html" hidden>
+        <span class="icono">📸</span>
+        <span><strong>Panel de alumnos</strong><small>Sube fotos y etiqueta a tus amigos</small></span>
         <span class="flecha">→</span>
       </a>
       <!-- Ocultos por ahora (solo funciona el registro). Para mostrarlos: quitar "hidden" y poner los links en PROMO. -->
@@ -675,7 +684,7 @@ async function consultarEvento() {
   if (!document.hidden) {
     try {
       const r = await (await fetch(window.API_URL, { method: "POST", body: JSON.stringify({ accion: "evento", vid: VID }) })).json();
-      if (r && r.ok) { pintarEvento(r.modo); if (r.cada) esperaEvento = r.cada; }
+      if (r && r.ok) { pintarEvento(r.modo); document.getElementById("link-alumnos").hidden = r.alumnos !== true; if (r.cada) esperaEvento = r.cada; }
     } catch (_) {}
   }
   consultando = false;

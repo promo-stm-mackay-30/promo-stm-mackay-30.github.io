@@ -171,6 +171,14 @@
   .mus-k div { background:var(--vidrio); border:1px solid var(--borde); border-radius:.9rem; padding:.45rem 0; }
   .mus-k b { display:block; font-size:1.35rem; }
   .mus-k span { font-size:.62rem; text-transform:uppercase; letter-spacing:.1em; color:var(--suave); }
+  .filtros-al { display:flex; gap:.4rem; margin-bottom:.8rem; }
+  .filtros-al button { flex:1; font:inherit; font-weight:700; font-size:.85rem; color:var(--texto); background:var(--vidrio); border:1px solid var(--borde); border-radius:99px; padding:.55rem; cursor:pointer; }
+  .filtros-al button.on { background:linear-gradient(110deg,var(--oro),var(--oro-2)); color:#1a1204; border-color:transparent; }
+  .al-fila { display:flex; gap:.6rem; align-items:center; padding:.65rem 0; border-bottom:1px solid rgba(255,255,255,.1); }
+  .al-fila > div { flex:1; min-width:0; }
+  .al-fila b { display:block; overflow-wrap:anywhere; }
+  .al-fila small { display:block; color:var(--suave); font-size:.78rem; overflow-wrap:anywhere; }
+  .al-fila button { flex:none; font:inherit; font-size:.76rem; font-weight:700; color:var(--texto); background:rgba(255,255,255,.1); border:1px solid var(--borde); border-radius:99px; padding:.45rem .7rem; cursor:pointer; }
   .dj { display:flex; align-items:center; gap:.6rem; padding:.6rem .1rem; border-bottom:1px solid rgba(255,255,255,.08); }
   .dj .n { width:1.5rem; flex:none; text-align:center; font-weight:800; color:var(--suave); font-size:.85rem; }
   .dj img, .dj .sin { width:2.6rem; height:2.6rem; flex:none; border-radius:.5rem; object-fit:cover; background:rgba(138,77,255,.35); display:grid; place-items:center; }
@@ -326,17 +334,18 @@
       </div>
 
       <div class="tarjeta">
-        <h2>Enviar anuncio a las familias</h2>
-        <label for="mColegio">Para</label>
-        <div class="fila">
+        <h2>Enviar anuncio</h2>
+        <label for="mPara">Para</label>
+        <select id="mPara"><option value="apoderados">Apoderados</option><option value="alumnos">Alumnos (con panel creado)</option><option value="ambos">Apoderados y alumnos</option></select>
+        <div class="fila" style="margin-top:.6rem">
           <select id="mColegio"><option value="">Todos los colegios</option><option value="The Mackay School">The Mackay School</option><option value="St Margaret's">St Margaret's</option></select>
           <select id="mCurso"><option value="">Todos los cursos</option><option value="8A">8A</option><option value="8B">8B</option><option value="8C">8C</option></select>
         </div>
         <label for="mAsunto">Asunto</label>
         <input type="text" id="mAsunto" maxlength="120" placeholder="Ej.: Entrega de pulseras" autocomplete="off">
         <label for="mMensaje">Mensaje</label>
-        <textarea id="mMensaje" maxlength="3000" placeholder="Escribe aquí el anuncio. Cada familia lo recibirá con «Hola (nombre del apoderado),» al inicio."></textarea>
-        <p class="nota" id="mContador">0 / 3000 caracteres · Solo llega a familias ya registradas.</p>
+        <textarea id="mMensaje" maxlength="3000" placeholder="Escribe aquí el anuncio. Cada persona lo recibirá con «Hola (su nombre),» al inicio."></textarea>
+        <p class="nota" id="mContador">0 / 3000 caracteres · Solo llega a familias ya registradas y alumnos con panel.</p>
 
         <label for="mPrueba">Enviarte una prueba antes</label>
         <div class="busca">
@@ -345,7 +354,7 @@
         </div>
         <p class="res" id="mPruebaRes"></p>
 
-        <button class="btn" id="mEnviar" type="button" style="margin-top:.6rem">Enviar a las familias</button>
+        <button class="btn" id="mEnviar" type="button" style="margin-top:.6rem">Enviar anuncio</button>
         <div id="mConfirm" class="confirma oculto">
           <p id="mConfirmTxt" style="margin-bottom:.6rem"></p>
           <label for="mClave">Escribe ENVIAR para confirmar</label>
@@ -403,6 +412,17 @@
         <button class="btn sec" id="bDj" type="button">Ver pedidos y dedicatorias</button>
       </div>
       <div class="tarjeta solo-admin">
+        <h2>📱 Panel de alumnos</h2>
+        <p class="nota" id="alEstado">Revisando…</p>
+        <div class="mus-k"><div><b id="alActivos">–</b><span>Alumnos</span></div><div><b id="alFotos">–</b><span>Fotos</span></div><div><b id="alRep">–</b><span>Reportadas</span></div></div>
+        <p class="nota" id="alEspacio"></p>
+        <button class="btn" id="bAlAbrir" type="button" disabled>Abrir el panel</button>
+        <button class="btn sec" id="bAlFotos" type="button">Ver y moderar fotos</button>
+        <button class="btn sec" id="bAlLista" type="button">Ver alumnos</button>
+        <button class="btn sec" id="bAlAvisos" type="button">Enviar avisos pendientes</button>
+        <p class="res" id="alRes"></p>
+      </div>
+      <div class="tarjeta solo-admin">
         <h2>🔐 Claves y PIN</h2>
         <p class="nota">Cambia las claves de Admin, Staff y Control de Acceso, y los PIN para iniciar la fiesta o el simulacro.</p>
         <button class="btn sec" id="bClaves" type="button">Cambiar claves</button>
@@ -424,7 +444,7 @@
           <li><b>💳 Plataforma de pago</b><br>Pendiente.</li>
           <li><b>🔁 Salida temporal y reingreso</b><br>Que un alumno pueda salir y volver a entrar.</li>
           <li><b>🎞️ Fotos del evento en el Portal de apoderados</b><br>Cuando el fotógrafo entregue el material.</li>
-          <li><b>🎓 Baúl de los recuerdos</b><br>Panel del estudiante a lo largo de los 4 años.</li>
+          <li><b>🎓 Baúl de los recuerdos</b><br>Los momentos de la generación a lo largo de los 4 años.</li>
         </ul>
       </div>
     </section>
@@ -464,6 +484,16 @@
   </div>
 </div>
 
+<div id="alModal" class="modal oculto" role="dialog" aria-modal="true" aria-labelledby="alTit">
+  <div class="hoja">
+    <div class="cab"><h3 id="alTit"></h3><button type="button" id="alCerrar" aria-label="Cerrar">×</button></div>
+    <div class="filtros-al" id="alFiltros"><button type="button" data-f="reportadas">Reportadas</button><button type="button" data-f="todas">Todas</button><button type="button" data-f="ocultas">Ocultas</button></div>
+    <p class="res" id="alModalRes"></p>
+    <div id="alCuerpo"></div>
+    <button class="btn sec oculto" id="alMas" type="button">Ver más</button>
+  </div>
+</div>
+
 <div id="claves" class="modal oculto" role="dialog" aria-modal="true" aria-labelledby="clavesTit">
   <div class="hoja">
     <div class="cab"><h3 id="clavesTit">🔐 Claves y PIN</h3><button type="button" id="clavesCerrar" aria-label="Cerrar">×</button></div>
@@ -487,6 +517,7 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
 <script src="config.js"></script>
+<script src="galeria.js"></script>
 <script>
 const $ = id => document.getElementById(id);
 const API = window.API_URL;
@@ -939,7 +970,7 @@ function irTab(n) {
   tabActual = n; carnet = null; apagar();                        // la cámara nunca queda encendida al cambiar de pestaña
   if (n === "puerta" || n === "consultar") $("slot-" + n).appendChild($("escaner"));
   pintarEvento(evento);
-  if (n === "mas") { cargarResumen(); cargarMusicaDj(); }
+  if (n === "mas") { cargarResumen(); cargarMusicaDj(); cargarPanelAlumnos(); }
   window.scrollTo(0, 0);
 }
 document.querySelectorAll("#tabs button").forEach(b => b.onclick = () => irTab(b.dataset.tab));
@@ -983,10 +1014,11 @@ $("rBuscar").onclick = buscarRegistros;
 $("rQ").addEventListener("keydown", ev => { if (ev.key === "Enter") buscarRegistros(); });
 
 /* ===== Correos: anuncio a las familias registradas ===== */
-const filtros = () => ({ colegio: $("mColegio").value, curso: $("mCurso").value });
+const filtros = () => ({ colegio: $("mColegio").value, curso: $("mCurso").value, para: $("mPara").value });
+$("mPara").onchange = () => $("mConfirm").classList.add("oculto");
 const textoPublico = () => ({ asunto: $("mAsunto").value.trim(), mensaje: $("mMensaje").value.trim() });
 const mostrarRes = (id, ok, txt) => { const e = $(id); e.className = "res " + (ok ? "ok" : "mal"); e.textContent = (ok ? "✅ " : "⛔ ") + txt; };
-$("mMensaje").addEventListener("input", () => { $("mContador").textContent = `${$("mMensaje").value.length} / 3000 caracteres · Solo llega a familias ya registradas.`; });
+$("mMensaje").addEventListener("input", () => { $("mContador").textContent = `${$("mMensaje").value.length} / 3000 caracteres · Solo llega a familias ya registradas y alumnos con panel.`; });
 $("mPrueba").addEventListener("input", () => { const f = $("mPrueba").value.replace(/\s+/g, "").toLowerCase(); if (f !== $("mPrueba").value) $("mPrueba").value = f; });
 
 $("mProbar").onclick = async () => {
@@ -1012,10 +1044,12 @@ $("mEnviar").onclick = async () => {
     const r = await api(Object.assign({ accion: "vistaMasivo" }, filtros()));
     if (r.auth === false) return cerrarSesion();
     if (!r.ok) return mostrarRes("mRes", false, r.msg);
-    if (!r.total) return mostrarRes("mRes", false, "No hay familias registradas con correo válido para ese filtro.");
-    const quien = [$("mColegio").value, $("mCurso").value].filter(Boolean).join(" · ") || "todas las familias registradas";
+    if ($("mPara").value !== "apoderados" && r.para !== $("mPara").value) return mostrarRes("mRes", false, "Para escribir a los alumnos falta publicar la nueva versión del servidor.");
+    if (!r.total) return mostrarRes("mRes", false, $("mPara").value === "alumnos" ? "Ningún alumno de ese filtro ha creado su panel todavía." : "No hay destinatarios con correo válido para ese filtro.");
+    const nombrePara = { apoderados: "apoderados", alumnos: "alumnos", ambos: "apoderados y alumnos" }[$("mPara").value];
+    const quien = [$("mColegio").value, $("mCurso").value].filter(Boolean).join(" · ") || "todos";
     const hoy = Math.min(r.total, r.hoy);
-    $("mConfirmTxt").innerHTML = `Vas a enviar «<b>${esc(asunto)}</b>» a <b>${r.total}</b> familias (${esc(quien)}).`
+    $("mConfirmTxt").innerHTML = `Vas a enviar «<b>${esc(asunto)}</b>» a <b>${r.total}</b> correos de ${nombrePara} (${esc(quien)}).`
       + (hoy < r.total ? `<br><small>Hoy solo se pueden enviar ${hoy} (cuota de Gmail; se reservan ${r.reserva} para confirmaciones). El resto queda pendiente y se envía después con «Continuar».</small>` : "");
     $("mClave").value = ""; $("mConfirm").classList.remove("oculto"); $("mClave").focus();
   } catch (_) { mostrarRes("mRes", false, "Sin conexión con el servidor."); }
@@ -1163,6 +1197,120 @@ $("clavesForm").addEventListener("submit", async ev => {
   } catch (_) { mostrarRes("clavesRes", false, "Sin conexión. Antes de repetir, prueba cuál clave quedó."); }
   b.disabled = false; b.textContent = "Guardar cambios";
 });
+
+/* ===== Más (solo Admin): panel de alumnos · abrir/cerrar, moderar fotos y revisar el espacio ===== */
+let alDatos = null, alFiltro = "reportadas", alLista = [], alTotal = 0, alVista = "fotos";
+function pintarPanelAlumnos(r) {
+  alDatos = r;
+  $("alEstado").innerHTML = r.abierto ? "<b style=\"color:var(--ok)\">ABIERTO</b>: aparece el botón en la portada y los apoderados pueden activarlo." : "<b>Cerrado</b>: nadie ve el botón ni puede activarlo.";
+  $("alActivos").textContent = r.alumnos.filter(a => a.estado === "Activo").length;
+  $("alFotos").textContent = r.fotos; $("alRep").textContent = r.reportadas;
+  $("alRep").style.color = r.reportadas ? "var(--mal)" : "";
+  $("alEspacio").textContent = `Las fotos ocupan ${r.fotosMB} MB.` + (r.drive ? ` Cuenta de la promo: ${(r.drive.usadoMB / 1024).toFixed(1)} de ${(r.drive.totalMB / 1024).toFixed(0)} GB usados.` : "") + ` Correos disponibles hoy: ${r.correos}.`;
+  const b = $("bAlAbrir"); b.disabled = false; b.textContent = r.abierto ? "Cerrar el panel" : "Abrir el panel"; b.dataset.seguro = "";
+}
+async function cargarPanelAlumnos() {
+  if (!document.body.classList.contains("rol-admin")) return;
+  try {
+    const r = await api({ accion: "alumnosAdmin" });
+    if (r.auth === false) return cerrarSesion();
+    if (r.ok) pintarPanelAlumnos(r);
+    else $("alEstado").textContent = r.msg === "Acción desconocida" ? "Disponible cuando se publique la nueva versión del servidor." : r.msg;
+  } catch (_) { $("alEstado").textContent = "Sin conexión con el servidor."; }
+}
+$("bAlAbrir").onclick = async () => {
+  const b = $("bAlAbrir"), abrir = !alDatos.abierto;
+  if (b.dataset.seguro !== "1") { b.dataset.seguro = "1"; b.textContent = abrir ? "Toca otra vez para ABRIR" : "Toca otra vez para CERRAR"; return; }
+  b.disabled = true; b.textContent = "Guardando…";
+  try {
+    const r = await api({ accion: "panelAlumnos", abierto: abrir });
+    if (r.auth === false) return cerrarSesion();
+    if (r.ok) { pintarPanelAlumnos(r); return mostrarRes("alRes", true, abrir ? "Panel abierto." : "Panel cerrado."); }
+    mostrarRes("alRes", false, r.msg);
+  } catch (_) { mostrarRes("alRes", false, "Sin conexión."); }
+  pintarPanelAlumnos(alDatos);
+};
+$("bAlAvisos").onclick = async () => {
+  const b = $("bAlAvisos"); b.disabled = true;
+  try { const r = await api({ accion: "avisosEnviar" }); if (r.auth === false) return cerrarSesion(); mostrarRes("alRes", r.ok, r.msg); }
+  catch (_) { mostrarRes("alRes", false, "Sin conexión."); }
+  b.disabled = false;
+};
+const cerrarAlModal = () => { $("alModal").classList.add("oculto"); cargarPanelAlumnos(); };
+$("alCerrar").onclick = cerrarAlModal;
+$("alModal").addEventListener("click", e => { if (e.target === $("alModal")) cerrarAlModal(); });
+const traerMinisAdmin = async ids => (await api({ accion: "fotosAdminMinis", ids })).minis;
+function pintarFotosAdmin() {
+  GaleriaG30.rejilla($("alCuerpo"), alLista, {
+    traer: traerMinisAdmin, abrir: moderar,
+    etiqueta: f => f.estado === "Reportada" ? "⚠ Reportada" : f.estado === "Oculta" ? "Oculta" : f.autor.split(" ")[0],
+    vacio: alFiltro === "reportadas" ? "<span>✅</span>No hay fotos reportadas." : "<span>🖼️</span>No hay fotos."
+  });
+  $("alMas").classList.toggle("oculto", alLista.length >= alTotal);
+}
+async function cargarFotosAdmin(mas) {
+  if (!mas) { alLista = []; $("alCuerpo").innerHTML = '<div class="girando"></div>'; $("alMas").classList.add("oculto"); }
+  const filtro = alFiltro;
+  try {
+    const r = await api({ accion: "fotosAdmin", filtro, desde: alLista.length });
+    if (r.auth === false) return cerrarSesion();
+    if (filtro !== alFiltro || alVista !== "fotos") return;
+    if (!r.ok) return mostrarRes("alModalRes", false, r.msg);
+    alLista = alLista.concat(r.fotos); alTotal = r.total; pintarFotosAdmin();
+  } catch (_) { $("alCuerpo").textContent = ""; mostrarRes("alModalRes", false, "Sin conexión."); }
+}
+function moderar(f) {
+  const doble = (texto, clase, hacer) => ({ texto, clase, hacer: async (cerrar, _, b) => {
+    if (hacer === "borrar" && b.dataset.seguro !== "1") { b.dataset.seguro = "1"; b.textContent = "Toca otra vez para borrar"; return; }
+    b.disabled = true;
+    try {
+      const r = await api({ accion: "fotosModerar", id: f.id, hacer });
+      if (r.auth === false) { cerrar(); return cerrarSesion(); }
+      if (!r.ok) { b.disabled = false; return mostrarRes("alModalRes", false, r.msg); }
+      cerrar(); GaleriaG30.olvidar(f.id); mostrarRes("alModalRes", true, hacer === "borrar" ? "Foto borrada." : hacer === "ocultar" ? "Foto oculta." : "Foto visible de nuevo."); cargarFotosAdmin();
+    } catch (_) { b.disabled = false; mostrarRes("alModalRes", false, "Sin conexión."); }
+  } });
+  const acciones = [];
+  if (f.estado !== "Visible") acciones.push(doble("✅ Dejar visible", "oro", "visible"));
+  if (f.estado !== "Oculta") acciones.push(doble("🙈 Ocultar", "", "ocultar"));
+  acciones.push(doble("🗑️ Borrar", "mal", "borrar"));
+  const info = f.reporta ? "Reportada por: " + f.reporta + (f.motivo ? " · " + f.motivo : "") : "";
+  GaleriaG30.visor(Object.assign({}, f, { msg: [f.msg, info].filter(Boolean).join(" — ") }), { cargar: async () => (await api({ accion: "fotosAdminVer", id: f.id })).foto, acciones });
+}
+function pintarAlumnosAdmin() {
+  const cont = $("alCuerpo"); cont.textContent = "";
+  if (!alDatos.alumnos.length) { cont.innerHTML = '<p class="nota">Ningún apoderado ha activado el panel todavía.</p>'; return; }
+  alDatos.alumnos.forEach(a => {
+    const d = document.createElement("div"); d.className = "al-fila";
+    d.innerHTML = `<div><b>${esc(a.alumno)}</b><small>${esc(a.curso)} · ${esc(a.colegio)} · ${a.estado === "Activo" ? "Activo" : a.estado === "Desactivado" ? "Desactivado" : "Falta que se registre"} · ${a.fotos} ${a.fotos === 1 ? "foto" : "fotos"}${a.subir ? "" : " · NO puede subir"}</small>${a.correo ? `<small>${esc(a.correo)}</small>` : ""}</div>`;
+    const b = document.createElement("button"); b.type = "button"; b.textContent = a.subir ? "Bloquear fotos" : "Permitir fotos";
+    b.onclick = async () => {
+      b.disabled = true;
+      try {
+        const r = await api({ accion: "alumnosGestionar", folio: a.folio, hacer: a.subir ? "bloquear" : "permitir" });
+        if (r.auth === false) return cerrarSesion();
+        if (r.ok) { alDatos = r; pintarAlumnosAdmin(); } else { mostrarRes("alModalRes", false, r.msg); b.disabled = false; }
+      } catch (_) { mostrarRes("alModalRes", false, "Sin conexión."); b.disabled = false; }
+    };
+    d.append(b); cont.append(d);
+  });
+}
+function abrirAlModal(vista) {
+  alVista = vista; $("alModal").classList.remove("oculto"); $("alModalRes").textContent = ""; $("alMas").classList.add("oculto");
+  $("alTit").textContent = vista === "fotos" ? "📸 Fotos de los alumnos" : "📱 Alumnos con panel";
+  $("alFiltros").classList.toggle("oculto", vista !== "fotos");
+  if (vista === "fotos") {
+    alFiltro = alDatos && alDatos.reportadas ? "reportadas" : "todas";
+    document.querySelectorAll("#alFiltros button").forEach(b => b.classList.toggle("on", b.dataset.f === alFiltro));
+    cargarFotosAdmin();
+  } else if (alDatos) { $("alCuerpo").dataset.tanda = 0; pintarAlumnosAdmin(); }
+}
+document.querySelectorAll("#alFiltros button").forEach(b => b.onclick = () => {
+  alFiltro = b.dataset.f; document.querySelectorAll("#alFiltros button").forEach(x => x.classList.toggle("on", x === b)); $("alModalRes").textContent = ""; cargarFotosAdmin();
+});
+$("alMas").onclick = () => cargarFotosAdmin(true);
+$("bAlFotos").onclick = () => abrirAlModal("fotos");
+$("bAlLista").onclick = () => abrirAlModal("alumnos");
 
 /* ===== Más: resumen y envíos pendientes ===== */
 const barra = (reg, tot) => `<div class="barra"><i style="width:${tot ? Math.round(reg * 100 / tot) : 0}%"></i></div>`;
@@ -1507,6 +1655,7 @@ function entrarPanel() {
 function cerrarSesion() {
   pin = ""; tk = ""; carnet = null; nomina = new Map(); try { sessionStorage.removeItem("pin_g30"); sessionStorage.removeItem("tk_g30"); } catch (_) {}
   clearInterval(window._c); apagar(); cerrar(); cerrarSala(); $("dj").classList.add("oculto"); musDj = null; cerrarClaves();
+  $("alModal").classList.add("oculto"); $("alCuerpo").textContent = ""; alDatos = null; GaleriaG30.vaciar(); document.querySelectorAll(".gx-visor").forEach(v => v.remove());
   $("pin").value = "";
   elegirAcceso();
 }
