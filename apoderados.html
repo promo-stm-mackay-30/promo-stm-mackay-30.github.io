@@ -935,7 +935,7 @@ async function cargarPanel() {
     if (datos && actual().folio === folio) pintarPanel();
   } catch (_) { if (!paneles[folio]) caja.innerHTML = '<div class="tarjeta"><p class="nota">Sin conexión. Vuelve a intentarlo.</p></div>'; }
 }
-const PASOS_AL = '<ol class="pasos-al"><li>Tu hijo/a abre <b>Panel de alumnos</b> en la página de la fiesta y toca "Es mi primera vez".</li><li>Escribe <b>tu correo</b> (el de este portal).</li><li>Te llega un código. Al dárselo, <b>autorizas</b> su panel.</li><li>Registra su correo personal y crea su clave.</li></ol>';
+const PASOS_AL = '<ol class="pasos-al"><li>Tu hijo/a abre <b>Panel de alumnos</b> en la página de la fiesta y toca "Es mi primera vez".</li><li>Toca "Solicitar código de acceso" y <b>escanea su pulsera</b>.</li><li>Te llega un código a tu correo. Al dárselo, <b>autorizas</b> su panel.</li><li>Registra su correo personal y crea su clave.</li></ol>';
 function pintarPanel() {
   const a = actual(), r = paneles[a.folio], p = r.panel, pul = r.pulsera, nombre = primerNombre(a.alumno), caja = $("panelCaja");
   const activo = p.estado === "Activo", frenado = p.estado === "Frenado";

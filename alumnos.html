@@ -147,17 +147,16 @@
     <button class="enlace" id="rVolver" type="button" style="padding-left:0">← Volver</button>
     <div class="pasos" aria-hidden="true"><i></i><i></i><i></i></div>
 
-    <form id="r1" novalidate>
+    <div id="r1">
       <h1>Primera vez</h1>
-      <p class="sub">Escribe el <b>correo de tu apoderado</b>. Le llegará un código: pídeselo.</p>
-      <div class="tarjeta">
-        <label for="rApoderado">Correo de tu apoderado</label>
-        <input type="email" id="rApoderado" inputmode="email" autocapitalize="none" autocorrect="off" spellcheck="false" autocomplete="off" placeholder="nombre@gmail.com">
+      <p class="sub">Ten tu <b>pulsera</b> a mano. Al escanearla le enviaremos un código a tu apoderado, sin escribir ningún correo.</p>
+      <div class="tarjeta centro">
+        <div style="font-size:3.6rem;line-height:1.2">⌚</div>
         <p class="msg mal" id="m1" role="alert" hidden></p>
-        <button class="btn" id="bPedir" type="submit" style="margin-top:1.1rem">Enviarle el código</button>
+        <button class="btn" id="bPedir" type="button" style="margin-top:1rem">📷 Solicitar código de acceso</button>
       </div>
-      <p class="nota centro">Es el correo que usó para registrarte en la fiesta.</p>
-    </form>
+      <p class="nota centro">El código le llega al correo que tu apoderado usó para registrarte en la fiesta. Después se lo pides.</p>
+    </div>
 
     <form id="r2" novalidate hidden>
       <h1>Pídele el código</h1>
@@ -168,7 +167,7 @@
         <p class="msg mal" id="m2" role="alert" hidden></p>
         <button class="btn" id="bCodigo" type="submit" style="margin-top:1.1rem">Continuar</button>
       </div>
-      <p class="centro"><button class="enlace" id="rOtro" type="button">Cambiar correo o pedir otro código</button></p>
+      <p class="centro"><button class="enlace" id="rOtro" type="button">Pedir otro código</button></p>
     </form>
 
     <form id="r3" novalidate hidden>
@@ -193,7 +192,7 @@
       <button class="redondo" id="bAjustes" type="button" aria-label="Ajustes">⚙️</button>
     </header>
 
-    <div class="sin-pulsera" id="sinPulsera" hidden><b>📿 Tu pulsera fue anulada</b><p>Pide una de repuesto a la organización y vincúlala aquí. Tus fotos siguen guardadas.</p><button class="btn" id="bPulsera" type="button">📷 Escanear mi pulsera nueva</button></div>
+    <div class="sin-pulsera" id="sinPulsera" hidden><b>⌚ Tu pulsera fue anulada</b><p>Pide una de repuesto a la organización y vincúlala aquí. Tus fotos siguen guardadas.</p><button class="btn" id="bPulsera" type="button">📷 Escanear mi pulsera nueva</button></div>
 
     <div id="v-subir">
       <div id="cola"></div>
@@ -327,16 +326,15 @@ $("fEntrar").addEventListener("submit", async ev => {
   } catch (_) { mensaje("eMsg", SIN_RED); }
   b.disabled = false; b.textContent = "Entrar";
 });
-let reg = { n: 1, apoderado: "", paso: "", alumnos: [] };
+let reg = { n: 1, pedido: "", para: "", paso: "", alumnos: [] };
 function pasoRegistro(n) {
   reg.n = n; pantalla("registro");
   [1, 2, 3].forEach(i => $("r" + i).hidden = i !== n);
   document.querySelectorAll(".pasos i").forEach((x, i) => x.classList.toggle("on", i < n));
-  if (n === 1) $("rApoderado").value = reg.apoderado;
-  if (n === 2) $("rPara").textContent = reg.apoderado;
+  if (n === 2) $("rPara").textContent = reg.para;
   if (n === 3) pintarNombres();
   // el apoderado puede tardar: el paso se recuerda en este teléfono hasta 24 horas
-  guardado.poner("localStorage", PASO, n > 1 ? JSON.stringify({ apoderado: reg.apoderado, hora: reg.hora }) : null);
+  if (n > 1) guardado.poner("localStorage", PASO, JSON.stringify({ pedido: reg.pedido, para: reg.para, hora: reg.hora }));
 }
 function pintarNombres() {
   const varios = reg.alumnos.length > 1, caja = $("rNombres");
@@ -349,21 +347,31 @@ function pintarNombres() {
     caja.append(l);
   });
 }
-$("bPrimera").onclick = () => { reg = { n: 1, apoderado: reg.apoderado, paso: "", alumnos: [] }; mensaje("m1", ""); pasoRegistro(1); };
+$("bPrimera").onclick = () => {
+  mensaje("m1", "");
+  if (reg.pedido && Date.now() - reg.hora < 24 * 3600000) return pasoRegistro(2);   // ya pidió un código: sigue donde quedó
+  pasoRegistro(1);
+};
 $("rVolver").onclick = () => { if (reg.n > 1) return pasoRegistro(reg.n - 1); pantalla("entrada"); };
-$("r1").addEventListener("submit", async ev => {
-  ev.preventDefault(); mensaje("m1", "");
-  const apoderado = correoFormato($("rApoderado").value); $("rApoderado").value = apoderado;
-  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(apoderado)) return mensaje("m1", "Escribe un correo válido (ej.: nombre@gmail.com).");
-  const b = $("bPedir"); b.disabled = true; b.textContent = "Revisando…";
-  try {
-    const r = await api({ accion: "alumnoPedir", correoApoderado: apoderado });
-    if (r.cerrado) pantalla("cerrado");
-    else if (r.ok) { reg.apoderado = apoderado; reg.hora = Date.now(); $("rCod").value = ""; mensaje("m2", ""); pasoRegistro(2); avisar("✉️ Le enviamos el código a tu apoderado"); }
-    else mensaje("m1", r.msg || "No se pudo enviar.");
-  } catch (_) { mensaje("m1", SIN_RED); }
-  b.disabled = false; b.textContent = "Enviarle el código";
-});
+$("bPedir").onclick = () => {
+  mensaje("m1", "");
+  let ocupado = false;
+  LectorQR.abrir("Escanea TU pulsera", async token => {
+    if (ocupado) return; ocupado = true;
+    LectorQR.estado("Enviando el código a tu apoderado…");
+    try {
+      const r = await api({ accion: "alumnoPedir", token });
+      if (r.ok) {
+        reg = { n: 2, pedido: r.pedido, para: r.para, paso: "", alumnos: [], hora: Date.now() };
+        await LectorQR.cerrar(); $("rCod").value = ""; mensaje("m2", ""); pasoRegistro(2); avisar("✉️ Le enviamos el código a tu apoderado"); return;
+      }
+      if (r.campo === "pulsera") { LectorQR.estado(r.msg, "mal"); ocupado = false; return; }
+      await LectorQR.cerrar();
+      if (r.cerrado) return pantalla("cerrado");
+      mensaje("m1", r.msg || "No se pudo enviar.");
+    } catch (_) { LectorQR.estado(SIN_RED, "mal"); ocupado = false; }
+  }, { boton: "Cancelar" });
+};
 $("rOtro").onclick = () => { mensaje("m1", ""); pasoRegistro(1); };
 $("rCod").addEventListener("input", e => e.target.value = e.target.value.replace(/\D/g, "").slice(0, 6));
 $("r2").addEventListener("submit", async ev => {
@@ -372,7 +380,7 @@ $("r2").addEventListener("submit", async ev => {
   if (codigo.length !== 6) return mensaje("m2", "Escribe los 6 números que le llegaron a tu apoderado.");
   const b = $("bCodigo"); b.disabled = true; b.textContent = "Revisando…";
   try {
-    const r = await api({ accion: "alumnoCodigo", correoApoderado: reg.apoderado, codigo });
+    const r = await api({ accion: "alumnoCodigo", pedido: reg.pedido, codigo });
     if (r.cerrado) pantalla("cerrado");
     else if (r.ok) { reg.paso = r.paso; reg.alumnos = r.alumnos; mensaje("m3", ""); pasoRegistro(3); }
     else mensaje("m2", r.msg || "No se pudo continuar.");
@@ -393,8 +401,8 @@ $("r3").addEventListener("submit", async ev => {
     if (r.cerrado) pantalla("cerrado");
     else if (r.ok) {
       guardado.poner("localStorage", PASO, null); guardado.poner("localStorage", CORREO, email);
-      $("rClave").value = ""; reg = { n: 1, apoderado: "", paso: "", alumnos: [] }; entrarCon(r); avisar("✓ ¡Tu panel está listo!");
-    } else if (r.vencido) { pasoRegistro(1); mensaje("m1", r.msg); }
+      $("rClave").value = ""; reg = { n: 1, pedido: "", para: "", paso: "", alumnos: [] }; entrarCon(r); avisar("✓ ¡Tu panel está listo!");
+    } else if (r.vencido) { reg.pedido = ""; guardado.poner("localStorage", PASO, null); pasoRegistro(1); mensaje("m1", r.msg); }
     else mensaje("m3", r.msg || "No se pudo crear.");
   } catch (_) { mensaje("m3", SIN_RED); }
   b.disabled = false; b.textContent = "Crear mi panel";
@@ -781,7 +789,7 @@ async function iniciar() {
   try { const r = await api({ accion: "evento" }); if (r.ok && r.alumnos !== true) return pantalla("cerrado"); } catch (_) {}
   try {
     const p = JSON.parse(guardado.leer("localStorage", PASO) || "null");
-    if (p && p.apoderado && Date.now() - p.hora < 24 * 3600000) { reg.apoderado = p.apoderado; reg.hora = p.hora; return pasoRegistro(2); }
+    if (p && p.pedido && Date.now() - p.hora < 24 * 3600000) { reg.pedido = p.pedido; reg.para = p.para; reg.hora = p.hora; return pasoRegistro(2); }
   } catch (_) {}
   pantalla("entrada");
 }
