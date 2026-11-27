@@ -409,14 +409,24 @@
         <button class="btn sec" id="bDj" type="button">Ver pedidos y dedicatorias</button>
       </div>
       <div class="tarjeta solo-admin">
+        <h2>📿 Pulsera perdida</h2>
+        <p class="nota">Anula la pulsera perdida y asigna una de repuesto (una sin asignar). La anulada deja de servir en la puerta.</p>
+        <div class="busca">
+          <input type="text" id="puQ" placeholder="Nombre o N.º de pulsera" autocomplete="off" autocapitalize="none" spellcheck="false">
+          <button class="btn" id="puBuscar" type="button">Buscar</button>
+        </div>
+        <p class="res" id="puRes"></p>
+        <div id="puLista"></div>
+      </div>
+      <div class="tarjeta solo-admin">
         <h2>📱 Panel de alumnos</h2>
         <p class="nota" id="alEstado">Revisando…</p>
         <div class="mus-k"><div><b id="alActivos">–</b><span>Alumnos</span></div><div><b id="alFotos">–</b><span>Fotos</span></div><div><b id="alRep">–</b><span>Reportadas</span></div></div>
         <p class="nota" id="alEspacio"></p>
         <button class="btn" id="bAlAbrir" type="button" disabled>Abrir el panel</button>
-        <button class="btn sec" id="bAlFotos" type="button">Ver y moderar fotos</button>
-        <button class="btn sec" id="bAlLista" type="button">Ver alumnos</button>
-        <button class="btn sec" id="bAlAvisos" type="button">Enviar avisos pendientes</button>
+        <button class="btn sec" id="bAlFotos" type="button" style="margin-top:.7rem">Ver y moderar fotos</button>
+        <button class="btn sec" id="bAlLista" type="button" style="margin-top:.7rem">Ver alumnos</button>
+        <button class="btn sec" id="bAlAvisos" type="button" style="margin-top:.7rem">Enviar avisos pendientes</button>
         <p class="res" id="alRes"></p>
       </div>
       <div class="tarjeta solo-admin">
@@ -506,6 +516,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
 <script src="config.js"></script>
 <script src="galeria.js"></script>
+<script src="lector.js"></script>
 <script>
 const $ = id => document.getElementById(id);
 const API = window.API_URL;
@@ -770,7 +781,7 @@ function credencial(x, estado) {
         <div class="colegio"><span class="rot">Colegio</span><b>${esc(x.colegio)}</b></div>
       </div>
       <div class="apod"><span class="rot">Apoderado</span><b>${esc(x.apoderado)}</b></div>
-      <div class="pieta"><span>Pulsera N.º <b>${esc(x.folio)}</b></span><span class="chip ${estado[0]}">${estado[1]}</span></div>
+      <div class="pieta"><span>Pulsera N.º <b>${esc(x.pulsera || x.folio)}</b></span><span class="chip ${estado[0]}">${estado[1]}</span></div>
       ${botonesFin}
     </div>`);
   activarFin();
@@ -966,7 +977,7 @@ document.querySelectorAll("#tabs button").forEach(b => b.onclick = () => irTab(b
 /* ===== Correos: reenviar la confirmación a una familia ya registrada ===== */
 async function buscarRegistros() {
   const q = $("rQ").value.trim(), out = $("rLista");
-  if (q.length < 2) { out.innerHTML = '<p class="nota">Escribe al menos 2 letras o el número de pulsera.</p>'; return; }
+  if (q.length < 2 && !/^\d+$/.test(q)) { out.innerHTML = '<p class="nota">Escribe al menos 2 letras o el número de pulsera.</p>'; return; }
   out.innerHTML = '<p class="nota">Buscando…</p>';
   try {
     const r = await api({ accion: "buscarRegistros", q });
@@ -975,7 +986,7 @@ async function buscarRegistros() {
     if (!r.resultados.length) { out.innerHTML = '<p class="nota">No se encontró ningún registro con ese dato.</p>'; return; }
     out.innerHTML = r.resultados.map(x => `<div class="reg" data-f="${esc(x.folio)}">
         <b>${esc(x.alumno)}</b>
-        <small>${esc(x.colegio)} · ${esc(x.curso)} · Pulsera N.º ${esc(x.folio)}<br>Apoderado/a: ${esc(x.apoderado)} · Último envío: ${esc(x.enviado || "–")}</small>
+        <small>${esc(x.colegio)} · ${esc(x.curso)} · Pulsera N.º ${esc(x.pulsera || x.folio)}<br>Apoderado/a: ${esc(x.apoderado)} · Último envío: ${esc(x.enviado || "–")}</small>
         <input type="email" value="${esc(x.email)}" autocapitalize="none" autocomplete="off" spellcheck="false" aria-label="Correo del apoderado">
         <button class="btn sec" type="button" style="margin-top:.5rem">Reenviar correo</button>
         <p class="res"></p></div>`).join("");
@@ -1186,11 +1197,60 @@ $("clavesForm").addEventListener("submit", async ev => {
   b.disabled = false; b.textContent = "Guardar cambios";
 });
 
+/* ===== Más (solo Admin): pulsera perdida · anular y asignar la de repuesto ===== */
+async function buscarPulseras() {
+  const q = $("puQ").value.trim(), cont = $("puLista");
+  $("puRes").className = "res"; $("puRes").textContent = "";
+  if (q.length < 2 && !/^\d+$/.test(q)) return mostrarRes("puRes", false, "Escribe al menos 2 letras o el número de pulsera.");
+  cont.innerHTML = '<p class="nota">Buscando…</p>';
+  try {
+    const r = await api({ accion: "buscarRegistros", q });
+    if (r.auth === false) return cerrarSesion();
+    cont.textContent = "";
+    if (!r.ok) return mostrarRes("puRes", false, r.msg);
+    if (!r.resultados.length) { cont.innerHTML = '<p class="nota">No hay registros con eso.</p>'; return; }
+    r.resultados.forEach(x => cont.append(filaPulsera(x)));
+  } catch (_) { cont.textContent = ""; mostrarRes("puRes", false, "Sin conexión."); }
+}
+function filaPulsera(x) {
+  const d = document.createElement("div"); d.className = "al-fila"; d.style.flexWrap = "wrap";
+  d.innerHTML = `<div><b>${esc(x.alumno)}</b><small>${esc(x.curso)} · ${x.pulsera ? "Pulsera N.º " + esc(x.pulsera) : x.pulsera === 0 ? "SIN pulsera (anulada)" : "Registro " + esc(x.folio)}</small></div>`;
+  const anular = document.createElement("button"); anular.type = "button"; anular.textContent = "Anular"; anular.hidden = x.pulsera === 0;
+  anular.onclick = async () => {
+    if (anular.dataset.seguro !== "1") { anular.dataset.seguro = "1"; anular.textContent = "Toca otra vez"; return; }
+    anular.disabled = true;
+    try {
+      const r = await api({ accion: "pulseraAnular", folio: x.folio });
+      if (r.auth === false) return cerrarSesion();
+      mostrarRes("puRes", r.ok, r.msg); nominaEn = 0; if (r.ok) $("puQ").value = x.alumno;   // el número cambió: se vuelve a buscar por nombre
+      if (r.ok) buscarPulseras().then(() => mostrarRes("puRes", true, r.msg)); else anular.disabled = false;
+    } catch (_) { anular.disabled = false; mostrarRes("puRes", false, "Sin conexión."); }
+  };
+  const nueva = document.createElement("button"); nueva.type = "button"; nueva.textContent = "Escanear la nueva";
+  nueva.onclick = () => {
+    let ocupado = false;
+    LectorQR.abrir("Pulsera de repuesto para " + x.alumno, async token => {
+      if (ocupado) return; ocupado = true;
+      LectorQR.estado("Asignando…");
+      try {
+        const r = await api({ accion: "pulseraAsignar", folio: x.folio, token });
+        if (r.auth === false) { await LectorQR.cerrar(); return cerrarSesion(); }
+        if (!r.ok) { LectorQR.estado(r.msg, "mal"); ocupado = false; return; }
+        await LectorQR.cerrar(); nominaEn = 0; $("puQ").value = x.alumno; await buscarPulseras(); mostrarRes("puRes", true, r.msg);
+      } catch (_) { LectorQR.estado("Sin conexión.", "mal"); ocupado = false; }
+    }, { boton: "Cancelar" });
+  };
+  d.append(anular, nueva);
+  return d;
+}
+$("puBuscar").onclick = buscarPulseras;
+$("puQ").addEventListener("keydown", e => { if (e.key === "Enter") buscarPulseras(); });
+
 /* ===== Más (solo Admin): panel de alumnos · abrir/cerrar, moderar fotos y revisar el espacio ===== */
 let alDatos = null, alFiltro = "reportadas", alLista = [], alTotal = 0, alVista = "fotos";
 function pintarPanelAlumnos(r) {
   alDatos = r;
-  $("alEstado").innerHTML = r.abierto ? "<b style=\"color:var(--ok)\">ABIERTO</b>: aparece el botón en la portada y los apoderados pueden activarlo." : "<b>Cerrado</b>: nadie ve el botón ni puede activarlo.";
+  $("alEstado").innerHTML = r.abierto ? "<b style=\"color:var(--ok)\">ABIERTO</b>: aparece el botón en la portada y los alumnos pueden registrarse." : "<b>Cerrado</b>: nadie ve el botón ni puede registrarse.";
   $("alActivos").textContent = r.alumnos.filter(a => a.estado === "Activo").length;
   $("alFotos").textContent = r.fotos; $("alRep").textContent = r.reportadas;
   $("alRep").style.color = r.reportadas ? "var(--mal)" : "";
@@ -1267,10 +1327,10 @@ function moderar(f) {
 }
 function pintarAlumnosAdmin() {
   const cont = $("alCuerpo"); cont.textContent = "";
-  if (!alDatos.alumnos.length) { cont.innerHTML = '<p class="nota">Ningún apoderado ha activado el panel todavía.</p>'; return; }
+  if (!alDatos.alumnos.length) { cont.innerHTML = '<p class="nota">Todavía ningún alumno ha pedido su código.</p>'; return; }
   alDatos.alumnos.forEach(a => {
     const d = document.createElement("div"); d.className = "al-fila";
-    d.innerHTML = `<div><b>${esc(a.alumno)}</b><small>${esc(a.curso)} · ${esc(a.colegio)} · ${a.estado === "Activo" ? "Activo" : a.estado === "Desactivado" ? "Desactivado" : "Falta que se registre"} · ${a.fotos} ${a.fotos === 1 ? "foto" : "fotos"}${a.subir ? "" : " · NO puede subir"}</small>${a.correo ? `<small>${esc(a.correo)}</small>` : ""}</div>`;
+    d.innerHTML = `<div><b>${esc(a.alumno)}</b><small>${esc(a.curso)} · ${esc(a.colegio)} · ${a.estado === "Activo" ? "Activo" : a.estado === "Frenado" ? "Frenado" : "Falta que se registre"} · ${a.fotos} ${a.fotos === 1 ? "foto" : "fotos"}${a.subir ? "" : " · NO puede subir"}</small>${a.correo ? `<small>${esc(a.correo)}</small>` : ""}</div>`;
     const b = document.createElement("button"); b.type = "button"; b.textContent = a.subir ? "Bloquear fotos" : "Permitir fotos";
     b.onclick = async () => {
       b.disabled = true;
@@ -1643,7 +1703,7 @@ function entrarPanel() {
 function cerrarSesion() {
   pin = ""; tk = ""; carnet = null; nomina = new Map(); try { sessionStorage.removeItem("pin_g30"); sessionStorage.removeItem("tk_g30"); } catch (_) {}
   clearInterval(window._c); apagar(); cerrar(); cerrarSala(); $("dj").classList.add("oculto"); musDj = null; cerrarClaves();
-  $("alModal").classList.add("oculto"); $("alCuerpo").textContent = ""; alDatos = null; GaleriaG30.vaciar(); document.querySelectorAll(".gx-visor").forEach(v => v.remove());
+  LectorQR.cerrar(); $("puLista").textContent = ""; $("puQ").value = ""; $("alModal").classList.add("oculto"); $("alCuerpo").textContent = ""; alDatos = null; GaleriaG30.vaciar(); document.querySelectorAll(".gx-visor").forEach(v => v.remove());
   $("pin").value = "";
   elegirAcceso();
 }

@@ -238,7 +238,7 @@
       <button class="acceso" type="button" data-ir="autorizados"><span class="ico">👨‍👩‍👧</span><span><strong>Autorizados para el retiro</strong><small id="rAut"></small></span><span class="der ok">Ver</span></button>
       <button class="acceso" type="button" data-ir="foto"><span class="ico">📸</span><span><strong>Foto del alumno</strong><small>Ayudará a encontrar sus fotos de la fiesta</small></span><span class="der" id="rFoto"></span></button>
       <button class="acceso" type="button" data-ir="musica"><span class="ico">🎶</span><span><strong>Música de la fiesta</strong><small>Pide, vota y dedícale una canción</small></span><span class="der nuevo" id="rMus">Nuevo</span></button>
-      <button class="acceso" type="button" data-ir="panel"><span class="ico">📱</span><span><strong>Panel de tu hijo/a</strong><small>Actívalo y controla su acceso</small></span><span class="der" id="rPanel" hidden></span></button>
+      <button class="acceso" type="button" data-ir="panel"><span class="ico">📱</span><span><strong>Panel y pulsera</strong><small>Su acceso, sus fotos y pulsera perdida</small></span><span class="der" id="rPanel" hidden></span></button>
       <button class="acceso" type="button" data-ir="recuerdos"><span class="ico">🎞️</span><span><strong>Fotos del evento</strong><small>Disponibles después de la fiesta</small></span><span class="der pronto">Pronto</span></button>
       <div class="tarjeta" style="margin-top:1rem">
         <h2>La fiesta</h2>
@@ -524,6 +524,7 @@ function ir(v) {
 document.querySelectorAll("[data-ir]").forEach(b => b.onclick = () => ir(b.dataset.ir));
 $("avatar").onclick = () => ir("foto");
 
+function pintarPastilla() { const a = actual(); $("pulsera").textContent = a.pulsera === 0 ? "Pulsera anulada" : "Pulsera N.º " + (a.pulsera || a.folio); }
 const iniciales = n => String(n).trim().split(/\s+/).slice(0, 2).map(p => p.charAt(0).toUpperCase()).join("");
 function pintar() {
   const a = actual();
@@ -536,7 +537,7 @@ function pintar() {
   });
   $("nombre").textContent = a.alumno;
   $("curso").textContent = a.curso + " · " + a.colegio;
-  $("pulsera").textContent = "Pulsera N.º " + a.folio;
+  pintarPastilla();
   const n = a.autorizados.filter(p => p.nombre).length;
   $("rAut").textContent = n ? `Tú y ${n} ${n === 1 ? "persona más" : "personas más"}` : "Solo tú";
   $("rFoto").textContent = a.foto ? "Lista ✓" : "Falta";
@@ -919,9 +920,9 @@ async function quitarCancion(id, texto) {
   } catch (_) { avisar(SIN_RED, true); }
 }
 
-/* ---------- Panel del alumno: activar, restablecer su clave y ver sus fotos ---------- */
-const paneles = {};   // folio → { abierto, panel }
-const pedirPanel = (folio, hacer, extra) => api(Object.assign({ accion: "portalPanelAlumno", sesion, folio, hacer }, extra));
+/* ---------- Panel del alumno y su pulsera ---------- */
+const paneles = {};   // folio → { abierto, panel, pulsera }
+const pedirPanel = (folio, hacer) => api({ accion: "portalPanelAlumno", sesion, folio, hacer });
 async function cargarPanel() {
   const a = actual(), folio = a.folio, caja = $("panelCaja");
   $("gHijo").textContent = ""; $("panelFotos").hidden = true;
@@ -929,64 +930,55 @@ async function cargarPanel() {
   try {
     const r = await pedirPanel(folio, "estado");
     if (r.sesion === false) return cerrarSesion(r.msg);
-    if (!r.ok) { caja.innerHTML = '<div class="tarjeta"><p class="nota">El panel de alumnos estará disponible muy pronto.</p></div>'; return; }
+    if (!r.ok || !r.pulsera) { caja.innerHTML = '<div class="tarjeta"><p class="nota">El panel de alumnos estará disponible muy pronto.</p></div>'; return; }
     paneles[folio] = r;
     if (datos && actual().folio === folio) pintarPanel();
   } catch (_) { if (!paneles[folio]) caja.innerHTML = '<div class="tarjeta"><p class="nota">Sin conexión. Vuelve a intentarlo.</p></div>'; }
 }
-const PASOS_AL = '<ol class="pasos-al"><li>Tu hijo/a abre <b>Panel de alumnos</b> en la página de la fiesta y toca "Es mi primera vez".</li><li>Escribe la clave y escanea <b>su</b> pulsera.</li><li>Registra su correo personal y crea su propia clave.</li></ol>';
-function pintarPanel(clave) {
-  const a = actual(), r = paneles[a.folio], p = r.panel, nombre = primerNombre(a.alumno), caja = $("panelCaja");
-  const activo = p.estado === "Activo", espera = p.estado === "Por registrar";
-  $("rPanel").hidden = !p.estado; $("rPanel").textContent = activo ? "Activo ✓" : espera ? "Pendiente" : "Apagado"; $("rPanel").className = "der " + (activo ? "ok" : "falta");
-  $("panelFotos").hidden = !p.estado;
-  if (clave) {
-    caja.innerHTML = `<div class="tarjeta"><h2>Clave de activación de ${esc(nombre)}</h2><div class="clave-grande">${esc(clave)}</div>
-      <p class="nota" style="margin-bottom:.6rem">Entrégasela solo a tu hijo/a. Vence en 7 días y no se vuelve a mostrar.</p>${PASOS_AL}
-      <button class="btn" id="claveLista" type="button" style="margin-top:1rem">Ya se la di</button></div>`;
-    $("claveLista").onclick = () => pintarPanel();
-    window.scrollTo(0, 0); return;
-  }
-  if (!r.abierto && !p.estado) { caja.innerHTML = `<div class="tarjeta recuerdos"><div class="grande">📱</div><h2 style="margin:.6rem 0;font-size:1rem">Muy pronto</h2><p class="nota">El panel de alumnos todavía no está abierto. Te avisaremos cuando puedas activarlo.</p></div>`; return; }
-  if (!p.estado || p.estado === "Desactivado") {
-    caja.innerHTML = `<div class="tarjeta"><h2>Panel de ${esc(nombre)}</h2>
-      <p class="nota" style="margin-bottom:.9rem">Con su panel puede subir fotos, etiquetar compañeros escaneando su pulsera y pedir canciones. Las fotos solo las ven quien las sube, los etiquetados, sus apoderados y la organización.</p>
-      <label class="chk"><input type="checkbox" id="alConsiento"><span>Como apoderado/a, <b>autorizo</b> que mi hijo/a tenga este panel, que registre su correo personal, y que pueda subir fotos y aparecer etiquetado/a en fotos de la fiesta.</span></label>
-      <button class="btn" id="alActivar" type="button" style="margin-top:1rem" disabled>Activar su panel</button></div>`;
-    $("alConsiento").onchange = e => $("alActivar").disabled = !e.target.checked || !r.abierto;
-    $("alActivar").onclick = () => hacerPanel("activar", { consiento: true }, $("alActivar"));
-    return;
-  }
-  caja.innerHTML = `<div class="tarjeta"><h2>Panel de ${esc(nombre)}</h2>
-    <dl class="datos">
-      <div><dt>Estado</dt><dd>${activo ? "Activo ✓" : p.pendiente ? "Esperando que se registre" : "La clave venció"}</dd></div>
-      ${p.correo ? `<div><dt>Su correo</dt><dd>${esc(p.correo)}</dd></div>` : ""}
-      ${p.ingreso ? `<div><dt>Último ingreso</dt><dd>${esc(p.ingreso)}</dd></div>` : ""}
-    </dl>
-    ${espera ? '<p class="nota" style="margin-top:.7rem">Si perdió la clave de activación, genera una nueva.</p>' : ""}
-    <button class="btn" id="alRestablecer" type="button" style="margin-top:1rem">${activo ? "Restablecer su clave" : "Generar clave nueva"}</button>
-    ${p.correo ? '<button class="btn sec" id="alQuitar" type="button">Quitar su correo</button>' : ""}
-    <button class="btn peligro" id="alApagar" type="button" style="margin-top:.9rem">Desactivar su panel</button></div>`;
-  const preguntar = (titulo, texto, si, hacer, peligro) => {
-    abrirHoja(`<h1 style="font-size:1.3rem">${esc(titulo)}</h1><p class="nota" style="margin-bottom:1rem">${esc(texto)}</p>
-      <button class="btn${peligro ? " peligro" : ""}" id="pSi" type="button">${esc(si)}</button><button class="btn sec" id="pNo" type="button">Cancelar</button>`);
-    $("pNo").onclick = cerrarHoja;
-    $("pSi").onclick = () => hacerPanel(hacer, {}, $("pSi"));
+const PASOS_AL = '<ol class="pasos-al"><li>Tu hijo/a abre <b>Panel de alumnos</b> en la página de la fiesta y toca "Es mi primera vez".</li><li>Escribe <b>tu correo</b> (el de este portal).</li><li>Te llega un código. Al dárselo, <b>autorizas</b> su panel.</li><li>Registra su correo personal y crea su clave.</li></ol>';
+function pintarPanel() {
+  const a = actual(), r = paneles[a.folio], p = r.panel, pul = r.pulsera, nombre = primerNombre(a.alumno), caja = $("panelCaja");
+  const activo = p.estado === "Activo", frenado = p.estado === "Frenado";
+  $("rPanel").hidden = false; $("rPanel").textContent = pul.anulada ? "Sin pulsera" : activo ? "Activo ✓" : frenado ? "Frenado" : "Sin crear";
+  $("rPanel").className = "der " + (activo && !pul.anulada ? "ok" : "falta");
+  $("panelFotos").hidden = false;
+  let panel;
+  if (activo) panel = `<dl class="datos"><div><dt>Estado</dt><dd>Activo ✓</dd></div><div><dt>Su correo</dt><dd>${esc(p.correo)}</dd></div>${p.ingreso ? `<div><dt>Último ingreso</dt><dd>${esc(p.ingreso)}</dd></div>` : ""}</dl>
+      <button class="btn" id="alRestablecer" type="button" style="margin-top:1rem">Restablecer acceso</button>
+      <p class="nota" style="margin:.6rem 0 .9rem">Úsalo si olvidó su clave, escribió mal su correo o no fue tu hijo/a quien se registró.</p>
+      <button class="btn peligro" id="alFrenar" type="button">Frenar acceso</button>`;
+  else if (frenado) panel = `<p class="nota" style="margin-bottom:1rem">🛑 <b style="color:#fff">Frenado:</b> ${esc(nombre)} no puede entrar al panel ni pedir códigos.</p><button class="btn" id="alReactivar" type="button">Reactivar acceso</button>`;
+  else panel = (r.abierto ? `<p class="nota" style="margin-bottom:.6rem">${esc(nombre)} todavía no crea su panel. Así se hace:</p>${PASOS_AL}<p class="nota" style="margin:.7rem 0 1rem">Podrá subir fotos, etiquetar escaneando pulseras y pedir canciones.</p>`
+      : '<p class="nota" style="margin-bottom:1rem">El panel de alumnos todavía no está abierto.</p>')
+      + '<button class="btn peligro" id="alFrenar" type="button">No autorizar (frenar acceso)</button>';
+  const pulsera = pul.anulada
+    ? `<p class="nota">⛔ <b style="color:#fff">Su pulsera está anulada.</b> Pide una de repuesto a la organización. Cuando la tenga, ${esc(nombre)} entra a su panel y toca <b>Escanear mi pulsera nueva</b>.</p>`
+    : `<p style="margin-bottom:.9rem">Usa la <b>pulsera N.º ${esc(pul.numero)}</b></p><button class="btn sec" id="alPerdida" type="button" style="margin-top:0"${pul.bloqueado ? " disabled" : ""}>Se perdió la pulsera</button>${pul.bloqueado ? '<p class="nota" style="margin-top:.6rem">Durante la fiesta habla con la organización en la puerta.</p>' : ""}`;
+  caja.innerHTML = `<div class="tarjeta"><h2>Panel de ${esc(nombre)}</h2>${panel}</div><div class="tarjeta"><h2>Su pulsera</h2>${pulsera}</div>`;
+  const preguntar = (id, titulo, texto, si, hacer, peligro) => {
+    if (!$(id)) return;
+    $(id).onclick = () => {
+      abrirHoja(`<h1 style="font-size:1.3rem">${esc(titulo)}</h1><p class="nota" style="margin-bottom:1rem">${esc(texto)}</p>
+        <button class="btn${peligro ? " peligro" : ""}" id="pSi" type="button">${esc(si)}</button><button class="btn sec" id="pNo" type="button">Cancelar</button>`);
+      $("pNo").onclick = cerrarHoja;
+      $("pSi").onclick = () => hacerPanel(hacer, $("pSi"));
+    };
   };
-  $("alRestablecer").onclick = () => preguntar(activo ? "¿Restablecer su clave?" : "¿Generar una clave nueva?", "Se cerrarán sus sesiones y tendrá que registrarse de nuevo con su pulsera y la clave nueva. Sus fotos se conservan.", "Sí, generar", "restablecer");
-  if ($("alQuitar")) $("alQuitar").onclick = () => preguntar("¿Quitar su correo?", "Se cerrarán sus sesiones y dejará de recibir avisos. Para volver a entrar necesitará una clave nueva.", "Sí, quitarlo", "quitarCorreo", true);
-  $("alApagar").onclick = () => preguntar("¿Desactivar su panel?", "No podrá entrar hasta que vuelvas a activarlo. Sus fotos se conservan.", "Sí, desactivar", "desactivar", true);
+  preguntar("alRestablecer", "¿Restablecer su acceso?", "Se cerrará su sesión y quedará libre el cupo: tendrá que hacer la primera vez de nuevo, con un código que te llegará. Sus fotos se conservan.", "Sí, restablecer", "restablecer");
+  preguntar("alFrenar", "¿Frenar el acceso?", "No podrá entrar ni pedir códigos hasta que lo reactives. Sus fotos se conservan.", "Sí, frenar", "frenar", true);
+  preguntar("alPerdida", "¿Se perdió la pulsera?", "La pulsera N.º " + pul.numero + " quedará anulada al instante: no servirá en la puerta. Después hay que pedir una de repuesto a la organización.", "Sí, anularla", "pulseraPerdida", true);
+  if ($("alReactivar")) $("alReactivar").onclick = () => hacerPanel("reactivar", $("alReactivar"));
 }
-async function hacerPanel(hacer, extra, boton) {
+async function hacerPanel(hacer, boton) {
   const a = actual(), folio = a.folio, texto = boton.textContent;
   boton.disabled = true; boton.textContent = "Un momento…";
   try {
-    const r = await pedirPanel(folio, hacer, extra);
+    const r = await pedirPanel(folio, hacer);
     if (r.sesion === false) return cerrarSesion(r.msg);
-    if (!r.ok) { avisar(r.msg || "No se pudo.", true); boton.disabled = false; boton.textContent = texto; return; }
-    paneles[folio] = r; cerrarHoja();
-    if (datos && actual().folio === folio) pintarPanel(r.activacion);
-    if (!r.activacion) avisar(hacer === "desactivar" ? "Panel desactivado" : "Listo");
+    if (!r.ok) { cerrarHoja(); avisar(r.msg || "No se pudo.", true); boton.disabled = false; boton.textContent = texto; return; }
+    paneles[folio] = r; cerrarHoja(); a.pulsera = r.pulsera.anulada ? 0 : r.pulsera.numero;
+    if (datos && actual().folio === folio) { pintarPastilla(); pintarPanel(); }
+    avisar({ frenar: "Acceso frenado", reactivar: "Acceso reactivado", restablecer: "Acceso restablecido", pulseraPerdida: "Pulsera anulada. Avisamos a la organización." }[hacer]);
   } catch (_) { avisar(SIN_RED, true); boton.disabled = false; boton.textContent = texto; }
 }
 $("verFotosHijo").onclick = async () => {

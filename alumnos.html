@@ -85,16 +85,10 @@
   .aviso-flotante { position: fixed; z-index: 60; left: 50%; transform: translateX(-50%); top: max(.8rem, env(safe-area-inset-top)); width: min(calc(100% - 1.6rem), 27rem); border-radius: 1rem; padding: .85rem 1rem; font-weight: 700; font-size: .9rem; text-align: center; background: #0f5b40; border: 1px solid rgba(46,229,157,.7); box-shadow: 0 1rem 2rem rgba(0,0,0,.5); }
   .aviso-flotante.mal { background: #6d1a26; border-color: rgba(255,90,110,.8); }
 
-  /* escáner de pulseras */
-  .escaner { position: fixed; inset: 0; z-index: 50; background: #04060f; display: flex; flex-direction: column; padding: max(.8rem, env(safe-area-inset-top)) 1rem max(1rem, env(safe-area-inset-bottom)); }
-  .escaner h2 { font-size: 1.15rem; text-align: center; margin-bottom: .6rem; }
-  #lector { flex: 1; min-height: 0; width: 100%; border-radius: 1.2rem; overflow: hidden; background: #000; }
-  #lector video { width: 100% !important; height: 100% !important; object-fit: cover; }
-  .esc-estado { min-height: 3.2rem; display: grid; place-items: center; text-align: center; font-weight: 800; padding: .5rem 0; }
-  .esc-estado.ok { color: #7ff3c4; } .esc-estado.mal { color: #ff9aa6; }
-  .escaner .chips { margin: 0 0 .7rem; justify-content: center; max-height: 6.5rem; overflow-y: auto; }
-  .escaner .btn + label, .escaner label.foto-qr { display: block; text-align: center; margin-top: .7rem; color: var(--cian); font-weight: 700; font-size: .88rem; text-decoration: underline; cursor: pointer; }
-  .escaner label.foto-qr input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+  .opcion { display: flex; gap: .7rem; align-items: center; margin: 0 0 .5rem; padding: .85rem 1rem; border-radius: 1rem; border: 1px solid var(--borde); background: var(--vidrio); color: var(--texto); font-size: .95rem; cursor: pointer; }
+  .opcion input { accent-color: var(--oro); width: 1.15rem; height: 1.15rem; flex: none; }
+  .sin-pulsera { padding: 1rem; border-radius: 1.1rem; background: rgba(255,90,110,.14); border: 1px solid rgba(255,90,110,.55); margin-bottom: 1rem; }
+  .sin-pulsera p { font-size: .9rem; line-height: 1.5; margin: .3rem 0 .8rem; }
 
   /* música */
   .cancion-fila { display: flex; align-items: center; gap: .8rem; min-width: 0; flex: 1; }
@@ -146,50 +140,50 @@
       <button class="btn" id="bEntrar" type="submit" style="margin-top:1.1rem">Entrar</button>
     </form>
     <button class="btn sec" id="bPrimera" type="button">✨ Es mi primera vez</button>
-    <p class="nota centro" style="margin-top:1rem">¿Olvidaste tu clave? Tu apoderado puede restablecerla en el Portal de apoderados.</p>
+    <p class="nota centro" style="margin-top:1rem">¿Olvidaste tu clave? Pide a tu apoderado que toque <b>Restablecer acceso</b> en su portal y después entra por "Es mi primera vez".</p>
   </section>
 
   <section id="registro" hidden>
     <button class="enlace" id="rVolver" type="button" style="padding-left:0">← Volver</button>
     <div class="pasos" aria-hidden="true"><i></i><i></i><i></i></div>
 
-    <div id="r1">
-      <h1>Primero, tú</h1>
-      <p class="sub">Necesitas dos cosas: la <b>clave de activación</b> que genera tu apoderado en su portal, y <b>tu pulsera</b>.</p>
+    <form id="r1" novalidate>
+      <h1>Primera vez</h1>
+      <p class="sub">Escribe el <b>correo de tu apoderado</b>. Le llegará un código: pídeselo.</p>
       <div class="tarjeta">
-        <label for="rActiva">Clave de activación (6 números)</label>
-        <input type="text" id="rActiva" class="codigo" inputmode="numeric" maxlength="6" autocomplete="off" placeholder="••••••">
+        <label for="rApoderado">Correo de tu apoderado</label>
+        <input type="email" id="rApoderado" inputmode="email" autocapitalize="none" autocorrect="off" spellcheck="false" autocomplete="off" placeholder="nombre@gmail.com">
         <p class="msg mal" id="m1" role="alert" hidden></p>
-        <button class="btn" id="bPulsera" type="button" style="margin-top:1.1rem">📷 Escanear mi pulsera</button>
+        <button class="btn" id="bPedir" type="submit" style="margin-top:1.1rem">Enviarle el código</button>
       </div>
-    </div>
+      <p class="nota centro">Es el correo que usó para registrarte en la fiesta.</p>
+    </form>
 
     <form id="r2" novalidate hidden>
-      <h1 id="rHola">Hola</h1>
-      <p class="sub">Escribe <b>tu correo personal</b>. Ahí te avisaremos cuando te etiqueten.</p>
+      <h1>Pídele el código</h1>
+      <p class="sub">Se lo enviamos a <b id="rPara" style="overflow-wrap:anywhere"></b>. Vence en 24 horas, así que puedes volver más tarde.</p>
       <div class="tarjeta">
-        <label for="rCorreo">Tu correo</label>
-        <input type="email" id="rCorreo" autocomplete="email" inputmode="email" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="nombre@gmail.com">
+        <label for="rCod">Código de 6 números</label>
+        <input type="text" id="rCod" class="codigo" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="••••••">
         <p class="msg mal" id="m2" role="alert" hidden></p>
-        <button class="btn" id="bCodigo" type="submit" style="margin-top:1.1rem">Enviarme el código</button>
+        <button class="btn" id="bCodigo" type="submit" style="margin-top:1.1rem">Continuar</button>
       </div>
+      <p class="centro"><button class="enlace" id="rOtro" type="button">Cambiar correo o pedir otro código</button></p>
     </form>
 
     <form id="r3" novalidate hidden>
       <h1>Último paso</h1>
-      <p class="sub">Enviamos un código a <b id="rPara" style="overflow-wrap:anywhere"></b>. Si no lo ves, mira en spam.</p>
+      <p class="sub" id="rQuien"></p>
+      <div id="rNombres"></div>
       <div class="tarjeta">
-        <label for="rCod">Código de 6 números</label>
-        <input type="text" id="rCod" class="codigo" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="••••••">
+        <label for="rCorreo">Tu correo personal</label>
+        <input type="email" id="rCorreo" autocomplete="email" inputmode="email" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="nombre@gmail.com">
         <label for="rClave">Crea tu clave (6 o más caracteres)</label>
         <input type="password" id="rClave" autocomplete="new-password">
-        <label for="rClave2">Repite tu clave</label>
-        <input type="password" id="rClave2" autocomplete="new-password">
         <label class="chk" style="margin-top:.8rem"><input type="checkbox" id="rVer"><span>Mostrar la clave</span></label>
         <p class="msg mal" id="m3" role="alert" hidden></p>
         <button class="btn" id="bCrear" type="submit" style="margin-top:1.1rem">Crear mi panel</button>
       </div>
-      <p class="centro"><button class="enlace" id="rOtro" type="button">Cambiar correo o pedir otro código</button></p>
     </form>
   </section>
 
@@ -198,6 +192,8 @@
       <div><small id="curso"></small><b id="saludo"></b></div>
       <button class="redondo" id="bAjustes" type="button" aria-label="Ajustes">⚙️</button>
     </header>
+
+    <div class="sin-pulsera" id="sinPulsera" hidden><b>📿 Tu pulsera fue anulada</b><p>Pide una de repuesto a la organización y vincúlala aquí. Tus fotos siguen guardadas.</p><button class="btn" id="bPulsera" type="button">📷 Escanear mi pulsera nueva</button></div>
 
     <div id="v-subir">
       <div id="cola"></div>
@@ -256,20 +252,12 @@
 </nav>
 
 <div class="velo" id="velo" role="dialog" aria-modal="true" hidden><div class="hoja" id="hoja"></div></div>
-<div class="escaner" id="escaner" role="dialog" aria-modal="true" aria-label="Escáner de pulseras" hidden>
-  <h2 id="escTitulo">Apunta al QR de la pulsera</h2>
-  <div id="lector"></div>
-  <p class="esc-estado" id="escEstado" role="status"></p>
-  <div class="chips" id="escChips"></div>
-  <button class="btn" id="escListo" type="button">Listo</button>
-  <label class="foto-qr">¿No lee? Saca una foto del QR<input type="file" id="fQr" accept="image/*" capture="environment"></label>
-  <div id="lectorFoto" hidden></div>
-</div>
 <div class="aviso-flotante" id="flota" role="status" hidden></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
 <script src="config.js"></script>
 <script src="galeria.js"></script>
+<script src="lector.js"></script>
 <script>
 const $ = id => document.getElementById(id);
 const API = window.API_URL;
@@ -319,50 +307,9 @@ function confirmar(titulo, texto, si, peligro) {
 function cerrarSesion(texto) {
   sesion = ""; yo = null; GaleriaG30.vaciar(); musica = null;
   guardado.poner("localStorage", SESION, null);
-  document.querySelectorAll(".gx-visor").forEach(v => v.remove());
+  document.querySelectorAll(".gx-visor").forEach(v => v.remove()); LectorQR.cerrar();
   cerrarHoja(); document.body.style.overflow = ""; pantalla("entrada"); mensaje("eMsg", texto || "");
 }
-
-/* ---------- Escáner de pulseras ---------- */
-const extraerToken = txt => { txt = String(txt || "").trim(); const i = txt.lastIndexOf("#"); return (i >= 0 ? txt.slice(i + 1) : txt).trim(); };
-let lector = null, alLeerPulsera = null, ultimoLeido = "", ultimoEn = 0, alCerrarEscaner = null;
-const nuevoLector = id => new Html5Qrcode(id, { verbose: false, formatsToSupport: [Html5QrcodeSupportedFormats.QR_CODE], experimentalFeatures: { useBarCodeDetectorIfSupported: true } });
-function estadoEscaner(t, tipo) { const e = $("escEstado"); e.textContent = t || ""; e.className = "esc-estado" + (tipo ? " " + tipo : ""); }
-async function abrirEscaner(titulo, alLeer, alCerrar) {
-  alLeerPulsera = alLeer; alCerrarEscaner = alCerrar; ultimoLeido = "";
-  $("escTitulo").textContent = titulo; $("escChips").textContent = ""; $("escaner").hidden = false; document.body.style.overflow = "hidden";
-  estadoEscaner("Encendiendo la cámara…");
-  if (typeof Html5Qrcode === "undefined") return estadoEscaner("No se pudo cargar el escáner. Revisa la conexión.", "mal");
-  const cfg = { fps: 12, qrbox: (w, h) => { const l = Math.floor(Math.min(w, h) * .85); return { width: l, height: l }; } };
-  const leer = txt => {
-    const t = extraerToken(txt), ahora = Date.now();
-    if (!t || (t === ultimoLeido && ahora - ultimoEn < 4000)) { ultimoEn = ahora; return; }
-    ultimoLeido = t; ultimoEn = ahora;
-    if (navigator.vibrate) navigator.vibrate(40);
-    alLeerPulsera && alLeerPulsera(t);
-  };
-  try {
-    const l = nuevoLector("lector");
-    lector = l;
-    await l.start({ facingMode: "environment" }, cfg, leer, () => {});
-    if (lector !== l || $("escaner").hidden) { try { await l.stop(); l.clear(); } catch (_) {} return; }
-    estadoEscaner("Busca el código QR de la pulsera");
-  } catch (_) { lector = null; estadoEscaner("No se pudo abrir la cámara. Da permiso, o usa la foto del QR.", "mal"); }
-}
-async function cerrarEscaner() {
-  $("escaner").hidden = true; document.body.style.overflow = "";
-  const l = lector, fin = alCerrarEscaner; lector = null; alLeerPulsera = null; alCerrarEscaner = null;
-  if (l) { try { await l.stop(); l.clear(); } catch (_) {} }
-  fin && fin();
-}
-$("escListo").onclick = cerrarEscaner;
-$("fQr").onchange = async e => {
-  const f = e.target.files[0]; e.target.value = "";
-  if (!f) return;
-  estadoEscaner("Leyendo la foto…");
-  try { const txt = await nuevoLector("lectorFoto").scanFile(f, false); ultimoLeido = ""; alLeerPulsera && alLeerPulsera(extraerToken(txt)); }
-  catch (_) { estadoEscaner("No encontramos el QR en la foto. Acércate y que se vea nítido.", "mal"); }
-};
 
 /* ---------- Entrada y primera vez ---------- */
 const correoFormato = v => String(v || "").replace(/\s+/g, "").toLowerCase();
@@ -380,70 +327,95 @@ $("fEntrar").addEventListener("submit", async ev => {
   } catch (_) { mensaje("eMsg", SIN_RED); }
   b.disabled = false; b.textContent = "Entrar";
 });
-let reg = { paso: "", email: "", alumno: "", n: 1 };
+let reg = { n: 1, apoderado: "", paso: "", alumnos: [] };
 function pasoRegistro(n) {
   reg.n = n; pantalla("registro");
   [1, 2, 3].forEach(i => $("r" + i).hidden = i !== n);
   document.querySelectorAll(".pasos i").forEach((x, i) => x.classList.toggle("on", i < n));
-  if (n === 2) $("rHola").textContent = "Hola, " + (reg.alumno.split(/\s+/)[0] || "");
-  if (n === 3) $("rPara").textContent = reg.email;
-  guardado.poner("sessionStorage", PASO, n > 1 ? JSON.stringify(Object.assign({ hora: Date.now() }, reg)) : null);   // si vas al correo y se recarga, sigues aquí
+  if (n === 1) $("rApoderado").value = reg.apoderado;
+  if (n === 2) $("rPara").textContent = reg.apoderado;
+  if (n === 3) pintarNombres();
+  // el apoderado puede tardar: el paso se recuerda en este teléfono hasta 24 horas
+  guardado.poner("localStorage", PASO, n > 1 ? JSON.stringify({ apoderado: reg.apoderado, hora: reg.hora }) : null);
 }
-$("bPrimera").onclick = () => { mensaje("m1", ""); $("rActiva").value = ""; pasoRegistro(1); };
-$("rVolver").onclick = () => { if (reg.n > 1) return pasoRegistro(reg.n - 1 === 2 ? 2 : 1); guardado.poner("sessionStorage", PASO, null); pantalla("entrada"); };
-$("rActiva").addEventListener("input", e => e.target.value = e.target.value.replace(/\D/g, "").slice(0, 6));
-$("bPulsera").onclick = () => {
-  mensaje("m1", "");
-  const activacion = $("rActiva").value;
-  if (activacion.length !== 6) return mensaje("m1", "Primero escribe los 6 números de la clave de activación.");
-  let ocupado = false;
-  abrirEscaner("Escanea TU pulsera", async token => {
-    if (ocupado) return; ocupado = true;
-    estadoEscaner("Revisando…");
-    try {
-      const r = await api({ accion: "alumnoActivar", token, activacion });
-      if (r.ok) { reg = { paso: r.paso, email: "", alumno: r.alumno, n: 2 }; $("rCorreo").value = r.correoPrevio || ""; await cerrarEscaner(); pasoRegistro(2); return; }
-      if (r.campo === "pulsera") { estadoEscaner(r.msg, "mal"); ocupado = false; return; }
-      await cerrarEscaner();
-      if (r.cerrado) return pantalla("cerrado");
-      mensaje("m1", r.msg || "No se pudo continuar.");
-    } catch (_) { estadoEscaner(SIN_RED, "mal"); ocupado = false; }
+function pintarNombres() {
+  const varios = reg.alumnos.length > 1, caja = $("rNombres");
+  caja.textContent = "";
+  $("rQuien").innerHTML = varios ? "¿Quién eres? Elige tu nombre y crea tu acceso." : `Vas a crear el panel de <b>${esc(reg.alumnos[0].alumno)}</b> (${esc(reg.alumnos[0].curso)}).`;
+  if (!varios) return;
+  reg.alumnos.forEach(a => {
+    const l = document.createElement("label"); l.className = "opcion";
+    l.innerHTML = `<input type="radio" name="quien" value="${a.folio}"><span><b>${esc(a.alumno)}</b><br><span class="nota">${esc(a.curso)} · ${esc(a.colegio)}</span></span>`;
+    caja.append(l);
   });
-  $("escListo").textContent = "Cancelar";
-};
-async function pedirCodigo(boton, texto, idMsg) {
-  const email = correoFormato($("rCorreo").value); $("rCorreo").value = email;
-  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return mensaje(idMsg, "Escribe un correo válido (ej.: nombre@gmail.com).");
-  boton.disabled = true; boton.textContent = "Enviando…"; mensaje(idMsg, "");
-  try {
-    const r = await api({ accion: "alumnoCorreo", paso: reg.paso, email });
-    if (r.ok) { reg.email = email; $("rCod").value = ""; pasoRegistro(3); }
-    else if (r.vencido) { pasoRegistro(1); mensaje("m1", r.msg); }
-    else mensaje(idMsg, r.msg || "No se pudo enviar.");
-  } catch (_) { mensaje(idMsg, SIN_RED); }
-  boton.disabled = false; boton.textContent = texto;
 }
-$("r2").addEventListener("submit", ev => { ev.preventDefault(); pedirCodigo($("bCodigo"), "Enviarme el código", "m2"); });
-$("rOtro").onclick = () => pasoRegistro(2);
+$("bPrimera").onclick = () => { reg = { n: 1, apoderado: reg.apoderado, paso: "", alumnos: [] }; mensaje("m1", ""); pasoRegistro(1); };
+$("rVolver").onclick = () => { if (reg.n > 1) return pasoRegistro(reg.n - 1); pantalla("entrada"); };
+$("r1").addEventListener("submit", async ev => {
+  ev.preventDefault(); mensaje("m1", "");
+  const apoderado = correoFormato($("rApoderado").value); $("rApoderado").value = apoderado;
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(apoderado)) return mensaje("m1", "Escribe un correo válido (ej.: nombre@gmail.com).");
+  const b = $("bPedir"); b.disabled = true; b.textContent = "Revisando…";
+  try {
+    const r = await api({ accion: "alumnoPedir", correoApoderado: apoderado });
+    if (r.cerrado) pantalla("cerrado");
+    else if (r.ok) { reg.apoderado = apoderado; reg.hora = Date.now(); $("rCod").value = ""; mensaje("m2", ""); pasoRegistro(2); avisar("✉️ Le enviamos el código a tu apoderado"); }
+    else mensaje("m1", r.msg || "No se pudo enviar.");
+  } catch (_) { mensaje("m1", SIN_RED); }
+  b.disabled = false; b.textContent = "Enviarle el código";
+});
+$("rOtro").onclick = () => { mensaje("m1", ""); pasoRegistro(1); };
 $("rCod").addEventListener("input", e => e.target.value = e.target.value.replace(/\D/g, "").slice(0, 6));
-$("rVer").onchange = e => ["rClave", "rClave2"].forEach(i => $(i).type = e.target.checked ? "text" : "password");
+$("r2").addEventListener("submit", async ev => {
+  ev.preventDefault(); mensaje("m2", "");
+  const codigo = $("rCod").value;
+  if (codigo.length !== 6) return mensaje("m2", "Escribe los 6 números que le llegaron a tu apoderado.");
+  const b = $("bCodigo"); b.disabled = true; b.textContent = "Revisando…";
+  try {
+    const r = await api({ accion: "alumnoCodigo", correoApoderado: reg.apoderado, codigo });
+    if (r.cerrado) pantalla("cerrado");
+    else if (r.ok) { reg.paso = r.paso; reg.alumnos = r.alumnos; mensaje("m3", ""); pasoRegistro(3); }
+    else mensaje("m2", r.msg || "No se pudo continuar.");
+  } catch (_) { mensaje("m2", SIN_RED); }
+  b.disabled = false; b.textContent = "Continuar";
+});
+$("rVer").onchange = e => $("rClave").type = e.target.checked ? "text" : "password";
 $("r3").addEventListener("submit", async ev => {
   ev.preventDefault(); mensaje("m3", "");
-  const codigo = $("rCod").value, clave = $("rClave").value;
-  if (codigo.length !== 6) return mensaje("m3", "Escribe los 6 números que te llegaron.");
+  const elegido = reg.alumnos.length > 1 ? Number((document.querySelector("input[name=quien]:checked") || {}).value) : reg.alumnos[0].folio;
+  const email = correoFormato($("rCorreo").value), clave = $("rClave").value; $("rCorreo").value = email;
+  if (!elegido) return mensaje("m3", "Elige tu nombre.");
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return mensaje("m3", "Escribe tu correo (ej.: nombre@gmail.com).");
   if (clave.length < 6) return mensaje("m3", "Tu clave debe tener al menos 6 caracteres.");
-  if (clave !== $("rClave2").value) return mensaje("m3", "Las dos claves no son iguales.");
   const b = $("bCrear"); b.disabled = true; b.textContent = "Creando…";
   try {
-    const r = await api({ accion: "alumnoCrear", paso: reg.paso, email: reg.email, codigo, clave });
-    if (r.ok) {
-      guardado.poner("sessionStorage", PASO, null); guardado.poner("localStorage", CORREO, reg.email);
-      $("rClave").value = $("rClave2").value = ""; entrarCon(r); avisar("✓ ¡Tu panel está listo!");
+    const r = await api({ accion: "alumnoCrear", paso: reg.paso, folio: elegido, email, clave });
+    if (r.cerrado) pantalla("cerrado");
+    else if (r.ok) {
+      guardado.poner("localStorage", PASO, null); guardado.poner("localStorage", CORREO, email);
+      $("rClave").value = ""; reg = { n: 1, apoderado: "", paso: "", alumnos: [] }; entrarCon(r); avisar("✓ ¡Tu panel está listo!");
     } else if (r.vencido) { pasoRegistro(1); mensaje("m1", r.msg); }
     else mensaje("m3", r.msg || "No se pudo crear.");
   } catch (_) { mensaje("m3", SIN_RED); }
   b.disabled = false; b.textContent = "Crear mi panel";
 });
+
+/* ---------- Pulsera nueva (si la anterior fue anulada) ---------- */
+$("bPulsera").onclick = () => {
+  let ocupado = false;
+  LectorQR.abrir("Escanea tu pulsera NUEVA", async token => {
+    if (ocupado) return; ocupado = true;
+    LectorQR.estado("Revisando…");
+    try {
+      const r = await conSesion({ accion: "alumnoPulsera", token });
+      if (!r.ok) { LectorQR.estado(r.msg || "No se pudo vincular.", "mal"); ocupado = false; return; }
+      yo = r; pintar(); await LectorQR.cerrar(); avisar(r.aviso || "✓ Pulsera vinculada");
+    } catch (e) {
+      if (e.message === "sesion" || e.message === "cerrado") return LectorQR.cerrar();
+      LectorQR.estado(SIN_RED, "mal"); ocupado = false;
+    }
+  }, { boton: "Cancelar" });
+};
 
 /* ---------- Panel ---------- */
 function entrarCon(r) { sesion = r.sesion; guardado.poner("localStorage", SESION, sesion); abrir(r); }
@@ -453,6 +425,7 @@ function pintar() {
   $("curso").textContent = yo.curso + " · " + yo.colegio;
   $("cupo").textContent = !yo.puedeSubir ? "Por ahora no puedes subir fotos. Habla con la organización."
     : yo.quedan ? `Te quedan ${yo.quedan} de ${yo.max} fotos.` : `Llegaste a las ${yo.max} fotos. Borra alguna para subir otra.`;
+  $("sinPulsera").hidden = yo.pulsera !== 0;
   const g = $("globo"); g.hidden = !yo.nuevas; g.textContent = yo.nuevas > 99 ? "99+" : yo.nuevas;
 }
 async function refrescar() {
@@ -516,30 +489,29 @@ function chip(x, quitar) {
   s.append(b); return s;
 }
 function pintarEtiquetas() {
-  [$("pChips"), $("escChips")].forEach(caja => {
+  [$("pChips"), LectorQR.chips].forEach(caja => {
     caja.textContent = "";
     elegida && elegida.etiquetas.forEach((x, i) => caja.append(chip(x, () => { elegida.etiquetas.splice(i, 1); pintarEtiquetas(); })));
   });
   $("bEtiquetar").textContent = elegida && elegida.etiquetas.length ? "🏷️ Escanear otra pulsera" : "🏷️ Etiquetar escaneando pulseras";
 }
 $("bEtiquetar").onclick = () => {
-  abrirEscaner("Escanea la pulsera de tu amigo/a", async token => {
+  LectorQR.abrir("Escanea la pulsera de tu amigo/a", async token => {
     if (!elegida) return;
-    if (elegida.etiquetas.some(x => x.token === token)) return estadoEscaner("Ya está etiquetado ✓", "ok");
-    if (elegida.etiquetas.length >= 15) return estadoEscaner("Máximo 15 personas por foto.", "mal");
-    estadoEscaner("Revisando…");
+    if (elegida.etiquetas.some(x => x.token === token)) return LectorQR.estado("Ya está etiquetado ✓", "ok");
+    if (elegida.etiquetas.length >= 15) return LectorQR.estado("Máximo 15 personas por foto.", "mal");
+    LectorQR.estado("Revisando…");
     const agregar = nombre => { if (!elegida || elegida.etiquetas.some(x => x.token === token)) return; elegida.etiquetas.push({ token, nombre }); pintarEtiquetas(); };
     try {
       const r = await conSesion({ accion: "alumnoEtiqueta", token });
-      if (!r.ok) return estadoEscaner(r.msg || "No se pudo leer.", "mal");
-      agregar(r.nombre); estadoEscaner("✓ " + r.nombre + " · puedes escanear otra", "ok");
+      if (!r.ok) return LectorQR.estado(r.msg || "No se pudo leer.", "mal");
+      agregar(r.nombre); LectorQR.estado("✓ " + r.nombre + " · puedes escanear otra", "ok");
     } catch (e) {
-      if (e.message === "sesion" || e.message === "cerrado") return cerrarEscaner();
+      if (e.message === "sesion" || e.message === "cerrado") return LectorQR.cerrar();
       agregar("Pulsera " + (elegida.etiquetas.length + 1));   // sin señal: el servidor la reconoce al subir
-      estadoEscaner("✓ Pulsera leída. Se reconocerá al subir.", "ok");
+      LectorQR.estado("✓ Pulsera leída. Se reconocerá al subir.", "ok");
     }
-  }, () => { $("escListo").textContent = "Listo"; });
-  $("escListo").textContent = "Listo";
+  });
   pintarEtiquetas();
 };
 
@@ -806,11 +778,11 @@ async function iniciar() {
       throw 0;
     } catch (_) { pantalla("entrada"); return mensaje("eMsg", "No pudimos abrir tu panel. Revisa la conexión y vuelve a cargar la página."); }
   }
-  try {
-    const p = JSON.parse(guardado.leer("sessionStorage", PASO) || "null");
-    if (p && p.paso && Date.now() - p.hora < 18 * 60000) { reg = p; $("rCorreo").value = p.email || ""; return pasoRegistro(p.n); }
-  } catch (_) {}
   try { const r = await api({ accion: "evento" }); if (r.ok && r.alumnos !== true) return pantalla("cerrado"); } catch (_) {}
+  try {
+    const p = JSON.parse(guardado.leer("localStorage", PASO) || "null");
+    if (p && p.apoderado && Date.now() - p.hora < 24 * 3600000) { reg.apoderado = p.apoderado; reg.hora = p.hora; return pasoRegistro(2); }
+  } catch (_) {}
   pantalla("entrada");
 }
 iniciar();
