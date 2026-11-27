@@ -216,6 +216,18 @@
   .destinos input { margin-top:.2rem; width:1.15rem; height:1.15rem; accent-color:var(--oro); flex:none; }
   .destinos small { display:block; font-weight:400; color:var(--suave); font-size:.78rem; margin-top:.1rem; }
   .destinos label:has(input:checked) { border-color:var(--oro); background:rgba(245,166,35,.12); }
+
+  /* ---------- Claves y PIN (solo Admin) ---------- */
+  .clave { margin-bottom:.8rem; }
+  .clave label { display:flex; justify-content:space-between; align-items:baseline; gap:.6rem; margin:0 0 .3rem; }
+  .clave label small { font-weight:700; font-size:.68rem; white-space:nowrap; color:var(--suave); }
+  .clave label small.ok { color:var(--ok); }
+  .clave input { width:100%; font:inherit; color:var(--texto); background:rgba(0,0,0,.3); border:1px solid var(--borde); border-radius:.8rem; padding:.75rem .9rem; outline:none; }
+  .clave input:focus { border-color:var(--cian); box-shadow:0 0 0 3px rgba(25,211,230,.2); }
+  .clave input.mal { border-color:var(--mal); box-shadow:0 0 0 3px rgba(255,90,110,.2); }
+  #claves h4 { margin:1.1rem 0 .6rem; }
+  .ver-claves { display:flex; gap:.6rem; align-items:center; margin:.2rem 0 1rem; font-size:.85rem; color:var(--texto); font-weight:400; }
+  .ver-claves input { width:1.15rem; height:1.15rem; accent-color:var(--oro); }
 </style>
 </head>
 <body>
@@ -391,6 +403,12 @@
         <button class="btn sec" id="bDj" type="button">Ver pedidos y dedicatorias</button>
       </div>
       <div class="tarjeta solo-admin">
+        <h2>🔐 Claves y PIN</h2>
+        <p class="nota">Cambia las claves de Admin, Staff y Control de Acceso, y los PIN para iniciar la fiesta o el simulacro.</p>
+        <button class="btn sec" id="bClaves" type="button">Cambiar claves</button>
+        <p class="res" id="clavesAviso"></p>
+      </div>
+      <div class="tarjeta solo-admin">
         <h2>Envíos de anuncios</h2>
         <div id="kCamp"><p class="nota">Aún no hay envíos.</p></div>
       </div>
@@ -443,6 +461,27 @@
     </div>
     <p class="res" id="djRes"></p>
     <div id="djListas"></div>
+  </div>
+</div>
+
+<div id="claves" class="modal oculto" role="dialog" aria-modal="true" aria-labelledby="clavesTit">
+  <div class="hoja">
+    <div class="cab"><h3 id="clavesTit">🔐 Claves y PIN</h3><button type="button" id="clavesCerrar" aria-label="Cerrar">×</button></div>
+    <p class="resumen-sala">Deja en blanco lo que no quieras cambiar. Por seguridad, las claves actuales no se muestran.</p>
+    <form id="clavesForm" autocomplete="off" novalidate>
+      <div class="clave"><label for="k_actual"><span>Tu PIN de Admin actual</span></label><input type="password" id="k_actual" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false"></div>
+      <h4>Claves de acceso</h4>
+      <div class="clave"><label for="k_admin"><span>Nuevo PIN de Admin</span><small id="h_admin"></small></label><input type="password" id="k_admin" autocomplete="new-password" autocapitalize="none" autocorrect="off" spellcheck="false" maxlength="40" placeholder="Mínimo 8 caracteres"></div>
+      <div class="clave" id="c_admin2" hidden><label for="k_admin2"><span>Repite el nuevo PIN de Admin</span></label><input type="password" id="k_admin2" autocomplete="new-password" autocapitalize="none" autocorrect="off" spellcheck="false" maxlength="40"></div>
+      <div class="clave"><label for="k_staff"><span>Nuevo PIN de Staff</span><small id="h_staff"></small></label><input type="password" id="k_staff" autocomplete="new-password" autocapitalize="none" autocorrect="off" spellcheck="false" maxlength="40" placeholder="Mínimo 6 caracteres"></div>
+      <div class="clave"><label for="k_puerta"><span>Nuevo PIN de Control de Acceso</span><small id="h_puerta"></small></label><input type="password" id="k_puerta" autocomplete="new-password" autocapitalize="none" autocorrect="off" spellcheck="false" maxlength="40" placeholder="Mínimo 6 caracteres"></div>
+      <h4>Para iniciar o finalizar</h4>
+      <div class="clave"><label for="k_fiesta"><span>Nuevo PIN de la fiesta</span><small id="h_fiesta"></small></label><input type="password" id="k_fiesta" autocomplete="new-password" autocapitalize="none" autocorrect="off" spellcheck="false" maxlength="12" inputmode="numeric" placeholder="4 a 12 números"></div>
+      <div class="clave"><label for="k_simulacro"><span>Nuevo PIN del simulacro</span><small id="h_simulacro"></small></label><input type="password" id="k_simulacro" autocomplete="new-password" autocapitalize="none" autocorrect="off" spellcheck="false" maxlength="12" inputmode="numeric" placeholder="4 a 12 números"></div>
+      <label class="ver-claves"><input type="checkbox" id="k_ver"> Mostrar lo que escribo</label>
+      <p class="res" id="clavesRes"></p>
+      <button class="btn" id="clavesOk" type="submit">Guardar cambios</button>
+    </form>
   </div>
 </div>
 
@@ -1076,6 +1115,55 @@ $("djCsv").onclick = () => {
   descargar(new Blob(["﻿" + filas.map(f => f.map(q).join(";")).join("\r\n")], { type: "text/csv;charset=utf-8" }), "Musica_DJ_Prom_G30.csv");
 };
 
+/* ===== Más (solo Admin): cambiar claves y PIN. El servidor exige el PIN de Admin actual. ===== */
+const CAMPOS_CLAVE = ["admin", "staff", "puerta", "fiesta", "simulacro"];
+function estadoCampos(hay) {
+  CAMPOS_CLAVE.forEach(k => {
+    const e = $("h_" + k);
+    e.textContent = !hay ? "" : hay[k] ? "definido ✓" : k === "simulacro" ? "usa el de la fiesta" : k === "fiesta" ? "usa 2030" : "sin definir";
+    e.className = hay && hay[k] ? "ok" : "";
+  });
+}
+function limpiarClaves() { $("clavesForm").reset(); $("c_admin2").hidden = true; $("clavesRes").textContent = ""; $("clavesForm").querySelectorAll("input").forEach(i => { i.classList.remove("mal"); if (i.id !== "k_ver") i.type = "password"; }); }
+async function abrirClaves() {
+  limpiarClaves(); estadoCampos(null); $("clavesAviso").textContent = "";
+  $("claves").classList.remove("oculto");
+  try {
+    const r = await api({ accion: "estadoClaves" });
+    if (r.auth === false) { cerrarClaves(); return cerrarSesion(); }
+    if (r.ok) estadoCampos(r.hay);
+    else mostrarRes("clavesRes", false, r.msg === "Acción desconocida" ? "Falta publicar la nueva versión del servidor." : r.msg);
+  } catch (_) { mostrarRes("clavesRes", false, "Sin conexión con el servidor."); }
+}
+function cerrarClaves() { $("claves").classList.add("oculto"); limpiarClaves(); }
+$("bClaves").onclick = abrirClaves;
+$("clavesCerrar").onclick = cerrarClaves;
+$("k_admin").addEventListener("input", () => $("c_admin2").hidden = !$("k_admin").value);
+$("k_ver").onchange = e => $("clavesForm").querySelectorAll("input:not(#k_ver)").forEach(i => i.type = e.target.checked ? "text" : "password");
+$("clavesForm").addEventListener("input", e => e.target.classList.remove("mal"));
+$("clavesForm").addEventListener("submit", async ev => {
+  ev.preventDefault();
+  const falla = (campo, texto) => { mostrarRes("clavesRes", false, texto); const i = $("k_" + campo); if (i) { i.classList.add("mal"); i.focus(); } };
+  const actual = $("k_actual").value, nuevas = {};
+  CAMPOS_CLAVE.forEach(k => { if ($("k_" + k).value) nuevas[k] = $("k_" + k).value; });
+  if (!actual) return falla("actual", "Escribe tu PIN de Admin actual.");
+  if (!Object.keys(nuevas).length) return falla("admin", "No escribiste ninguna clave nueva.");
+  if (nuevas.admin && nuevas.admin !== $("k_admin2").value) return falla("admin2", "Los dos PIN de Admin nuevos no coinciden.");
+  const b = $("clavesOk"); b.disabled = true; b.textContent = "Guardando…";
+  try {
+    const r = await api({ accion: "cambiarClaves", actual, nuevas });
+    if (r.auth === false && !r.bloqueado) { cerrarClaves(); return cerrarSesion(); }
+    if (!r.ok) falla(r.campo, r.msg === "Acción desconocida" ? "Falta publicar la nueva versión del servidor." : r.msg);
+    else {
+      const eraAdmin = !!nuevas.admin;
+      if (eraAdmin) { pin = nuevas.admin; try { sessionStorage.setItem("pin_g30", pin); } catch (_) {} if (bioGuardado()) { borrarBio(); pintarBio(); } }
+      cerrarClaves();
+      mostrarRes("clavesAviso", true, "Cambiado: " + r.cambiadas.join(", ") + "." + (nuevas.admin || nuevas.staff || nuevas.puerta ? " Los otros teléfonos tendrán que entrar de nuevo." : "") + (eraAdmin ? " Vuelve a activar tu huella en esta pestaña." : ""));
+    }
+  } catch (_) { mostrarRes("clavesRes", false, "Sin conexión. Antes de repetir, prueba cuál clave quedó."); }
+  b.disabled = false; b.textContent = "Guardar cambios";
+});
+
 /* ===== Más: resumen y envíos pendientes ===== */
 const barra = (reg, tot) => `<div class="barra"><i style="width:${tot ? Math.round(reg * 100 / tot) : 0}%"></i></div>`;
 async function cargarResumen() {
@@ -1418,7 +1506,7 @@ function entrarPanel() {
 }
 function cerrarSesion() {
   pin = ""; tk = ""; carnet = null; nomina = new Map(); try { sessionStorage.removeItem("pin_g30"); sessionStorage.removeItem("tk_g30"); } catch (_) {}
-  clearInterval(window._c); apagar(); cerrar(); cerrarSala(); $("dj").classList.add("oculto"); musDj = null;
+  clearInterval(window._c); apagar(); cerrar(); cerrarSala(); $("dj").classList.add("oculto"); musDj = null; cerrarClaves();
   $("pin").value = "";
   elegirAcceso();
 }
